@@ -1,11 +1,1 @@
---2022-12-16 22:44:55--  https://gitee.com/yudezeng/proot_proc/raw/master/ord
-Resolving gitee.com... 212.64.63.190, 212.64.63.215
-Connecting to gitee.com|212.64.63.190|:443... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 3 [text/plain]
-Saving to: ‘proot_proc/ord’
-
-     0K                                                       100%  251K=0s
-
-2022-12-16 22:44:56 (251 KB/s) - ‘proot_proc/ord’ saved [3/3]
-
+clear
