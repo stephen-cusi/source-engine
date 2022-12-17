@@ -21,3 +21,4 @@ Discord: https://discord.gg/hZRB7WMgGw
 
 
 # [How to Build?](https://github.com/nillerusr/source-engine/wiki/How-to-build)
+# [Download the latest file](https://github.com/stephen-cusi/source-engine/actions)
