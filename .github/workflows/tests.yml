@@ -7,7 +7,7 @@ on:
     branches:
       - "*"
 jobs:
-  windows_engine_amd64:
+  windows_engine_x86:
     runs-on: windows-latest
     steps:
     - name: Checkout
@@ -17,15 +17,15 @@ jobs:
     - name: Create output dir
       run: mkdir ./out
     - name: Configure build
-      run: ./waf configure -T debug -8 --build-game=cstrike --prefix=./out
+      run: ./waf configure -T release --build-game=cstrike --prefix=./out
     - name: Build
       run: ./waf install
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: engine_amd64_cstrike
+        name: engine_x86_cstrike
         path: ./out
-  windows_hl2_cldl_amd64:
+  windows_hl2_cldl_x86:
     runs-on: windows-latest
     steps:
     - name: Checkout
@@ -35,15 +35,15 @@ jobs:
     - name: Create output dir
       run: mkdir ./out
     - name: Configure build
-      run: ./waf configure -T debug -8 --build-game=hl2 --prefix=./out
+      run: ./waf configure -T release --build-game=hl2 --prefix=./out
     - name: Build
       run: ./waf install --target=client,server
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows_hl2_cl_dll_amd64
+        name: windows_hl2_cl_dll_x86
         path: ./out
-  windows_dods_cl_dll_amd64:
+  windows_dods_cl_dll_x86:
     runs-on: windows-latest
     steps:
     - name: Checkout
@@ -53,15 +53,15 @@ jobs:
     - name: Create output dir
       run: mkdir ./out
     - name: Configure build
-      run: ./waf configure -T debug -8 --build-game=dod --prefix=./out
+      run: ./waf configure -T release --build-game=dod --prefix=./out
     - name: Build
       run: ./waf install --target=client,server
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows_dod_cl_dll_amd64
+        name: windows_dod_cl_dll_x86
         path: ./out
-  windows_only_dedicated_amd64:
+  windows_only_dedicated_x86:
     runs-on: windows-latest
     steps:
     - name: Checkout
@@ -71,11 +71,11 @@ jobs:
     - name: Create output dir
       run: mkdir ./out
     - name: Configure build
-      run: ./waf configure -T debug -8 -d --build-game=dod --prefix=./out
+      run: ./waf configure -T release -d --build-game=dod --prefix=./out
     - name: Build
       run: ./waf install
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: windows_hl2_dedicated_amd64
+        name: windows_dod_dedicated_x86
         path: ./out
