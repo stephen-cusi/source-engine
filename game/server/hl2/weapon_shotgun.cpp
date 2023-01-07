@@ -471,8 +471,12 @@ void CWeaponShotgun::PrimaryAttack( void )
 	
 	// Fire the bullets, and force the first shot to be perfectly accuracy
 	pPlayer->FireBullets( sk_plr_num_shotgun_pellets.GetInt(), vecSrc, vecAiming, GetBulletSpread(), MAX_TRACE_LENGTH, m_iPrimaryAmmoType, 0, -1, -1, 0, NULL, true, true );
-	
+
+#ifdef EZ
+	pPlayer->ViewPunch(QAngle(random->RandomFloat(-4, -2), random->RandomFloat(-4, 4), 0)); // Breadman - values doubled
+#else
 	pPlayer->ViewPunch( QAngle( random->RandomFloat( -2, -1 ), random->RandomFloat( -2, 2 ), 0 ) );
+#endif
 
 	CSoundEnt::InsertSound( SOUND_COMBAT, GetAbsOrigin(), SOUNDENT_VOLUME_SHOTGUN, 0.2, GetOwner() );
 
@@ -527,7 +531,11 @@ void CWeaponShotgun::SecondaryAttack( void )
 
 	// Fire the bullets
 	pPlayer->FireBullets( 12, vecSrc, vecAiming, GetBulletSpread(), MAX_TRACE_LENGTH, m_iPrimaryAmmoType, 0, -1, -1, 0, NULL, false, false );
+#ifdef EZ
+	pPlayer->ViewPunch( QAngle(random->RandomFloat(-7, -7), random->RandomFloat(-6, 6), 0) );
+#else
 	pPlayer->ViewPunch( QAngle(random->RandomFloat( -5, 5 ),0,0) );
+#endif
 
 	pPlayer->SetMuzzleFlashTime( gpGlobals->curtime + 1.0 );
 

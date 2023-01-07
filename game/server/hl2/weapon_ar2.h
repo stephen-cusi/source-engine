@@ -28,7 +28,10 @@ public:
 
 	void	ItemPostFrame( void );
 	void	Precache( void );
-	
+
+#ifdef EZ1
+	void	PrimaryAttack(void); // Breadman
+#endif	
 	void	SecondaryAttack( void );
 	void	DelayedAttack( void );
 
@@ -43,7 +46,11 @@ public:
 
 	int		GetMinBurst( void ) { return 2; }
 	int		GetMaxBurst( void ) { return 5; }
+#ifdef EZ1
+	float	GetFireRate( void ) { return 0.12f; } // Breadman - lowered for prototype
+#else
 	float	GetFireRate( void ) { return 0.1f; }
+#endif
 
 	bool	CanHolster( void );
 	bool	Reload( void );
@@ -57,8 +64,12 @@ public:
 	virtual const Vector& GetBulletSpread( void )
 	{
 		static Vector cone;
-		
+
+#ifdef EZ1
+		cone = VECTOR_CONE_10DEGREES;
+#else
 		cone = VECTOR_CONE_3DEGREES;
+#endif
 
 		return cone;
 	}

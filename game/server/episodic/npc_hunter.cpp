@@ -78,7 +78,11 @@ static const char *HUNTER_ZAP_THINK = "HunterZap";
 static const char *HUNTER_JOSTLE_VEHICLE_THINK = "HunterJostle";
 
 
+#ifdef EZ1
+ConVar sk_hunter_health( "sk_hunter_health", "7000" );
+#else
 ConVar sk_hunter_health( "sk_hunter_health", "210" );
+#endif
 
 // Melee attacks
 ConVar sk_hunter_dmg_one_slash( "sk_hunter_dmg_one_slash", "20" );

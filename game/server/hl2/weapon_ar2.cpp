@@ -31,9 +31,18 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#ifdef EZ1
+ConVar sk_weapon_ar2_alt_fire_radius( "sk_weapon_ar2_alt_fire_radius", "5" );
+ConVar sk_weapon_ar2_alt_fire_duration( "sk_weapon_ar2_alt_fire_duration", "1" );
+#else
 ConVar sk_weapon_ar2_alt_fire_radius( "sk_weapon_ar2_alt_fire_radius", "10" );
 ConVar sk_weapon_ar2_alt_fire_duration( "sk_weapon_ar2_alt_fire_duration", "2" );
+#endif
 ConVar sk_weapon_ar2_alt_fire_mass( "sk_weapon_ar2_alt_fire_mass", "150" );
+
+#ifdef EZ
+int BurstMax = 0; // Breadman. It's called BurstMax but is actually the number of times to cycle before completing
+#endif
 
 //=========================================================
 //=========================================================
@@ -196,11 +205,69 @@ void CWeaponAR2::DoImpactEffect( trace_t &tr, int nDamageType )
 	BaseClass::DoImpactEffect( tr, nDamageType );
 }
 
+#ifdef EZ1
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: BREADMAN --- This overrides the primaryfire function to suit the mod - Breadman
+// Input  : &info - 
+//-----------------------------------------------------------------------------
+void CWeaponAR2::PrimaryAttack( void )
+{
+	if (CBasePlayer *pPlayer = ToBasePlayer(GetOwner()))
+	{
+		SendWeaponAnim(ACT_VM_PRIMARYATTACK);
+		WeaponSound( SINGLE );
+
+
+		// Fire the bullets
+		FireBulletsInfo_t info;
+		info.m_iShots = 2;
+		info.m_vecSrc = pPlayer->Weapon_ShootPosition();
+		info.m_vecDirShooting = pPlayer->GetAutoaimVector(AUTOAIM_SCALE_DEFAULT);
+		info.m_vecSpread = pPlayer->GetAttackSpread(this);
+		info.m_flDistance = MAX_TRACE_LENGTH;
+		info.m_iAmmoType = m_iPrimaryAmmoType;
+		info.m_iTracerFreq = 2;
+
+		pPlayer->FireBullets(info);
+		pPlayer->DoMuzzleFlash();
+
+		// Time we wait before allowing to throw another
+		m_flNextPrimaryAttack = gpGlobals->curtime + 0.09f;
+
+		m_iPrimaryAttacks++;
+		gamestats->Event_WeaponFired(pPlayer, false, GetClassname());
+
+		m_iClip1 = m_iClip1 - 1;
+
+		AddViewKick();
+
+		BaseClass::ItemPostFrame();
+	}
+}
+#endif // EZ1
+
+// END Breadman
+
+//-----------------------------------------------------------------------------
+// Purpose: BURST FIRE THREE MINI-PELLETS 
+// At the moment the first shot fired consumes x2 ammo for some freakin' reason. - old comment
+// BUT NOW It's working as it should wat tha fack. DON'T QUESTION IT. SMILE. KEEP WORKING.
 //-----------------------------------------------------------------------------
 void CWeaponAR2::DelayedAttack( void )
 {
+#ifdef EZ
+	// Clamp
+	if (BurstMax > 3) { BurstMax = 3; };
+
+	// If we've reached our burst limit, stop firing.
+	if (BurstMax == 3)
+	{
+		// Reset our burst and return to sender.
+		//Msg("\n ENDING AR2 BURST ATTACK \n");
+		BurstMax = 0;
+		return; 
+	}
+#endif // EZ
 	m_bShotDelayed = false;
 	
 	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
@@ -226,7 +293,11 @@ void CWeaponAR2::DelayedAttack( void )
 	Vector impactPoint = vecSrc + ( vecAiming * MAX_TRACE_LENGTH );
 
 	// Fire the bullets
+#ifdef EZ
+	Vector vecVelocity = vecAiming * 1500.0f;
+#else
 	Vector vecVelocity = vecAiming * 1000.0f;
+#endif // EZ
 
 	// Fire the combine ball
 	CreateCombineBall(	vecSrc, 
@@ -251,18 +322,32 @@ void CWeaponAR2::DelayedAttack( void )
 	
 	pOwner->ViewPunch( QAngle( random->RandomInt( -8, -12 ), random->RandomInt( 1, 2 ), 0 ) );
 
+#ifndef EZ
 	// Decrease ammo
 	pOwner->RemoveAmmo( 1, m_iSecondaryAmmoType );
+#endif // EZ
 
 	// Can shoot again immediately
+#ifdef EZ
+	m_flNextPrimaryAttack = gpGlobals->curtime + 1.0f;
+#else
 	m_flNextPrimaryAttack = gpGlobals->curtime + 0.5f;
+#endif // EZ
 
 	// Can blow up after a short delay (so have time to release mouse button)
 	m_flNextSecondaryAttack = gpGlobals->curtime + 1.0f;
+
+#ifdef EZ
+	// Add into our burst max
+	BurstMax++;
+
+	// Fire the next round
+	CWeaponAR2::DelayedAttack();
+#endif // EZ
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: 
+// Purpose: ENERGY BALL ATTACK
 //-----------------------------------------------------------------------------
 void CWeaponAR2::SecondaryAttack( void )
 {
@@ -289,6 +374,13 @@ void CWeaponAR2::SecondaryAttack( void )
 
 	SendWeaponAnim( ACT_VM_FIDGET );
 	WeaponSound( SPECIAL1 );
+
+#ifdef EZ
+	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+
+	// Decrease ammo - trying this down here.
+	pOwner->RemoveAmmo(1, m_iSecondaryAmmoType);
+#endif // EZ
 
 	m_iSecondaryAttacks++;
 	gamestats->Event_WeaponFired( pPlayer, false, GetClassname() );
@@ -344,7 +436,11 @@ void CWeaponAR2::FireNPCPrimaryAttack( CBaseCombatCharacter *pOperator, bool bUs
 
 	CSoundEnt::InsertSound( SOUND_COMBAT|SOUND_CONTEXT_GUNFIRE, pOperator->GetAbsOrigin(), SOUNDENT_VOLUME_MACHINEGUN, 0.2, pOperator, SOUNDENT_CHANNEL_WEAPON, pOperator->GetEnemy() );
 
+#ifdef EZ1
+	pOperator->FireBullets( 2, vecShootOrigin, vecShootDir, VECTOR_CONE_10DEGREES, MAX_TRACE_LENGTH, m_iPrimaryAmmoType, 2 );
+#else
 	pOperator->FireBullets( 1, vecShootOrigin, vecShootDir, VECTOR_CONE_PRECALCULATED, MAX_TRACE_LENGTH, m_iPrimaryAmmoType, 2 );
+#endif // EZ1
 
 	// NOTENOTE: This is overriden on the client-side
 	// pOperator->DoMuzzleFlash();
@@ -471,8 +567,13 @@ void CWeaponAR2::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatChara
 void CWeaponAR2::AddViewKick( void )
 {
 	#define	EASY_DAMPEN			0.5f
+#ifdef EZ
+	#define	MAX_VERTICAL_KICK	12.0f	//Degrees
+	#define	SLIDE_LIMIT			1.0f	//Seconds
+#else
 	#define	MAX_VERTICAL_KICK	8.0f	//Degrees
 	#define	SLIDE_LIMIT			5.0f	//Seconds
+#endif // EZ
 	
 	//Get the view kick
 	CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );

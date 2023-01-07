@@ -23,6 +23,7 @@ class CAchievementMgr;
 class CBaseAchievement : public CGameEventListener, public IAchievement
 {
 	DECLARE_CLASS_NOBASE( CBaseAchievement );
+
 public:
 	CBaseAchievement();	
 	virtual ~CBaseAchievement();
@@ -140,6 +141,7 @@ protected:
 	const char *m_pInflictorClassNameFilter;			// if non-NULL, inflictor class name to filter with
 	const char *m_pInflictorEntityNameFilter;			// if non-NULL, inflictor entity name to filter with
 	const char *m_pVictimClassNameFilter;				// if non-NULL, victim class name to filter with
+	const char *m_pVictimEntityFilter;					// Breadman - if non-NULL, victim entity to filter with
 	const char *m_pAttackerClassNameFilter;				// if non-NULL, attacker class name to filter with
 	const char *m_pMapNameFilter;						// if non-NULL, map name to filter with
 	const char *m_pGameDirFilter;						// if non-NULL, game dir name to filter with

@@ -357,7 +357,11 @@ void PerformCustomEffects( const Vector &vecOrigin, trace_t &tr, const Vector &s
 	{
 		QAngle vecAngles;
 		VectorAngles( -shotDir, vecAngles );
+#ifdef EZ
+		DispatchParticleEffect("warp_shield_impact_BMan", vecOrigin, vecAngles);
+#else
 		DispatchParticleEffect( "warp_shield_impact", vecOrigin, vecAngles );
+#endif
 	}
 }
 

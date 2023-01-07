@@ -1084,7 +1084,11 @@ void CFastZombie::HandleAnimEvent( animevent_t *pEvent )
 		right = right * -50;
 
 		QAngle angle( -3, -5, -3  );
+#ifdef EZ
+		ClawAttack( GetClawAttackRange(), 12, angle, right, ZOMBIE_BLOOD_RIGHT_HAND ); // Breadman - I think this is the fast zombie attack damage right here.
+#else
 		ClawAttack( GetClawAttackRange(), 3, angle, right, ZOMBIE_BLOOD_RIGHT_HAND );
+#endif
 		return;
 	}
 
@@ -1094,7 +1098,11 @@ void CFastZombie::HandleAnimEvent( animevent_t *pEvent )
 		AngleVectors( GetLocalAngles(), NULL, &right, NULL );
 		right = right * 50;
 		QAngle angle( -3, 5, -3 );
+#ifdef EZ
+		ClawAttack( GetClawAttackRange(), 12, angle, right, ZOMBIE_BLOOD_RIGHT_HAND ); // Breadman - I think this is the fast zombie attack damage right here.
+#else
 		ClawAttack( GetClawAttackRange(), 3, angle, right, ZOMBIE_BLOOD_LEFT_HAND );
+#endif
 		return;
 	}
 
@@ -1480,7 +1488,11 @@ void CFastZombie::LeapAttackTouch( CBaseEntity *pOther )
 	forward *= 500;
 	QAngle qaPunch( 15, random->RandomInt(-5,5), random->RandomInt(-5,5) );
 	
+#ifdef EZ
+	ClawAttack( GetClawAttackRange(), 50, qaPunch, forward, ZOMBIE_BLOOD_BOTH_HANDS ); // Breadman - Both claws. Pain train.
+#else
 	ClawAttack( GetClawAttackRange(), 5, qaPunch, forward, ZOMBIE_BLOOD_BOTH_HANDS );
+#endif // EZ
 
 	SetTouch( NULL );
 }

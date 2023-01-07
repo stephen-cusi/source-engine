@@ -115,6 +115,8 @@ $Project "client"
 	"game\client\client_hl2mp.vpc"		[($WIN32||$POSIX) && $HL2MP]
 	"game\client\client_hl1.vpc"		[($WIN32||$POSIX) && $HL1]
 	"game\client\client_hl1mp.vpc"		[($WIN32||$POSIX) && $HL1MP]
+
+	"game\client\client_ez1.vpc"		[($WIN32||$X360||$POSIX) && $EZ1]
 }
 
 $Project "client_sdk"
@@ -432,6 +434,8 @@ $Project "server"
 	"game\server\server_hl2mp.vpc"		[($WIN32||$POSIX) && $HL2MP]
 	"game\server\server_hl1.vpc"		[($WIN32||$POSIX) && $HL1]
 	"game\server\server_hl1mp.vpc"		[($WIN32||$POSIX) && $HL1MP]
+
+	"game\server\server_ez1.vpc"		[($WIN32||$X360||$POSIX) && $EZ1]
 }
 
 $Project "simdtest"

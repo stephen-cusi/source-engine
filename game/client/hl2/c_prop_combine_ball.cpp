@@ -24,6 +24,9 @@ CLIENTEFFECT_MATERIAL( "effects/ar2_altfire1b" )
 CLIENTEFFECT_MATERIAL( "effects/combinemuzzle1_nocull" )
 CLIENTEFFECT_MATERIAL( "effects/combinemuzzle2_nocull" )
 CLIENTEFFECT_MATERIAL( "effects/combinemuzzle1" )
+#ifdef EZ
+CLIENTEFFECT_MATERIAL( "effects/combinemuzzle2" )
+#endif
 CLIENTEFFECT_MATERIAL( "effects/ar2_altfire1" )
 CLIENTEFFECT_MATERIAL( "effects/ar2_altfire1b" )
 CLIENTEFFECT_REGISTER_END()
@@ -96,7 +99,11 @@ bool C_PropCombineBall::InitMaterials( void )
 	// Flicker material
 	if ( m_pFlickerMaterial == NULL )
 	{
+#ifndef EZ
 		m_pFlickerMaterial = materials->FindMaterial( "effects/combinemuzzle1", NULL, false );
+#else
+		m_pFlickerMaterial = materials->FindMaterial( "effects/combinemuzzle2", NULL, false );
+#endif // EZ
 
 		if ( m_pFlickerMaterial == NULL )
 			return false;

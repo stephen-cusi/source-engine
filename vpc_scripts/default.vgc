@@ -21,6 +21,8 @@ $Games
 	"PORTAL"
 	"SDK"
 	"TF"
+
+	"EZ1"
 }
 
 $Include "vpc_scripts\projects.vgc"

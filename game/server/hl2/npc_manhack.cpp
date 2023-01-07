@@ -226,6 +226,9 @@ CNPC_Manhack::CNPC_Manhack()
 	m_flEnginePitch1Time = 0;
 	m_bDoSwarmBehavior = true;
 	m_flBumpSuppressTime = 0;
+#ifdef EZ
+	m_bShouldFollowPlayer = false;
+#endif // EZ
 }
 
 //------------------------------------------------------------------------------
@@ -240,7 +243,13 @@ CNPC_Manhack::~CNPC_Manhack()
 //-----------------------------------------------------------------------------
 Class_T	CNPC_Manhack::Classify(void)
 {
-	return (m_bHeld||m_bHackedByAlyx) ? CLASS_PLAYER_ALLY : CLASS_MANHACK; 
+	return (m_bHeld||m_bHackedByAlyx) ?	
+#ifndef EZ
+	CLASS_PLAYER_ALLY
+#else
+	CLASS_CITIZEN_REBEL
+#endif
+	: CLASS_MANHACK;
 }
 
 
@@ -2453,7 +2462,12 @@ void CNPC_Manhack::Spawn(void)
 	SetCollisionGroup( COLLISION_GROUP_NONE );
 
 	m_bHeld = false;
+#ifdef EZ
+	m_bHackedByAlyx = true;
+#else
 	m_bHackedByAlyx = false;
+#endif // EZ
+
 	StopLoitering();
 }
 
@@ -2470,8 +2484,13 @@ void CNPC_Manhack::StartEye( void )
 		
 		if( m_bHackedByAlyx )
 		{
+#ifdef EZ
+			m_pEyeGlow->SetTransparency(kRenderTransAdd, 0, 255, 255, 128, kRenderFxNoDissipation);
+			m_pEyeGlow->SetColor(0, 255, 255);
+#else
 			m_pEyeGlow->SetTransparency( kRenderTransAdd, 0, 255, 0, 128, kRenderFxNoDissipation );
 			m_pEyeGlow->SetColor( 0, 255, 0 );
+#endif // EZ
 		}
 		else
 		{
@@ -2492,8 +2511,13 @@ void CNPC_Manhack::StartEye( void )
 
 		if( m_bHackedByAlyx )
 		{
+#ifdef EZ
+			m_pLightGlow->SetTransparency( kRenderTransAdd, 0, 255, 255, 128, kRenderFxNoDissipation );
+			m_pLightGlow->SetColor( 0, 255, 255 );
+#else
 			m_pLightGlow->SetTransparency( kRenderTransAdd, 0, 255, 0, 128, kRenderFxNoDissipation );
 			m_pLightGlow->SetColor( 0, 255, 0 );
+#endif // EZ
 		}
 		else
 		{
@@ -2695,6 +2719,17 @@ void CNPC_Manhack::StartTask( const Task_t *pTask )
 			// calc center of squad
 			int count = 0;
 			m_vSavePosition = Vector( 0, 0, 0 );
+
+#ifdef EZ
+			if (m_bShouldFollowPlayer) {
+				CBasePlayer *pPlayer = ToBasePlayer(GetOwnerEntity());
+				if (pPlayer) {
+					//DevMsg("Following player\n");
+					m_vSavePosition += pPlayer->EyePosition() * 10;
+					count += 10;
+				}
+			}
+#endif // EZ
 
 			// give attacking members more influence
 			AISquadIter_t iter;
@@ -3226,12 +3261,14 @@ void CNPC_Manhack::SetEyeState( int state )
 		{
 			if ( m_pEyeGlow )
 			{
+#ifndef EZ
 				//Toggle our state
 				if( m_bHackedByAlyx )
 				{
 					m_pEyeGlow->SetColor( 0, 255, 0 );
 				}
 				else
+#endif // EZ
 				{
 					m_pEyeGlow->SetColor( 255, 0, 0 );
 				}
@@ -3243,11 +3280,13 @@ void CNPC_Manhack::SetEyeState( int state )
 			
 			if ( m_pLightGlow )
 			{
+#ifndef EZ
 				if( m_bHackedByAlyx )
 				{
 					m_pLightGlow->SetColor( 0, 255, 0 );
 				}
 				else
+#endif // EZ
 				{
 					m_pLightGlow->SetColor( 255, 0, 0 );
 				}
