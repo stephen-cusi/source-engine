@@ -28,17 +28,19 @@ jobs:
         mkdir ./andriod
         mkdir ./andriod/hl2mp
         mkdir ./andriod/hl1
+        mkdir ./andriod/hl1mp
+        mkdir ./andriod/cstrike
         git submodule init;git submodule update
-        ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod --disable-warns --build-game=cstrike 
+        ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod/cstrike --disable-warns --build-game=cstrike 
         ./waf install --target=client,server -j4
         ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod/hl2mp --disable-warns --build-game=hl2mp 
         ./waf install --target=client,server -j4
         ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod/hl1 --disable-warns --build-game=hl1 
         ./waf install --target=client,server -j4
-        ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod/hl1 --disable-warns --build-game=hl1mp
+        ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod/hl1mp --disable-warns --build-game=hl1mp
         #test hldms
         ./waf install --target=client,server -j4
-        mv ./andriod/lib ./andriod/cstrike
+        #mv ./andriod/lib ./andriod/cstrike
         cat build/config.log >./andriod/info.txt
         
     - uses: actions/upload-artifact@v3
