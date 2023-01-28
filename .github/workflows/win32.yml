@@ -22,12 +22,13 @@ jobs:
         #sudo apt update;sudo apt upgrade;sudo apt-get install -f -y gdb libopenal-dev g++-multilib gcc-multilib libpng-dev libjpeg-dev libfreetype6-dev libfontconfig1-dev libcurl4-gnutls-dev libsdl2-dev zlib1g-dev libbz2-dev libedit-dev
         ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=hl2 
         ./waf.bat install -j4
-        
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=hl1mp
+        ./waf.bat install -j4
         cat build/config.log >./win/info.txt
         
     - uses: actions/upload-artifact@v3
       with:
-        name: win32-source-engine
+        name: win32-source-engine+hldms
         path: ./win
         if-no-files-found: error
 
