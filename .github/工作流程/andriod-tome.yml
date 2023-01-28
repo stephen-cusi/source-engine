@@ -35,6 +35,9 @@ jobs:
         ./waf install --target=client,server -j4
         ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod/hl1 --disable-warns --build-game=hl1 
         ./waf install --target=client,server -j4
+        ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod/hl1 --disable-warns --build-game=hl1mp
+        #test hldms
+        ./waf install --target=client,server -j4
         mv ./andriod/lib ./andriod/cstrike
         cat build/config.log >./andriod/info.txt
         
