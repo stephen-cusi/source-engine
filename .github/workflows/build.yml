@@ -1,93 +1,138 @@
-name: Build
+name: build_win32_all
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
 
+#Source Engine build
 jobs:
-  build-linux-i386:
-    runs-on: ubuntu-18.04
+  build-srceng-win-32bit:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build linux-i386
+    - uses: actions/checkout@v3
+    - name: Build-32
       run: |
-        scripts/build-ubuntu-i386.sh
+        
+        git submodule init;git submodule update
+        ./waf.bat configure -T release --prefix=./win --disable-warns
+        ./waf.bat install -j4
+        cat build/config.log >./win/info.txt
+        
+    - uses: actions/upload-artifact@v3
+      with:
+        name: srceng-win32
+        path: ./win
+        if-no-files-found: error
 
-  build-linux-amd64:
-    runs-on: ubuntu-18.04
+
+  build-srceng-win-64bit:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build linux-amd64
+    - uses: actions/checkout@v3
+    - name: Build-64
       run: |
-        scripts/build-ubuntu-amd64.sh
+        git submodule init;git submodule update
+        ./waf.bat configure -T release --prefix=./win --disable-warns
+        
+        ./waf.bat install -j4
+        cat build/config.log > ./win/info.txt
+    - uses: actions/upload-artifact@v3
+      with:
+        name: srceng-win64
+        path: ./win
+        if-no-files-found: error
 
-  build-android-armv7a:
-    runs-on: ubuntu-18.04
+#Dedicated server build
+  build-dedicated-win-32bit:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build android-armv7a
+    - uses: actions/checkout@v3
+    - name: Build-32
       run: |
-        scripts/build-android-armv7a.sh
+        
+        git submodule init;git submodule update
+        ./waf.bat configure -T release --prefix=./win --disable-warns
+        ./waf.bat install -j4
+        cat build/config.log >./win/info.txt
+        
+    - uses: actions/upload-artifact@v3
+      with:
+        name: srcds-win32
+        path: ./win
+        if-no-files-found: error
 
-  build-windows-i386:
-    runs-on: windows-2019
+
+  build-dedicated-win-64bit:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build windows-i386
+    - uses: actions/checkout@v3
+    - name: Build-64
       run: |
-        git submodule init && git submodule update
-        ./waf.bat configure -T debug
-        ./waf.bat build
+        git submodule init;git submodule update
+        ./waf.bat configure -T release --prefix=./win --disable-warns -d
+        
+        ./waf.bat install -j4
+        cat build/config.log > ./win/info.txt
+    - uses: actions/upload-artifact@v3
+      with:
+        name: srcds-win64
+        path: ./win
+        if-no-files-found: error
 
-  build-windows-amd64:
-    runs-on: windows-2019
+#Client server build for other games
+  build-mod-win-32bit:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build windows-amd64
+    - uses: actions/checkout@v3
+    - name: Build-32
       run: |
-        git submodule init && git submodule update
-        ./waf.bat configure -T debug -8
-        ./waf.bat build
+        
+        git submodule init;git submodule update
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=cstrike 
+        ./waf.bat install -j4 --target=client,server
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=hl2mp
+        ./waf.bat install -j4 --target=client,server
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=episodic
+        ./waf.bat install -j4 --target=client,server
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=dod
+        ./waf.bat install -j4 --target=server,client
+        cat build/config.log >./win/info.txt
+        
+    - uses: actions/upload-artifact@v3
+      with:
+        name: cstrike,hl2mp,episodic,dod-win32
+        path: ./win
+        if-no-files-found: error
 
-  build-dedicated-windows-i386:
-    runs-on: windows-2019
+
+  build-mod-win-64bit:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Build dedicated windows-i386
+    - uses: actions/checkout@v3
+    - name: Build-64
       run: |
-        git submodule init && git submodule update
-        ./waf.bat configure -T debug -d
-        ./waf.bat build
-
-  build-dedicated-windows-amd64:
-    runs-on: windows-2019
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build dedicated windows-amd64
-      run: |
-        git submodule init && git submodule update
-        ./waf.bat configure -T debug -d -8
-        ./waf.bat build
-
-  build-dedicated-linux-i386:
-    runs-on: ubuntu-18.04
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build dedicated linux-i386
-      run: |
-        scripts/build-ubuntu-i386.sh -d
-
-  build-dedicated-linux-amd64:
-    runs-on: ubuntu-18.04
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build dedicated linux-amd64
-      run: |
-        scripts/build-ubuntu-amd64.sh -d
+        git submodule init;git submodule update
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=cstrike -8
+        ./waf.bat install -j4 --target=client,server
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=hl2mp -8
+        ./waf.bat install -j4 --target=client,server
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=episodic -8
+        ./waf.bat install -j4 --target=client,server
+        ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=dod -8
+        ./waf.bat install -j4 --target=server,client
+        cat build/config.log > ./win/info.txt
+    - uses: actions/upload-artifact@v3
+      with:
+        name: cstrike,hl2mp,episodic,dod-win64
+        path: ./win
+        if-no-files-found: error
