@@ -107,12 +107,13 @@ jobs:
         sudo apt upgrade
         sudo apt-get install -f -y gdb libopenal-dev g++-multilib gcc-multilib libpng-dev libjpeg-dev libfreetype6-dev libfontconfig1-dev libcurl4-gnutls-dev libsdl2-dev zlib1g-dev libbz2-dev libedit-dev
         git submodule init;git submodule update
-        ./waf configure -T release -8 --prefix=./linux --disable-warns 
-        
-        sudo ./waf install --target=togl -j4
+        ./waf configure -T release --prefix=./linux --disable-warns -d
+        sudo ./waf install -j4
+        ./waf configure -T release -8 --prefix=./linux/64bit --disable_warns -d
+        sudo ./waf install -j4
         cat build/config.log > ./linux/info.txt
     - uses: actions/upload-artifact@v3
       with:
-        name: source-linux-64-togles
+        name: source-server-linux-64&32
         path: ./linux
         if-no-files-found: error
