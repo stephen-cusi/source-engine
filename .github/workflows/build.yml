@@ -58,7 +58,7 @@ jobs:
       run: |
         
         git submodule init;git submodule update
-        ./waf.bat configure -debug --prefix=./win --disable-warns -d
+        ./waf.bat configure -T debug --prefix=./win --disable-warns -d
         ./waf.bat install -j4
         cat build/config.log >./win/info.txt
         
