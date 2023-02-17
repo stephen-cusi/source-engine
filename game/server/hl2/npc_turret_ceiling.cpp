@@ -296,7 +296,7 @@ void CNPC_CeilingTurret::Spawn( void )
 	SetHeight( CEILING_TURRET_RETRACT_HEIGHT );
 
 	AddFlag( FL_AIMTARGET );
-	AddEFlags( EFL_NO_DISSOLVE );
+//	AddEFlags( EFL_NO_DISSOLVE );
 
 	SetPoseParameter( m_poseAim_Yaw, 0 );
 	SetPoseParameter( m_poseAim_Pitch, 0 );

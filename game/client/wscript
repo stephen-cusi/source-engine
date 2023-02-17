@@ -19,7 +19,9 @@ games = {
 	'portal': ['client_base.vpc', 'client_portal.vpc'],
 	'hl1mp': ['client_base.vpc', 'client_hl1mp.vpc'],
 	'cstrike': ['client_base.vpc', 'client_cstrike.vpc'],
-	'dod': ['client_base.vpc', 'client_dod.vpc']
+	'dod': ['client_base.vpc', 'client_dod.vpc'],
+	'gunmod_mp': ['client_base.vpc', 'client_hl2mp.vpc', 'client_gunmod.vpc'],
+	'gunmod': ['client_base.vpc', 'client_episodic.vpc', 'client_gunmod.vpc'],
 }
 
 def configure(conf):

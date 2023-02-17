@@ -513,7 +513,7 @@ void CNPC_Strider::Spawn()
 	SetSolid( SOLID_BBOX );
 	AddSolidFlags( FSOLID_NOT_STANDABLE );
 	SetMoveType( MOVETYPE_STEP );
-	AddEFlags( EFL_NO_DISSOLVE | EFL_NO_MEGAPHYSCANNON_RAGDOLL );
+//	AddEFlags( EFL_NO_DISSOLVE | EFL_NO_MEGAPHYSCANNON_RAGDOLL );
 
 	// Cached for quick comparisons
 	m_iszStriderBusterName = AllocPooledString( "weapon_striderbuster" );

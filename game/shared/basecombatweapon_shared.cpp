@@ -1009,9 +1009,8 @@ void CBaseCombatWeapon::Equip( CBaseCombatCharacter *pOwner )
 void CBaseCombatWeapon::SetActivity( Activity act, float duration ) 
 { 
 	//Adrian: Oh man...
-#if !defined( CLIENT_DLL ) && (defined( HL2MP ) || defined( PORTAL ))
-	SetModel( GetWorldModel() );
-#endif
+	if ( GetOwner()->IsPlayer() )
+		SetModel( GetViewModel() );
 	
 	int sequence = SelectWeightedSequence( act ); 
 	
@@ -1020,9 +1019,8 @@ void CBaseCombatWeapon::SetActivity( Activity act, float duration )
 		sequence = SelectWeightedSequence( ACT_VM_IDLE );
 
 	//Adrian: Oh man again...
-#if !defined( CLIENT_DLL ) && (defined( HL2MP ) || defined( PORTAL ))
-	SetModel( GetViewModel() );
-#endif
+	if ( GetOwner()->IsPlayer() )
+		SetModel( GetViewModel() );
 
 	if ( sequence != ACTIVITY_NOT_AVAILABLE )
 	{

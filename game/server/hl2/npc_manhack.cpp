@@ -2400,7 +2400,7 @@ void CNPC_Manhack::Spawn(void)
 		SetNavType(NAV_GROUND);
 	}
 		 
-	AddEFlags( EFL_NO_DISSOLVE | EFL_NO_MEGAPHYSCANNON_RAGDOLL );
+//	AddEFlags( EFL_NO_DISSOLVE | EFL_NO_MEGAPHYSCANNON_RAGDOLL );
 	AddEffects( EF_NOSHADOW );
 
 	SetBloodColor( DONT_BLEED );

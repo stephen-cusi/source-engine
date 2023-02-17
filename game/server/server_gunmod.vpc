@@ -1,0 +1,34 @@
+//-----------------------------------------------------------------------------
+//	SERVER_EPISODIC.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro GAMENAME 	"gunmod" [!$SOURCESDK]
+$Macro GAMENAME 	"mod_episodic" [$SOURCESDK]
+
+$Include "$SRCDIR\game\server\server_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;$SRCDIR\game\shared\episodic;.\hl2;.\episodic;.\gunmod;$SRCDIR\game\shared\gunmod"
+		$PreprocessorDefinitions		"$BASE;HL2_DLL;USES_SAVERESTORE;GUNMOD_DLL"
+	}
+}
+
+$Project "Client (Gunmod)"
+{
+	$Folder	"Gunmod DLL"
+	{
+		$File		"$SRCDIR/game/shared/gunmod/weapon_physgun.cpp"
+		$File       "$SRCDIR/game/shared/gunmod/weapon_toolgun.cpp"
+		$File       "$SRCDIR/game/shared/gunmod/weapon_hopwire.cpp"
+		$File       "gunmod/grenade_hopwire.cpp"
+		$File 		"gunmod/weapon_gauss.cpp"
+		
+	}
+
+}

@@ -11,6 +11,8 @@
 #include "Sprite.h"
 #include "SpriteTrail.h"
 #include "soundent.h"
+#include "KeyValues.h"
+#include "filesystem.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -27,7 +29,9 @@ ConVar sk_plr_dmg_fraggrenade	( "sk_plr_dmg_fraggrenade","0");
 ConVar sk_npc_dmg_fraggrenade	( "sk_npc_dmg_fraggrenade","0");
 ConVar sk_fraggrenade_radius	( "sk_fraggrenade_radius", "0");
 
+#ifndef GUNMOD_DLL
 #define GRENADE_MODEL "models/Weapons/w_grenade.mdl"
+#endif
 
 class CGrenadeFrag : public CBaseGrenade
 {
@@ -72,6 +76,10 @@ protected:
 	bool	m_inSolid;
 	bool	m_combineSpawned;
 	bool	m_punted;
+#ifdef GUNMOD_DLL
+public:
+	const char *modelName;
+#endif
 };
 
 LINK_ENTITY_TO_CLASS( npc_grenade_frag, CGrenadeFrag );
@@ -104,9 +112,13 @@ CGrenadeFrag::~CGrenadeFrag( void )
 
 void CGrenadeFrag::Spawn( void )
 {
-	Precache( );
+	Precache();
 
+#ifdef GUNMOD_DLL
+	SetModel( modelName );
+#else
 	SetModel( GRENADE_MODEL );
+#endif
 
 	if( GetOwnerEntity() && GetOwnerEntity()->IsPlayer() )
 	{
@@ -277,8 +289,20 @@ void CGrenadeFrag::VPhysicsUpdate( IPhysicsObject *pPhysics )
 
 void CGrenadeFrag::Precache( void )
 {
+#ifdef GUNMOD_DLL
+	KeyValues *kv = new KeyValues( "SMenu" );
+	if ( kv )
+	{
+		if ( kv->LoadFromFile(g_pFullFileSystem, "addons/toolgun/dynamite.txt") )
+		{
+			kv->GetFirstSubKey();
+			modelName = kv->GetString("modelname", "");
+		}
+	}
+	PrecacheModel( modelName );
+#else
 	PrecacheModel( GRENADE_MODEL );
-
+#endif
 	PrecacheScriptSound( "Grenade.Blip" );
 
 	PrecacheModel( "sprites/redglow1.vmt" );

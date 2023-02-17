@@ -472,7 +472,7 @@ void CNPC_Dog::Spawn( void )
 	m_takedamage		= DAMAGE_NO;
 	
 	CapabilitiesAdd( bits_CAP_MOVE_GROUND | bits_CAP_OPEN_DOORS | bits_CAP_TURN_HEAD | bits_CAP_ANIMATEDFACE );
-	CapabilitiesAdd( bits_CAP_FRIENDLY_DMG_IMMUNE );
+//	CapabilitiesAdd( bits_CAP_FRIENDLY_DMG_IMMUNE );
 
 	NPCInit();
 

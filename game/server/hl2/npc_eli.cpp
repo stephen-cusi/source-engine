@@ -105,14 +105,14 @@ void CNPC_Eli::Spawn()
 		SetMoveType( MOVETYPE_NONE );
 
 		CapabilitiesAdd( bits_CAP_ANIMATEDFACE | bits_CAP_TURN_HEAD );
-		CapabilitiesAdd( bits_CAP_FRIENDLY_DMG_IMMUNE );
+//		CapabilitiesAdd( bits_CAP_FRIENDLY_DMG_IMMUNE );
 	}
 	else
 	{
 		SetupWithoutParent();
 	}
 
-	AddEFlags( EFL_NO_DISSOLVE | EFL_NO_MEGAPHYSCANNON_RAGDOLL | EFL_NO_PHYSCANNON_INTERACTION );
+//	AddEFlags( EFL_NO_DISSOLVE | EFL_NO_MEGAPHYSCANNON_RAGDOLL | EFL_NO_PHYSCANNON_INTERACTION );
 	SetBloodColor( BLOOD_COLOR_RED );
 	m_iHealth			= 8;
 	m_flFieldOfView		= 0.5;// indicates the width of this NPC's forward view cone ( as a dotproduct result )
@@ -140,7 +140,7 @@ void CNPC_Eli::SetupWithoutParent( void )
 	SetMoveType( MOVETYPE_STEP );
 
 	CapabilitiesAdd( bits_CAP_MOVE_GROUND | bits_CAP_OPEN_DOORS | bits_CAP_ANIMATEDFACE | bits_CAP_TURN_HEAD );
-	CapabilitiesAdd( bits_CAP_FRIENDLY_DMG_IMMUNE );
+//	CapabilitiesAdd( bits_CAP_FRIENDLY_DMG_IMMUNE );
 }
 
 //-----------------------------------------------------------------------------

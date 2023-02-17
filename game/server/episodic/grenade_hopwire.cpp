@@ -5,7 +5,7 @@
 //=====================================================================================//
 
 #include "cbase.h"
-#include "grenade_hopwire.h"
+#include "grenade_blackhole.h"
 #include "rope.h"
 #include "rope_shared.h"
 #include "beam_shared.h"
@@ -18,7 +18,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-ConVar hopwire_vortex( "hopwire_vortex", "0" );
+ConVar hopwire_vortex( "hopwire_vortex", "1" );
 ConVar hopwire_trap( "hopwire_trap", "1" );
 ConVar hopwire_strider_kill_dist_h( "hopwire_strider_kill_dist_h", "300" );
 ConVar hopwire_strider_kill_dist_v( "hopwire_strider_kill_dist_v", "256" );
@@ -564,7 +564,7 @@ void CGrenadeHopwire::Detonate( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-CBaseGrenade *HopWire_Create( const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseEntity *pOwner, float timer )
+CBaseGrenade *Hopwire_Create( const Vector &position, const QAngle &angles, const Vector &velocity, const AngularImpulse &angVelocity, CBaseEntity *pOwner, float timer )
 {
 	CGrenadeHopwire *pGrenade = (CGrenadeHopwire *) CBaseEntity::Create( "npc_grenade_hopwire", position, angles, pOwner );
 	

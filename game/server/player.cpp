@@ -113,6 +113,14 @@ ConVar cl_forwardspeed( "cl_forwardspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT
 ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 #endif // CSTRIKE_DLL
 
+//For Ultimate Deathmatch and maybe for gunmod
+static ConVar beta_weapons("beta_weapons", "0");
+static ConVar dod_weapons("dod_weapons", "0");
+static ConVar cs_weapons("cs_weapons", "0");
+static ConVar hl1_weapons("hl1_weapons", "0");
+//Like a Hopwire from Episodic
+static ConVar cut_weapons("cut_weapons", "0");
+
 // This is declared in the engine, too
 ConVar	sv_noclipduringpause( "sv_noclipduringpause", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "If cheats are enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
 
@@ -6148,9 +6156,6 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveAmmo( 5,	"grenade");
 		GiveAmmo( 32,	"357" );
 		GiveAmmo( 16,	"XBowBolt" );
-#ifdef HL2_EPISODIC
-		GiveAmmo( 5,	"Hopwire" );
-#endif		
 		GiveNamedItem( "weapon_smg1" );
 		GiveNamedItem( "weapon_frag" );
 		GiveNamedItem( "weapon_crowbar" );
@@ -6162,12 +6167,29 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_rpg" );
 		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "weapon_crossbow" );
+		GiveNamedItem( "weapon_toolgun");
+		GiveNamedItem( "weapon_physgun");
+		
+		if ( beta_weapons.GetBool() )
+		{
+			GiveNamedItem( "weapon_cguard" );
+			GiveAmmo(5, "AR2AltFire");
+			GiveNamedItem( "weapon_gauss" );
+			GiveAmmo(100, "GaussEnergy");
+			GiveNamedItem( "weapon_hopwire");		
+#ifdef HL2_EPISODIC
+			GiveAmmo( 5,	"Hopwire" );
+#endif
+			GiveNamedItem( "weapon_flaregun");
+			GiveAmmo( 5, "FlareRound");
+		}
+
 #ifdef HL2_EPISODIC
 		// GiveNamedItem( "weapon_magnade" );
 #endif
 		if ( GetHealth() < 100 )
 		{
-			TakeHealth( 25, DMG_GENERIC );
+			TakeHealth( 100, DMG_GENERIC );
 		}
 		
 		gEvilImpulse101		= false;

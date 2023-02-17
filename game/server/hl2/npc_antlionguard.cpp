@@ -850,7 +850,7 @@ void CNPC_AntlionGuard::Spawn( void )
 	}
 
 	// Do not dissolve
-	AddEFlags( EFL_NO_DISSOLVE );
+//	AddEFlags( EFL_NO_DISSOLVE );
 
 	// We get a minute of free knowledge about the target
 	GetEnemies()->SetEnemyDiscardTime( 120.0f );

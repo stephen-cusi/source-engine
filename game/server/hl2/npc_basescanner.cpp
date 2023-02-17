@@ -110,7 +110,7 @@ void CNPC_BaseScanner::Spawn(void)
 
 	// This entity cannot be dissolved by the combine balls,
 	// nor does it get killed by the mega physcannon.
-	AddEFlags( EFL_NO_DISSOLVE | EFL_NO_MEGAPHYSCANNON_RAGDOLL );
+//	AddEFlags( EFL_NO_DISSOLVE | EFL_NO_MEGAPHYSCANNON_RAGDOLL );
 
 	m_flGoalOverrideDistance = 0.0f;
 

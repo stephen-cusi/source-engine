@@ -305,7 +305,7 @@ void CNPC_FloorTurret::Spawn( void )
 	m_iHealth		= 100;
 	m_iMaxHealth	= 100;
 
-	AddEFlags( EFL_NO_DISSOLVE );
+//	AddEFlags( EFL_NO_DISSOLVE );
 
 	SetPoseParameter( m_poseAim_Yaw, 0 );
 	SetPoseParameter( m_poseAim_Pitch, 0 );

@@ -104,7 +104,7 @@ void CNPC_GroundTurret::Spawn( void )
 
 	CapabilitiesClear();
 
-	AddEFlags( EFL_NO_DISSOLVE );
+//	AddEFlags( EFL_NO_DISSOLVE );
 
 	NPCInit();
 

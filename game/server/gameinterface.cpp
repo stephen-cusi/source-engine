@@ -827,6 +827,15 @@ float CServerGameDLL::GetTickInterval( void ) const
 {
 	float tickinterval = DEFAULT_TICK_INTERVAL;
 
+//=============================================================================
+// HPE_BEGIN:
+// [Forrest] For Counter-Strike, set default tick rate of 66 and removed -tickrate command line parameter.
+//=============================================================================
+// Ignoring this for now, server ops are abusing it
+#if !defined( TF_DLL ) && !defined( CSTRIKE_DLL ) && !defined( DOD_DLL )
+//=============================================================================
+// HPE_END
+//=============================================================================
 	// override if tick rate specified in command line
 	if ( CommandLine()->CheckParm( "-tickrate" ) )
 	{
@@ -834,6 +843,7 @@ float CServerGameDLL::GetTickInterval( void ) const
 		if ( tickrate > 10 )
 			tickinterval = 1.0f / tickrate;
 	}
+#endif
 
 	return tickinterval;
 }
@@ -2018,10 +2028,11 @@ static void ValidateMOTDFilename( IConVar *pConVar, const char *oldValue, float 
 
 static ConVar motdfile( "motdfile", "motd.txt", 0, "The MOTD file to load.", ValidateMOTDFilename );
 static ConVar motdfile_text( "motdfile_text", "motd_text.txt", 0, "The text-only MOTD file to use for clients that have disabled HTML MOTDs.", ValidateMOTDFilename );
+
 void CServerGameDLL::LoadMessageOfTheDay()
 {
-	LoadSpecificMOTDMsg( motdfile, "motd" );
-	LoadSpecificMOTDMsg( motdfile_text, "motd_text" );
+	/*LoadSpecificMOTDMsg( motdfile, "motd" );
+	LoadSpecificMOTDMsg( motdfile_text, "motd_text" );*/
 }
 
 void CServerGameDLL::LoadSpecificMOTDMsg( const ConVar &convar, const char *pszStringName )
