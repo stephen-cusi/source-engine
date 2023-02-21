@@ -349,7 +349,7 @@ def configure(conf):
 
 
 	flags = []
-
+	flags += ['-llua', '-L'+os.path.abspath('.')+'/lib/lua/']
 	if conf.options.SANITIZE:
 		flags += ['-fsanitize=%s'%conf.options.SANITIZE, '-fno-sanitize=vptr']
 
@@ -473,6 +473,7 @@ def configure(conf):
 				conf.check_cfg(package='libpng', uselib_store='PNG', args=['--cflags', '--libs'])
 				conf.check_cfg(package='libcurl', uselib_store='CURL', args=['--cflags', '--libs'])
 			conf.check_cfg(package='zlib', uselib_store='ZLIB', args=['--cflags', '--libs'])
+			conf.check_cfg(package='lua', uselib_store='	LUA', args=['--cflags', '--libs'])
 
 			if conf.options.OPUS:
 				conf.check_cfg(package='opus', uselib_store='OPUS', args=['--cflags', '--libs'])
