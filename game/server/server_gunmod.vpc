@@ -15,7 +15,7 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;$SRCDIR\game\shared\episodic;.\hl2;.\episodic;.\gunmod;$SRCDIR\game\shared\gunmod"
-		$PreprocessorDefinitions		"$BASE;HL2_DLL;USES_SAVERESTORE;GUNMOD_DLL"
+		$PreprocessorDefinitions		"$BASE;HL2_DLL;USES_SAVERESTORE;GUNMOD_DLL;LUA_SDK"
 	}
 }
 

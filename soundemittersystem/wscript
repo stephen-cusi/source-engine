@@ -19,8 +19,9 @@ def configure(conf):
 
 def build(bld):
 	source = [
-		'../game/shared/interval.cpp',
 		'soundemittersystembase.cpp',
+		'lisoundemittersystembase.cpp',
+		'../game/shared/interval.cpp',
 		'../public/SoundParametersInternal.cpp',
 		'../public/tier0/memoverride.cpp'
 	]

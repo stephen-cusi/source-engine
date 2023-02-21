@@ -6,21 +6,22 @@
 
 #include "cbase.h"
 #include "filesystem.h"
-	#ifndef CLIENT_DLL
+#ifndef CLIENT_DLL
 #include "gameinterface.h"
-	#endif
+#endif
 #include "steam/isteamfriends.h"
 #include "networkstringtabledefs.h"
-	#ifndef CLIENT_DLL
+#ifndef CLIENT_DLL
 #include "basescriptedtrigger.h"
-	#endif
+#endif
 #include "basescripted.h"
-#include "hl2mp/weapon_hl2mpbase_scriptedweapon.h"
+#include "weapon_hl2mpbase_scriptedweapon.h"
 #include "luamanager.h"
 #include "luasrclib.h"
 #include "luacachefile.h"
-#include "lconvar.h"
+#include "tier1/lconvar.h"
 #include "licvar.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -178,8 +179,6 @@ void luasrc_setmodulepaths(lua_State *L) {
   lua_pop(L, 1);  /* pop result */
 }
 
-
-
 #ifdef CLIENT_DLL
 void luasrc_init_gameui (void) {
   LGameUI = luaL_newstate();
@@ -201,6 +200,7 @@ void luasrc_init_gameui (void) {
   luaopen_surface(LGameUI);
   luaopen_vgui(LGameUI);
 }
+
 void luasrc_shutdown_gameui (void) {
   ResetGameUIConCommandDatabase();
 
