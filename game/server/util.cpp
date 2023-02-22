@@ -59,7 +59,7 @@ void DBG_AssertFunction( bool fExpr, const char *szExpr, const char *szFile, int
 		Q_snprintf(szOut,sizeof(szOut), "ASSERT FAILED:\n %s \n(%s@%d)\n%s", szExpr, szFile, szLine, szMessage);
 	else
 		Q_snprintf(szOut,sizeof(szOut), "ASSERT FAILED:\n %s \n(%s@%d)\n", szExpr, szFile, szLine);
-	Warning( "%s", szOut );
+	Warning( szOut);
 }
 #endif	// DEBUG
 
@@ -73,6 +73,9 @@ public:
 	CEntityFactoryDictionary();
 
 	virtual void InstallFactory( IEntityFactory *pFactory, const char *pClassName );
+#ifdef LUA_SDK
+	virtual void RemoveFactory( IEntityFactory *pFactory, const char *pClassName );
+#endif
 	virtual IServerNetworkable *Create( const char *pClassName );
 	virtual void Destroy( const char *pClassName, IServerNetworkable *pNetworkable );
 	virtual const char *GetCannonicalName( const char *pClassName );
@@ -148,9 +151,22 @@ IEntityFactory *CEntityFactoryDictionary::FindFactory( const char *pClassName )
 //-----------------------------------------------------------------------------
 void CEntityFactoryDictionary::InstallFactory( IEntityFactory *pFactory, const char *pClassName )
 {
+#ifndef HL2SB
 	Assert( FindFactory( pClassName ) == NULL );
+#endif
 	m_Factories.Insert( pClassName, pFactory );
 }
+
+
+#ifdef LUA_SDK
+//-----------------------------------------------------------------------------
+// Remove an existing factory
+//-----------------------------------------------------------------------------
+void CEntityFactoryDictionary::RemoveFactory( IEntityFactory *pFactory, const char *pClassName )
+{
+	m_Factories.Remove( pClassName );
+}
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -200,7 +216,7 @@ void CEntityFactoryDictionary::ReportEntitySizes()
 {
 	for ( int i = m_Factories.First(); i != m_Factories.InvalidIndex(); i = m_Factories.Next( i ) )
 	{
-		Msg( " %s: %d", m_Factories.GetElementName( i ), m_Factories[i]->GetEntitySize() );
+		Msg( " %s: %llu", m_Factories.GetElementName( i ), (uint64)(m_Factories[i]->GetEntitySize()) );
 	}
 }
 
@@ -345,19 +361,14 @@ int UTIL_DropToFloor( CBaseEntity *pEntity, unsigned int mask, CBaseEntity *pIgn
 
 	trace_t	trace;
 
-#if !defined(HL2MP) && !defined(HL1_DLL)
+#ifndef HL2MP
 	// HACK: is this really the only sure way to detect crossing a terrain boundry?
 	UTIL_TraceEntity( pEntity, pEntity->GetAbsOrigin(), pEntity->GetAbsOrigin(), mask, pIgnore, pEntity->GetCollisionGroup(), &trace );
 	if (trace.fraction == 0.0)
 		return -1;
 #endif // HL2MP
 
-	UTIL_TraceEntity( pEntity, pEntity->GetAbsOrigin() + Vector(0,0,1), pEntity->GetAbsOrigin() - Vector(0,0,256), mask, pIgnore, pEntity->GetCollisionGroup(), &trace );
-
-#ifdef HL1_DLL
-	if( fabs(pEntity->GetAbsOrigin().z - trace.endpos.z) <= 2.f )
-		return -1;
-#endif
+	UTIL_TraceEntity( pEntity, pEntity->GetAbsOrigin(), pEntity->GetAbsOrigin() - Vector(0,0,256), mask, pIgnore, pEntity->GetCollisionGroup(), &trace );
 
 	if (trace.allsolid)
 		return -1;
@@ -624,8 +635,27 @@ CBasePlayer* UTIL_PlayerByUserId( int userID )
 // 
 CBasePlayer *UTIL_GetLocalPlayer( void )
 {
+#ifdef HL2SB
+	// HACKHACK: We change the behavior of UTIL_GetLocalPlayer() here to be
+	// compatible with multiplayer games for the sake of not crashing.
+	CBasePlayer *pHostPlayer = UTIL_GetListenServerHost();
+	if ( pHostPlayer != NULL )
+		return pHostPlayer;
+#endif
+
 	if ( gpGlobals->maxClients > 1 )
 	{
+#ifdef HL2SB
+		for( int iClient = 1; iClient <= gpGlobals->maxClients; ++iClient )
+		{
+			CBasePlayer *pEnt = UTIL_PlayerByIndex( iClient );
+			if(!pEnt || !pEnt->IsPlayer())
+				continue;
+
+			// Return the first player we can get a hold of.
+			return pEnt;
+		}
+#else
 		if ( developer.GetBool() )
 		{
 			Assert( !"UTIL_GetLocalPlayer" );
@@ -636,10 +666,65 @@ CBasePlayer *UTIL_GetLocalPlayer( void )
 		}
 
 		return NULL;
+#endif
 	}
 
 	return UTIL_PlayerByIndex( 1 );
 }
+
+#ifdef HL2SB
+CBasePlayer *UTIL_GetNearestPlayer( const Vector& pos )
+{
+	CBasePlayer *pPlayer = NULL;
+	float	flNearestDistSqr = FLT_MAX;
+	float	flDistSqr;
+	for( int iClient = 1; iClient <= gpGlobals->maxClients; ++iClient )
+	{
+		CBasePlayer *pEnt = UTIL_PlayerByIndex( iClient );
+		if(!pEnt || !pEnt->IsPlayer())
+			continue;
+
+		// Distance is the deciding factor
+		flDistSqr = ( pos - pEnt->GetAbsOrigin() ).LengthSqr();
+
+		// Closer, take it
+		if ( flDistSqr < flNearestDistSqr )
+		{
+			flNearestDistSqr = flDistSqr;
+			pPlayer = pEnt;
+		}
+	}
+	
+	return pPlayer;
+}
+
+CBasePlayer *UTIL_GetNearestVisiblePlayer( CBaseEntity *pEntity, int mask )
+{
+	const Vector& pos = pEntity->GetAbsOrigin();
+
+	CBasePlayer *pPlayer = NULL;
+	float	flNearestDistSqr = FLT_MAX;
+	float	flDistSqr;
+	for( int iClient = 1; iClient <= gpGlobals->maxClients; ++iClient )
+	{
+		CBasePlayer *pEnt = UTIL_PlayerByIndex( iClient );
+		if(!pEnt || !pEnt->IsPlayer())
+			continue;
+
+		// Distance is the deciding factor
+		flDistSqr = ( pos - pEnt->GetAbsOrigin() ).LengthSqr();
+
+		// Closer, take it
+		if ( flDistSqr < flNearestDistSqr && pEntity->FVisible( pEnt, mask ) )
+		{
+			flNearestDistSqr = flDistSqr;
+			pPlayer = pEnt;
+		}
+	}
+
+	return pPlayer;
+}
+#endif
 
 //
 // Get the local player on a listen server - this is for multiplayer use only
@@ -1353,7 +1438,7 @@ void UTIL_SnapDirectionToAxis( Vector &direction, float epsilon )
 	}
 }
 
-char *UTIL_VarArgs( const char *format, ... )
+const char *UTIL_VarArgs( const char *format, ... )
 {
 	va_list		argptr;
 	static char		string[1024];
