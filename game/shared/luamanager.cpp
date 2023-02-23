@@ -54,7 +54,7 @@ lua_State *LGameUI;
 lua_State *L;
 
 // Lua system
-bool g_bLuaInitialized;
+//bool g_bLuaInitialized;
 
 static int luasrc_print (lua_State *L) {
   int n = lua_gettop(L);  /* number of arguments */

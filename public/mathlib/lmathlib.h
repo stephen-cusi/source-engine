@@ -26,7 +26,7 @@ LUA_API lua_matrix3x4_t     &(lua_tomatrix) (lua_State *L, int idx);
 /*
 ** push functions (C -> stack)
 */
-LUA_API void  (lua_pushmatrix) (lua_State *L, lua_matrix3x4_t &v);
+LUA_API void  (lua_pushmatrix) (lua_State *L, const lua_matrix3x4_t &v);
 
 
 

@@ -23,6 +23,10 @@
 
 #include "voice_status.h"
 
+#ifdef LUA_SDK
+#include "luamanager.h"
+#endif
+
 using namespace vgui;
 
 #define TEAM_MAXCOUNT			5

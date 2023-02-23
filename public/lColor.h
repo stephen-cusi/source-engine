@@ -27,7 +27,7 @@ LUA_API lua_Color      &(lua_tocolor) (lua_State *L, int idx);
 /*
 ** push functions (C -> stack)
 */
-LUA_API void  (lua_pushcolor) (lua_State *L, lua_Color &clr);
+LUA_API void  (lua_pushcolor) (lua_State *L, const lua_Color &clr);
 
 
 

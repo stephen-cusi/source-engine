@@ -13,6 +13,7 @@
 #include "lshareddefs.h"
 #include "lbaseentity_shared.h"
 #include "mathlib/lvector.h"
+#include "takedamageinfo.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -44,7 +45,7 @@ LUA_API lua_FireBulletsInfo_t lua_tofirebulletsinfo (lua_State *L, int idx) {
   lua_pop(L, 1);
   lua_getfield(L, idx, "m_iDamage");
   if (!lua_isnil(L, -1))
-    info.m_iDamage = luaL_checkint(L, -1);
+    info.m_flDamage = luaL_checkint(L, -1);
   lua_pop(L, 1);
   lua_getfield(L, idx, "m_iPlayerDamage");
   if (!lua_isnil(L, -1))

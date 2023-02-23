@@ -398,10 +398,11 @@ static int CBasePlayer_HintMessage (lua_State *L) {
   return 0;
 }
 
-static int CBasePlayer_IncrementEFNoInterpParity (lua_State *L) {
+/*static int CBasePlayer_IncrementEFNoInterpParity (lua_State *L) {
   luaL_checkplayer(L, 1)->IncrementEFNoInterpParity();
   return 0;
 }
+*/
 
 static int CBasePlayer_IsBot (lua_State *L) {
   lua_pushboolean(L, luaL_checkplayer(L, 1)->IsBot());
@@ -962,7 +963,7 @@ static const luaL_Reg CBasePlayermeta[] = {
   {"GetWaterJumpTime", CBasePlayer_GetWaterJumpTime},
   {"GetWeapon", CBasePlayer_GetWeapon},
   {"HintMessage", CBasePlayer_HintMessage},
-  {"IncrementEFNoInterpParity", CBasePlayer_IncrementEFNoInterpParity},
+  //{"IncrementEFNoInterpParity", CBasePlayer_IncrementEFNoInterpParity},
   {"IsBot", CBasePlayer_IsBot},
   {"IsHLTV", CBasePlayer_IsHLTV},
   {"IsInAVehicle", CBasePlayer_IsInAVehicle},
