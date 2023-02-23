@@ -8,12 +8,12 @@
 #define LISurface_cpp
 
 #include "cbase.h"
-#include "vgui/isurface.h"
+#include "vgui/ISurface.h"
 #include "vgui/ILocalize.h"
 #include "vgui_controls/Controls.h"
 #include "luamanager.h"
 #include "luasrclib.h"
-#include "vgui/lvgui.h"
+#include "vgui/LVGUI.h"
 #include "vgui_controls/lPanel.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -29,7 +29,7 @@ static int surface_AddBitmapFontFile (lua_State *L) {
 }
 
 static int surface_AddCustomFontFile (lua_State *L) {
-  lua_pushboolean(L, surface()->AddCustomFontFile(luaL_checkstring(L, 1)));
+  lua_pushboolean(L, surface()->AddCustomFontFile(luaL_checkstring(L, 1), luaL_checkstring(L, 1) ));
   return 1;
 }
 

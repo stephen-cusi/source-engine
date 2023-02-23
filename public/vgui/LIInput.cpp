@@ -20,7 +20,6 @@
 
 using namespace vgui;
 
-
 static int input_CandidateListStartsAtOne (lua_State *L) {
   lua_pushboolean(L, input()->CandidateListStartsAtOne());
   return 1;
@@ -56,13 +55,14 @@ static int input_GetCurrentIMEHandle (lua_State *L) {
   return 1;
 }
 
-static int input_GetCursorPos__USE_VCR_MODE (lua_State *L) {
+/*static int input_GetCursorPos__USE_VCR_MODE (lua_State *L) {
   int x, y;
   input()->GetCursorPos__USE_VCR_MODE(x, y);
   lua_pushinteger(L, x);
   lua_pushinteger(L, y);
   return 2;
 }
+*/
 
 static int input_GetCursorPosition (lua_State *L) {
   int x, y;
@@ -286,8 +286,8 @@ static const luaL_Reg inputlib[] = {
   {"GetCandidateListPageStart",   input_GetCandidateListPageStart},
   {"GetCandidateListSelectedItem",   input_GetCandidateListSelectedItem},
   {"GetCurrentIMEHandle",   input_GetCurrentIMEHandle},
-  {"GetCursorPos__USE_VCR_MODE",   input_GetCursorPos__USE_VCR_MODE},
-  {"GetCursorPos",   input_GetCursorPos__USE_VCR_MODE},
+//  {"GetCursorPos__USE_VCR_MODE",   input_GetCursorPos__USE_VCR_MODE},
+//  {"GetCursorPos",   input_GetCursorPos__USE_VCR_MODE},
   {"GetCursorPosition",   input_GetCursorPosition},
   {"GetEnglishIMEHandle",   input_GetEnglishIMEHandle},
   {"GetFocus",   input_GetFocus},

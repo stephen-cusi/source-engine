@@ -29,20 +29,20 @@ enum HL2MPPlayerState
 	NUM_PLAYER_STATES
 };
 
+enum
+{
+	TURN_NONE = 0,
+	TURN_LEFT,
+	TURN_RIGHT
+};
 
-#if defined( CLIENT_DLL )
+#ifdef CLIENT_DLL
 #define CHL2MP_Player C_HL2MP_Player
 #endif
 
 class CPlayerAnimState
 {
 public:
-	enum
-	{
-		TURN_NONE = 0,
-		TURN_LEFT,
-		TURN_RIGHT
-	};
 
 	CPlayerAnimState( CHL2MP_Player *outer );
 

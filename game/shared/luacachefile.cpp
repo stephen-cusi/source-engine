@@ -88,7 +88,7 @@ LUA_API void luasrc_ExtractLcf ()
 			{
 				GetZipItem( hz, i, &ze );
 				// forget directories, we create hierarchies from file names
-				if ((ze.attr & FILE_ATTRIBUTE_DIRECTORY) != 1)
+				if ((ze.attr /*& FILE_ATTRIBUTE_DIRECTORY*/) != 1)
 				{
 					char fullpath[MAX_PATH];
 					char path[MAX_PATH];

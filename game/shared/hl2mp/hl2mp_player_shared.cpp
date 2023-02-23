@@ -75,17 +75,6 @@ Vector CHL2MP_Player::GetAttackSpread( CBaseCombatWeapon *pWeapon, CBaseEntity *
 //-----------------------------------------------------------------------------
 void CHL2MP_Player::PlayStepSound( Vector &vecOrigin, surfacedata_t *psurface, float fvol, bool force )
 {
-#if defined( LUA_SDK )
-	BEGIN_LUA_CALL_HOOK( "PlayerPlayStepSound" );
-		lua_pushhl2mpplayer( L, this );
-		lua_pushvector( L, vecOrigin );
-		lua_pushsurfacedata( L, psurface );
-		lua_pushnumber( L, fvol );
-		lua_pushboolean( L, force );
-	END_LUA_CALL_HOOK( 5, 1 );
-
-	RETURN_LUA_NONE();
-#endif
 
 	if ( gpGlobals->maxClients > 1 && !sv_footsteps.GetFloat() )
 		return;

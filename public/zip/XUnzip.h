@@ -136,7 +136,6 @@ typedef DWORD ZRESULT;
 #define ZIP_HANDLE   1
 #define ZIP_FILENAME 2
 #define ZIP_MEMORY   3
-#define FILE_ATTRIBUTE_DIRECTORY S_IFDIR
 
 typedef struct
 { int index;                 // index of this file within the zip

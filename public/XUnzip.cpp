@@ -109,6 +109,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "zip/XUnzip.h"
+#include "filesystem/basefilesystem.h"
 
 #if defined(POSIX)
 #define _tcslen strlen
@@ -138,7 +139,7 @@ bool WriteFile( void *handle, void *buf, unsigned int towrite, unsigned int *wri
 }
 
 #define FILE_ATTRIBUTE_NORMAL	 S_IFREG
-//#define FILE_ATTRIBUTE_DIRECTORY S_IFDIR
+#define FILE_ATTRIBUTE_DIRECTORY S_IFDIR
 #define FILE_ATTRIBUTE_ARCHIVE   0
 #define FILE_ATTRIBUTE_HIDDEN    0
 #define FILE_ATTRIBUTE_READONLY	 0
