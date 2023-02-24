@@ -16,7 +16,7 @@
 #include "luasrclib.h"
 #include "lconvar.h"
 #include "lbaseplayer_shared.h"
-
+#include "datacache/imdlcache.h"
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 

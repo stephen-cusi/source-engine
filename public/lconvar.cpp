@@ -12,7 +12,7 @@
 #define lconvar_cpp
 
 #include "convar.h"
-#include "../LuaManager.h"
+#include "../luamanager.h"
 #include "lconvar.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
