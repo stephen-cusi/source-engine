@@ -58,7 +58,7 @@ LUA_API lua_VMatrix &lua_tovmatrix (lua_State *L, int idx) {
 */
 
 
-LUA_API void lua_pushvmatrix (lua_State *L, lua_VMatrix &matrix) {
+LUA_API void lua_pushvmatrix (lua_State *L, lua_VMatrix const &matrix) {
   lua_VMatrix *pMat = (lua_VMatrix *)lua_newuserdata(L, sizeof(lua_VMatrix));
   *pMat = matrix;
   luaL_getmetatable(L, "VMatrix");

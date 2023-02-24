@@ -34,6 +34,10 @@
 #include "ai_behavior_lead.h"
 #include "gameinterface.h"
 
+#ifdef LUA_SDK
+#include "luamanager.h"
+#endif
+
 #ifdef HL2_DLL
 #include "hl2_player.h"
 #endif
@@ -1357,6 +1361,17 @@ bool CChangeLevel::KeyValue( const char *szKeyName, const char *szValue )
 			Assert(0);
 		}
 		Q_strncpy(m_szMapName, szValue, sizeof(m_szMapName));
+#ifdef LUA_SDK
+		if (m_nTableReference == LUA_NOREF)
+		{
+			lua_newtable(L);
+			m_nTableReference = luaL_ref(L, LUA_REGISTRYINDEX);
+		}
+		lua_getref(L, m_nTableReference);
+		lua_pushstring(L, m_szMapName);
+		lua_setfield(L, -2, "m_szMapName");
+		lua_pop(L, 1);
+#endif
 	}
 	else if (FStrEq(szKeyName, "landmark"))
 	{
@@ -1367,6 +1382,17 @@ bool CChangeLevel::KeyValue( const char *szKeyName, const char *szValue )
 		}
 		
 		Q_strncpy(m_szLandmarkName, szValue, sizeof( m_szLandmarkName ));
+#ifdef LUA_SDK
+		if (m_nTableReference == LUA_NOREF)
+		{
+			lua_newtable(L);
+			m_nTableReference = luaL_ref(L, LUA_REGISTRYINDEX);
+		}
+		lua_getref(L, m_nTableReference);
+		lua_pushstring(L, m_szLandmarkName);
+		lua_setfield(L, -2, "m_szLandmarkName");
+		lua_pop(L, 1);
+#endif
 	}
 	else
 		return BaseClass::KeyValue( szKeyName, szValue );

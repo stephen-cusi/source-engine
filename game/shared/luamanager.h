@@ -12,6 +12,7 @@
 #endif
 
 #include "lua.hpp"
+#include "convar.h"
 
 #define LUA_ROOT					"lua" // Can't be "LUA_PATH" because luaconf.h uses it.
 #define LUA_PATH_CACHE				"lua_cache"

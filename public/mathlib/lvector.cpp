@@ -41,7 +41,7 @@ LUA_API lua_QAngle &lua_toangle (lua_State *L, int idx) {
 */
 
 
-LUA_API void lua_pushvector (lua_State *L, lua_Vector &v) {
+LUA_API void lua_pushvector (lua_State *L, lua_Vector const &v) {
   lua_Vector *pVec = (lua_Vector *)lua_newuserdata(L, sizeof(lua_Vector));
   *pVec = v;
   luaL_getmetatable(L, "Vector");
@@ -49,7 +49,7 @@ LUA_API void lua_pushvector (lua_State *L, lua_Vector &v) {
 }
 
 
-LUA_API void lua_pushangle (lua_State *L, lua_QAngle &v) {
+LUA_API void lua_pushangle (lua_State *L, lua_QAngle const &v) {
   lua_QAngle *pVec = (lua_QAngle *)lua_newuserdata(L, sizeof(lua_QAngle));
   *pVec = v;
   luaL_getmetatable(L, "QAngle");
@@ -316,10 +316,10 @@ LUALIB_API int luaopen_Vector (lua_State *L) {
   luaL_register(L, "_G", Vector_funcs);
   lua_pop(L, 1);
   Vector origin = vec3_origin;
-  lua_pushvector(L, origin);
+  lua_pushvector(L, (lua_Vector)origin);
   lua_setglobal(L, "vec3_origin");  /* set global vec3_origin */
   Vector invalid = vec3_invalid;
-  lua_pushvector(L, invalid);
+  lua_pushvector(L, (lua_Vector)invalid);
   lua_setglobal(L, "vec3_invalid");  /* set global vec3_invalid */
   return 1;
 }
@@ -456,7 +456,7 @@ LUALIB_API int luaopen_QAngle (lua_State *L) {
   luaL_register(L, "_G", QAngle_funcs);
   lua_pop(L, 1);
   QAngle v = vec3_angle;
-  lua_pushangle(L, v);
+  lua_pushangle(L, (lua_QAngle)v);
   lua_setglobal(L, "vec3_angle");  /* set global vec3_angle */
   return 1;
 }

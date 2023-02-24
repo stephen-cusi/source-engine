@@ -34,7 +34,7 @@ LUA_API lua_Color &lua_tocolor (lua_State *L, int idx) {
 */
 
 
-LUA_API void lua_pushcolor (lua_State *L, lua_Color &clr) {
+LUA_API void lua_pushcolor (lua_State *L, lua_Color const &clr) {
   lua_Color *pColor = (lua_Color *)lua_newuserdata(L, sizeof(lua_Color));
   *pColor = clr;
   luaL_getmetatable(L, "Color");

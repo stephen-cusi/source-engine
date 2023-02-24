@@ -1192,7 +1192,9 @@ private:
 	bool m_bhasHaptics;
 
 	bool m_autoKickDisabled;
+#if defined( LUA_SDK )
 public:
+#endif
 	struct StepSoundCache_t
 	{
 		StepSoundCache_t() : m_usSoundNameIndex( 0 ) {}
@@ -1201,7 +1203,9 @@ public:
 	};
 	// One for left and one for right side of step
 	StepSoundCache_t		m_StepSoundCache[ 2 ];
+#if defined( LUA_SDK )
 private:
+#endif
 	CUtlLinkedList< CPlayerSimInfo >  m_vecPlayerSimInfo;
 	CUtlLinkedList< CPlayerCmdInfo >  m_vecPlayerCmdInfo;
 

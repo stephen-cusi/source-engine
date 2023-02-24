@@ -213,7 +213,8 @@ static int CBaseEntity_DoImpactEffect (lua_State *L) {
 }
 
 static int CBaseEntity_EarPosition (lua_State *L) {
-  lua_pushvector(L, luaL_checkentity(L, 1)->EarPosition());
+  Vector earPosition = luaL_checkentity(L, 1)->EarPosition();
+  lua_pushvector(L, earPosition);
   return 1;
 }
 
@@ -287,7 +288,8 @@ static int CBaseEntity_EyeAngles (lua_State *L) {
 }
 
 static int CBaseEntity_EyePosition (lua_State *L) {
-  lua_pushvector(L, luaL_checkentity(L, 1)->EyePosition());
+  Vector eyePosition = luaL_checkentity(L, 1)->EyePosition();
+  lua_pushvector(L, eyePosition);
   return 1;
 }
 

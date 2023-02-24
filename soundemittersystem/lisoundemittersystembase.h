@@ -10,7 +10,7 @@
 #ifdef _WIN32
 #pragma once
 #endif
-
+#include "SoundEmitterSystem/isoundemittersystembase.h"
 
 /* type for CSoundParameters in Lua */
 typedef CSoundParameters lua_CSoundParameters;
