@@ -25,7 +25,14 @@ extern ConVar sv_lan;
 
 #define S2A_EXTRA_DATA_HAS_GAMETAG_DATA                         0x01            // Next bytes are the game tag string
 #define RETRY_INFO_REQUEST_TIME 0.4 // seconds
+#define MASTER_RESPONSE_TIMEOUT 1.5 // seconds
 #define INFO_REQUEST_TIMEOUT 5.0 // seconds
+
+static char g_MasterServers[][64] =
+{
+	"185.192.97.130:27010",
+	"168.138.92.21:27016"
+};
 
 //-----------------------------------------------------------------------------
 // Purpose: List of master servers and some state info about them
@@ -69,11 +76,11 @@ public:
 
 	void ProcessConnectionlessPacket( netpacket_t *packet );
 
-	void SetMaster_f( void );
+	void AddMaster_f( const CCommand &args );
 	void Heartbeat_f( void );
 
 	void RunFrame();
-	void RequestServersInfo();
+	void RetryServersInfoRequest();
 
 	void ReplyInfo( const netadr_t &adr, uint sequence );
 	newgameserver_t &ProcessInfo( bf_read &buf );
@@ -82,6 +89,7 @@ public:
 	void RequestInternetServerList( const char *gamedir, IServerListResponse *response );
 	void RequestLANServerList( const char *gamedir, IServerListResponse *response );
 	void AddServerAddresses( netadr_t **adr, int count );
+	void RequestServerInfo( const netadr_t &adr );
 	void StopRefresh();
 
 private:
@@ -89,14 +97,16 @@ private:
 	adrlist_t *m_pMasterAddresses;
 
 	bool m_bInitialized;
-	bool m_bWaitingForReplys;
+	bool m_bRefreshing;
 
 	int m_iServersResponded;
 
 	double m_flStartRequestTime;
 	double m_flRetryRequestTime;
+	double m_flMasterRequestTime;
 
 	uint m_iInfoSequence;
+	char m_szGameDir[256];
 
 	// If nomaster is true, the server will not send heartbeats to the master server
 	bool	m_bNoMasters;
@@ -129,8 +139,8 @@ CMaster::CMaster( void )
 	m_serverListResponse = NULL;
 	SetDefLessFunc( m_serverAddresses );
 	SetDefLessFunc( m_serversRequestTime );
-	m_bWaitingForReplys = false;
-	m_iInfoSequence = 0;
+	m_bRefreshing = false;
+	m_iInfoSequence = 1;
 
 	Init();
 }
@@ -143,28 +153,48 @@ void CMaster::RunFrame()
 {
 	CheckHeartbeat();
 
-	if( !m_bWaitingForReplys )
+	if( !m_bRefreshing )
 		return;
 
 	if( m_serverListResponse &&
-		m_flStartRequestTime < Plat_FloatTime()-INFO_REQUEST_TIMEOUT   )
+		m_flStartRequestTime < Plat_FloatTime()-INFO_REQUEST_TIMEOUT )
 	{
+		StopRefresh();
 		m_serverListResponse->RefreshComplete( NServerResponse::nServerFailedToRespond );
-		m_bWaitingForReplys = false;
+		return;
+	}
+
+	if( m_iServersResponded > 0 &&
+			m_iServersResponded >= m_serverAddresses.Count() &&
+			m_flMasterRequestTime < Plat_FloatTime() - MASTER_RESPONSE_TIMEOUT )
+	{
+		StopRefresh();
+		m_serverListResponse->RefreshComplete( NServerResponse::nServerResponded );
+		return;
 	}
 
 	if( m_flRetryRequestTime < Plat_FloatTime() - RETRY_INFO_REQUEST_TIME )
 	{
 		m_flRetryRequestTime = Plat_FloatTime();
 
+		if( m_serverAddresses.Count() == 0 ) // Retry masterserver request
+		{
+			g_pServersInfo->RequestInternetServerList(m_szGameDir, NULL);
+			return;
+		}
+
 		if( m_iServersResponded < m_serverAddresses.Count() )
-			RequestServersInfo();
+			RetryServersInfoRequest();
 	}
 }
 
 void CMaster::StopRefresh()
 {
-	m_bWaitingForReplys = false;
+	if( !m_bRefreshing )
+		return;
+
+	m_iServersResponded = 0;
+	m_bRefreshing = false;
 	m_serverAddresses.RemoveAll();
 	m_serversRequestTime.RemoveAll();
 }
@@ -205,9 +235,7 @@ void CMaster::ReplyInfo( const netadr_t &adr, uint sequence )
 	buf.PutUnsignedInt( nFlags );
 
 	if ( nFlags & S2A_EXTRA_DATA_HAS_GAMETAG_DATA )
-	{
 		buf.PutString( pchTags );
-	}
 
 	NET_SendPacket( NULL, NS_SERVER, adr, (unsigned char *)buf.Base(), buf.TellPut() );
 }
@@ -232,7 +260,6 @@ newgameserver_t &CMaster::ProcessInfo(bf_read &buf)
 
 	// Password?
 	s.m_bPassword = buf.ReadByte();
-
 	s.m_iFlags = buf.ReadLong();
 
 	if( s.m_iFlags & S2A_EXTRA_DATA_HAS_GAMETAG_DATA )
@@ -264,7 +291,8 @@ void CMaster::ProcessConnectionlessPacket( netpacket_t *packet )
 		}
 		case M2C_QUERY:
 		{
-			m_serverAddresses.RemoveAll();
+			if( !m_bRefreshing )
+				break;
 
 			ip = msg.ReadLong();
 			port = msg.ReadShort();
@@ -273,15 +301,20 @@ void CMaster::ProcessConnectionlessPacket( netpacket_t *packet )
 			{
 				netadr_t adr(ip, port);
 
+				unsigned short index = m_serverAddresses.Find(adr);
+				if( index != m_serverAddresses.InvalidIndex() )
+				{
+					ip = msg.ReadLong();
+					port = msg.ReadShort();
+					continue;
+				}
+
 				m_serverAddresses.Insert(adr, false);
+				RequestServerInfo(adr);
 
 				ip = msg.ReadLong();
 				port = msg.ReadShort();
 			}
-
-			m_iServersResponded = 0;
-			RequestServersInfo();
-			m_flRetryRequestTime = m_flStartRequestTime = Plat_FloatTime();
 			break;
 		}
 		case C2S_INFOREQUEST:
@@ -291,6 +324,9 @@ void CMaster::ProcessConnectionlessPacket( netpacket_t *packet )
 		}
 		case S2C_INFOREPLY:
 		{
+			if( !m_bRefreshing )
+				break;
+
 			uint sequence = msg.ReadLong();
 			newgameserver_t &s = ProcessInfo( msg );
 
@@ -303,29 +339,36 @@ void CMaster::ProcessConnectionlessPacket( netpacket_t *packet )
 
 			double requestTime = m_serversRequestTime[rindex];
 
+			if( m_serverAddresses[index] ) // shit happens
+				return;
+
 			m_serverAddresses[index] = true;
-			s.m_nPing = (packet->received-requestTime)*1000.0;
+			s.m_nPing = (Plat_FloatTime()-requestTime)*1000.0;
 			s.m_NetAdr = packet->from;
 			m_serverListResponse->ServerResponded( s );
 
 			m_iServersResponded++;
-
-			if( m_iServersResponded >= m_serverAddresses.Count() )
-			{
-				StopRefresh();
-				m_serverListResponse->RefreshComplete( NServerResponse::nServerResponded );
-			}
 			break;
 		}
 	}
 }
 
-void CMaster::RequestServersInfo()
+void CMaster::RequestServerInfo( const netadr_t &adr )
 {
 	static ALIGN4 char string[256] ALIGN4_POST;    // Buffer for sending heartbeat
-
 	bf_write msg( string, sizeof(string) );
 
+	msg.WriteLong( CONNECTIONLESS_HEADER );
+	msg.WriteByte( C2S_INFOREQUEST );
+	msg.WriteLong( m_iInfoSequence );
+	m_serversRequestTime.Insert(m_iInfoSequence, Plat_FloatTime());
+
+	m_iInfoSequence++;
+	NET_SendPacket( NULL, NS_CLIENT, adr, msg.GetData(), msg.GetNumBytesWritten() );
+}
+
+void CMaster::RetryServersInfoRequest()
+{
 	FOR_EACH_MAP_FAST( m_serverAddresses, i )
 	{
 		bool bResponded = m_serverAddresses.Element(i);
@@ -333,17 +376,8 @@ void CMaster::RequestServersInfo()
 			continue;
 
 		const netadr_t adr = m_serverAddresses.Key(i);
-
-		msg.WriteLong( CONNECTIONLESS_HEADER );
-		msg.WriteByte( C2S_INFOREQUEST );
-		msg.WriteLong( m_iInfoSequence );
-		m_serversRequestTime.Insert(m_iInfoSequence, net_time);
-
-		m_iInfoSequence++;
-		NET_SendPacket( NULL, NS_CLIENT, adr, msg.GetData(), msg.GetNumBytesWritten() );
+		RequestServerInfo( adr );
 	}
-
-	m_bWaitingForReplys = true;
 }
 
 //-----------------------------------------------------------------------------
@@ -367,8 +401,7 @@ void CMaster::SendHeartbeat ( adrlist_t *p )
 		return;
 
 	// Send to master
-	// TODO(nillerusr): send engine version in this packet
-	Q_FileBase( com_gamedir, szGD, sizeof( szGD ) );
+		Q_FileBase( com_gamedir, szGD, sizeof( szGD ) );
 
 	bf_write buf( string, sizeof(string) );
 	buf.WriteByte( S2M_HEARTBEAT );
@@ -499,11 +532,14 @@ void CMaster::UseDefault ( void )
 {
 	netadr_t adr;
 
-	// Convert to netadr_t
-	if ( NET_StringToAdr ( DEFAULT_MASTER_ADDRESS, &adr ) )
+	for( int i = 0; i < ARRAYSIZE(g_MasterServers);i++ )
 	{
-		// Add to master list
-		AddServer( &adr );
+		// Convert to netadr_t
+		if ( NET_StringToAdr ( g_MasterServers[i], &adr ) )
+		{
+			// Add to master list
+			AddServer( &adr );
+		}
 	}
 }
 
@@ -552,9 +588,19 @@ void CMaster::RespondToHeartbeatChallenge( netadr_t &from, bf_read &msg )
 //-----------------------------------------------------------------------------
 // Purpose: Add/remove master servers
 //-----------------------------------------------------------------------------
-void CMaster::SetMaster_f (void)
+void CMaster::AddMaster_f ( const CCommand &args )
 {
+	CUtlString cmd( ( args.ArgC() > 1 ) ? args[ 1 ] : "" );
 
+	netadr_t adr;
+
+	if( !NET_StringToAdr(cmd.String(), &adr) )
+	{
+		Warning("Invalid address\n");
+		return;
+	}
+
+	this->AddServer(&adr);
 }
 
 
@@ -578,9 +624,9 @@ void CMaster::Heartbeat_f (void)
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
-void SetMaster_f( void )
+void AddMaster_f( const CCommand &args )
 {
-	master->SetMaster_f();
+	master->AddMaster_f( args );
 }
 
 //-----------------------------------------------------------------------------
@@ -591,7 +637,7 @@ void Heartbeat1_f( void )
 	master->Heartbeat_f();
 }
 
-static ConCommand setmaster("setmaster", SetMaster_f );
+static ConCommand setmaster("addmaster", AddMaster_f );
 static ConCommand heartbeat("heartbeat", Heartbeat1_f, "Force heartbeat of master servers" ); 
 
 //-----------------------------------------------------------------------------
@@ -632,8 +678,15 @@ void CMaster::Shutdown(void)
 void CMaster::RequestInternetServerList(const char *gamedir, IServerListResponse *response)
 {
 	if( m_bNoMasters ) return;
+	strncpy( m_szGameDir, gamedir, sizeof(m_szGameDir) );
 
-	m_serverListResponse = response;
+	if( response )
+	{
+		StopRefresh();
+		m_bRefreshing = true;
+		m_serverListResponse = response;
+		m_flRetryRequestTime = m_flStartRequestTime = m_flMasterRequestTime = Plat_FloatTime();
+	}
 
 	ALIGN4 char buf[256] ALIGN4_POST;
 	bf_write msg(buf, sizeof(buf));
@@ -641,8 +694,14 @@ void CMaster::RequestInternetServerList(const char *gamedir, IServerListResponse
 	msg.WriteByte( C2M_CLIENTQUERY );
 	msg.WriteString(gamedir);
 
-	// TODO(nillerusr): add switching between masters?
-	NET_SendPacket(NULL, NS_CLIENT, m_pMasterAddresses->adr, msg.GetData(), msg.GetNumBytesWritten() );
+	adrlist_t *p;
+
+	p = m_pMasterAddresses;
+	while ( p )
+	{
+		NET_SendPacket(NULL, NS_CLIENT, p->adr, msg.GetData(), msg.GetNumBytesWritten() );
+		p = p->next;
+	}
 }
 
 void CMaster::RequestLANServerList(const char *gamedir, IServerListResponse *response)
@@ -654,10 +713,3 @@ void CMaster::AddServerAddresses( netadr_t **adr, int count )
 {
 
 }
-
-void Master_Request_f()
-{
-	g_pServersInfo->RequestInternetServerList("cstrike", NULL);
-}
-
-ConCommand master_request( "master_request", Master_Request_f );
