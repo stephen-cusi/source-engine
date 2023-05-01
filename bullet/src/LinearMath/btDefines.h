@@ -237,7 +237,8 @@ inline int btGetVersion()
 					#define BT_USE_SIMD_VECTOR3
 					#define BT_USE_SSE
 				#elif defined (__arm__) || (__aarch64__)
-					#define BT_USE_NEON
+					#define BT_USE_NEON 1
+					#define BT_USE_SIMD_VECTOR3
 				#else
 					#error
 				#endif
