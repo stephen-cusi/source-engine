@@ -1474,13 +1474,6 @@ void CPhysicsCollision::VCollideLoad(vcollide_t *pOutput, int solidCount, const 
 	for (int i = 0; i < solidCount; i++) {
 		const collideheader_t &surfaceheader = *(collideheader_t *)pOutput->solids[i];
 
-		if (surfaceheader.vphysicsID	!= VPHYSICS_ID
-		 || surfaceheader.version		!= 0x100) {
-			pOutput->solids[i] = NULL;
-			Warning("VCollideLoad: Skipped solid %d due to invalid id/version (magic: %.4s version: %d)", i+1, surfaceheader.vphysicsID, surfaceheader.version);
-			continue;
-		}
-
 		CPhysCollide *pShape = NULL;
 
 		// NOTE: modelType 0 is IVPS, 1 is (mostly unused) MOPP format
