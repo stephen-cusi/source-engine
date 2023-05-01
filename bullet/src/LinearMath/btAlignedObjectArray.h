@@ -202,15 +202,11 @@ class btAlignedObjectArray
 		// when the new number of elements is smaller, memory will not be freed to reduce performance overhead of run-time memory (de)allocations.
 		SIMD_FORCE_INLINE void resizeNoInitialize(int newsize)
 		{
-			int curSize = size();
+			const register int curSize = size();
 
-			if (newsize >= curSize)
+			if (newsize > curSize)
 			{
-				if (newsize > size())
-				{
-					reserve(newsize);
-				}
-				// leave this uninitialized
+				reserve(newsize);
 			}
 
 			m_size = newsize;
@@ -220,7 +216,7 @@ class btAlignedObjectArray
 		// when the new number of elements is smaller, the destructor will be called, but memory will not be freed to reduce performance overhead of run-time memory (de)allocations.
 		SIMD_FORCE_INLINE void resize(int newsize, const T& fillData=T())
 		{
-			int curSize = size();
+			const register int curSize = size();
 
 			if (newsize < curSize)
 			{
@@ -246,7 +242,7 @@ class btAlignedObjectArray
 
 		SIMD_FORCE_INLINE T& expandNonInitializing()
 		{	
-			int sz = size();
+			const register int sz = size();
 			if( sz == capacity() )
 			{
 				reserve( allocSize(sz) );
@@ -260,7 +256,7 @@ class btAlignedObjectArray
 
 		SIMD_FORCE_INLINE T& expand(const T& fillValue=T())
 		{	
-			int sz = size();
+			const register int sz = size();
 			if( sz == capacity() )
 			{
 				reserve( allocSize(sz) );
@@ -277,7 +273,7 @@ class btAlignedObjectArray
 
 		SIMD_FORCE_INLINE void push_back(const T& _Val)
 		{	
-			int sz = size();
+			const register int sz = size();
 			if( sz == capacity() )
 			{
 				reserve( allocSize(sz) );
