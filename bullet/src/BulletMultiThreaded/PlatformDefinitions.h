@@ -34,20 +34,6 @@
 	*/
 	
 	typedef unsigned char     uint8_t;
-	#ifndef __PHYSICS_COMMON_H__
-#ifndef PFX_USE_FREE_VECTORMATH
-#ifndef __BT_SKIP_UINT64_H
-#if defined(_WIN64) && defined(_MSC_VER)
-		typedef unsigned __int64 uint64_t;
-#else
-			typedef unsigned long int uint64_t;
-#endif
-#endif //__BT_SKIP_UINT64_H
-		#endif //PFX_USE_FREE_VECTORMATH
-
-		typedef unsigned int      uint32_t;
-	#endif //__PHYSICS_COMMON_H__
-
 	typedef unsigned short    uint16_t;
 	
 	#include <malloc.h>
