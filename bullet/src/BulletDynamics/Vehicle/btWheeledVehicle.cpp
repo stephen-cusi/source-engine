@@ -43,7 +43,7 @@ class btWheelConstraint : public btTypedConstraint {
 
 			btVector3 wheelPosWS = m_rbA.getWorldTransform() * m_pWheel->bodyOffset;
 			btVector3 diff = m_rbB.getWorldTransform().getOrigin() - wheelPosWS;
-				
+
 			btVector3 downWS = m_rbA.getWorldTransform().getBasis() * m_pWheel->down;
 			downWS.normalize();
 
@@ -97,13 +97,13 @@ class btWheelConstraint : public btTypedConstraint {
 				info->m_constraintError[offset] = fwddiff * info->fps * info->erp / info->m_numIterations;
 				info->m_lowerLimit[offset] = -SIMD_INFINITY;
 				info->m_upperLimit[offset] =  SIMD_INFINITY;
-				
+
 				offset += info->rowskip;
 
 				btScalar sideDiff = axleWS.dot(diff);
 				(*(btVector3 *)&info->m_J1linearAxis[offset]) =  axleWS.normalized();
 				(*(btVector3 *)&info->m_J2linearAxis[offset]) = -axleWS.normalized();
-				
+
 				info->m_constraintError[offset] = sideDiff * info->fps * info->erp / info->m_numIterations;
 				info->m_lowerLimit[offset] = -SIMD_INFINITY;
 				info->m_upperLimit[offset] =  SIMD_INFINITY;

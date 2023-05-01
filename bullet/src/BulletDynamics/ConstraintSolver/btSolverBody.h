@@ -25,6 +25,87 @@ class	btCollisionObject;
 #include "LinearMath/btAlignedAllocator.h"
 #include "LinearMath/btTransformUtil.h"
 
+///Until we get other contributions, only use SIMD on Windows, when using Visual Studio 2008 or later, and not double precision
+#ifdef BT_USE_SSE
+#define USE_SIMD 1
+#endif //
+
+
+#ifdef USE_SIMD
+
+struct	btSimdScalar
+{
+	SIMD_FORCE_INLINE	btSimdScalar()
+	{
+
+	}
+
+	SIMD_FORCE_INLINE	btSimdScalar(float	fl)
+	:m_vec128 (_mm_set1_ps(fl))
+	{
+	}
+
+	SIMD_FORCE_INLINE	btSimdScalar(__m128 v128)
+		:m_vec128(v128)
+	{
+	}
+	union
+	{
+		__m128		m_vec128;
+		float		m_floats[4];
+		int			m_ints[4];
+		btScalar	m_unusedPadding;
+	};
+	SIMD_FORCE_INLINE	__m128	get128()
+	{
+		return m_vec128;
+	}
+
+	SIMD_FORCE_INLINE	const __m128	get128() const
+	{
+		return m_vec128;
+	}
+
+	SIMD_FORCE_INLINE	void	set128(__m128 v128)
+	{
+		m_vec128 = v128;
+	}
+
+	SIMD_FORCE_INLINE	operator       __m128()       
+	{ 
+		return m_vec128; 
+	}
+	SIMD_FORCE_INLINE	operator const __m128() const 
+	{ 
+		return m_vec128; 
+	}
+	
+	SIMD_FORCE_INLINE	operator float() const 
+	{ 
+		return m_floats[0]; 
+	}
+
+};
+
+///@brief Return the elementwise product of two btSimdScalar
+SIMD_FORCE_INLINE btSimdScalar 
+operator*(const btSimdScalar& v1, const btSimdScalar& v2) 
+{
+	return btSimdScalar(_mm_mul_ps(v1.get128(),v2.get128()));
+}
+
+///@brief Return the elementwise product of two btSimdScalar
+SIMD_FORCE_INLINE btSimdScalar 
+operator+(const btSimdScalar& v1, const btSimdScalar& v2) 
+{
+	return btSimdScalar(_mm_add_ps(v1.get128(),v2.get128()));
+}
+
+
+#else
+#define btSimdScalar btScalar
+#endif
+
 ///The btSolverBody is an internal datastructure for the constraint solver. Only necessary data is packed to increase cache coherence/performance.
 ATTRIBUTE_ALIGNED16 (struct)	btSolverBody
 {
@@ -35,7 +116,7 @@ ATTRIBUTE_ALIGNED16 (struct)	btSolverBody
 	btVector3		m_angularFactor;
 	btVector3		m_linearFactor;
 	btVector3		m_invMass;
-	btVector3		m_pushVelocity; // Split impulse velocity, instantly applied.
+	btVector3		m_pushVelocity;
 	btVector3		m_turnVelocity;
 	btVector3		m_linearVelocity;
 	btVector3		m_angularVelocity;
@@ -44,8 +125,6 @@ ATTRIBUTE_ALIGNED16 (struct)	btSolverBody
 
 	btRigidBody*	m_originalBody;
 	btCollisionObject* m_originalColObj;
-	bool			m_bFixed;
-
 	void	setWorldTransform(const btTransform& worldTransform)
 	{
 		m_worldTransform = worldTransform;
@@ -85,7 +164,7 @@ ATTRIBUTE_ALIGNED16 (struct)	btSolverBody
 
 
 	//Optimization for the iterative solver: avoid calculating constant terms involving inertia, normal, relative position
-	SIMD_FORCE_INLINE void applyImpulse(const btVector3& linearComponent, const btVector3& angularComponent, const btScalar impulseMagnitude)
+	SIMD_FORCE_INLINE void applyImpulse(const btVector3& linearComponent, const btVector3& angularComponent,const btScalar impulseMagnitude)
 	{
 		if (m_originalBody)
 		{
@@ -94,7 +173,7 @@ ATTRIBUTE_ALIGNED16 (struct)	btSolverBody
 		}
 	}
 
-	SIMD_FORCE_INLINE void internalApplyPushImpulse(const btVector3& linearComponent, const btVector3& angularComponent, btScalar impulseMagnitude)
+	SIMD_FORCE_INLINE void internalApplyPushImpulse(const btVector3& linearComponent, const btVector3& angularComponent,btScalar impulseMagnitude)
 	{
 		if (m_originalBody)
 		{
@@ -176,7 +255,7 @@ ATTRIBUTE_ALIGNED16 (struct)	btSolverBody
 
 
 	//Optimization for the iterative solver: avoid calculating constant terms involving inertia, normal, relative position
-	SIMD_FORCE_INLINE void internalApplyImpulse(const btVector3& linearComponent, const btVector3& angularComponent, const btScalar impulseMagnitude)
+	SIMD_FORCE_INLINE void internalApplyImpulse(const btVector3& linearComponent, const btVector3& angularComponent,const btScalar impulseMagnitude)
 	{
 		if (m_originalBody)
 		{
@@ -202,7 +281,7 @@ ATTRIBUTE_ALIGNED16 (struct)	btSolverBody
 
 	void	writebackVelocityAndTransform(btScalar timeStep, btScalar splitImpulseTurnErp)
 	{
-		(void) timeStep;
+        (void) timeStep;
 		if (m_originalBody)
 		{
 			m_linearVelocity += m_deltaLinearVelocity;
@@ -210,10 +289,10 @@ ATTRIBUTE_ALIGNED16 (struct)	btSolverBody
 			
 			//correct the position/orientation based on push/turn recovery
 			btTransform newTransform;
-			if (!m_pushVelocity.fuzzyZero() || !m_turnVelocity.fuzzyZero())
+			if (m_pushVelocity[0]!=0.f || m_pushVelocity[1]!=0 || m_pushVelocity[2]!=0 || m_turnVelocity[0]!=0.f || m_turnVelocity[1]!=0 || m_turnVelocity[2]!=0)
 			{
 			//	btQuaternion orn = m_worldTransform.getRotation();
-				btTransformUtil::integrateTransform(m_worldTransform, m_pushVelocity, m_turnVelocity*splitImpulseTurnErp, timeStep, newTransform);
+				btTransformUtil::integrateTransform(m_worldTransform,m_pushVelocity,m_turnVelocity*splitImpulseTurnErp,timeStep,newTransform);
 				m_worldTransform = newTransform;
 			}
 			//m_worldTransform.setRotation(orn);

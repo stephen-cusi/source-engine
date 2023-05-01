@@ -21,23 +21,6 @@
 	#include "DebugDrawer.h"
 #endif
 
-// Multithreading stuff
-
-#define USE_PARALLEL_DISPATCHER
-//#define USE_PARALLEL_SOLVER // NOT COMPLETE
-
-#if defined(USE_PARALLEL_DISPATCHER) || defined(USE_PARALLEL_SOLVER)
-	#define MULTITHREADED
-#endif
-
-#ifdef USE_PARALLEL_DISPATCHER
-	#include "BulletMultiThreaded/btParallelCollisionDispatcher.h"
-#endif
-
-#ifdef USE_PARALLEL_SOLVER
-	#include "BulletMultiThreaded/btParallelConstraintSolver.h"
-#endif
-
 #include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
 #include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
 

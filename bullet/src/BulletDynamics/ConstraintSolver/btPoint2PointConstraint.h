@@ -74,9 +74,9 @@ public:
 
 	btConstraintSetting	m_setting;
 
-	btPoint2PointConstraint(btRigidBody& rbA, btRigidBody& rbB, const btVector3& pivotInA, const btVector3& pivotInB);
+	btPoint2PointConstraint(btRigidBody& rbA,btRigidBody& rbB, const btVector3& pivotInA,const btVector3& pivotInB);
 
-	btPoint2PointConstraint(btRigidBody& rbA, const btVector3& pivotInA);
+	btPoint2PointConstraint(btRigidBody& rbA,const btVector3& pivotInA);
 
 
 	virtual void	buildJacobian();
@@ -116,6 +116,11 @@ public:
 	virtual	void	setParam(int num, btScalar value, int axis = -1);
 	///return the local value of parameter
 	virtual	btScalar getParam(int num, int axis = -1) const;
+	
+	virtual	int getFlags() const
+	{
+        	return m_flags;
+    	}
 
 	virtual	int	calculateSerializeBufferSize() const;
 
@@ -165,7 +170,7 @@ SIMD_FORCE_INLINE	const char*	btPoint2PointConstraint::serialize(void* dataBuffe
 {
 	btPoint2PointConstraintData2* p2pData = (btPoint2PointConstraintData2*)dataBuffer;
 
-	btTypedConstraint::serialize(&p2pData->m_typeConstraintData, serializer);
+	btTypedConstraint::serialize(&p2pData->m_typeConstraintData,serializer);
 	m_pivotInA.serialize(p2pData->m_pivotInA);
 	m_pivotInB.serialize(p2pData->m_pivotInB);
 

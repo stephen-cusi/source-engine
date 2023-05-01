@@ -29,13 +29,13 @@ ATTRIBUTE_ALIGNED16(class) btCollisionShape
 protected:
 	int m_shapeType;
 	void* m_userPointer;
-	int m_userData;
+	int m_userIndex;
 
 public:
 
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	btCollisionShape() : m_shapeType(INVALID_SHAPE_PROXYTYPE), m_userPointer(0), m_userData(0)
+	btCollisionShape() : m_shapeType (INVALID_SHAPE_PROXYTYPE), m_userPointer(0), m_userIndex(-1)
 	{
 	}
 
@@ -44,11 +44,11 @@ public:
 	}
 
 	///getAabb returns the axis aligned bounding box in the coordinate frame of the given transform t.
-	virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const =0;
+	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const =0;
 
-	virtual void	getBoundingSphere(btVector3& center, btScalar& radius) const;
+	virtual void	getBoundingSphere(btVector3& center,btScalar& radius) const;
 
-	///getAngularMotionDisc returns the maximus radius needed for Conservative Advancement to handle time-of-impact with rotations.
+	///getAngularMotionDisc returns the maximum radius needed for Conservative Advancement to handle time-of-impact with rotations.
 	virtual btScalar	getAngularMotionDisc() const;
 
 	virtual btScalar	getContactBreakingThreshold(btScalar defaultContactThresholdFactor) const;
@@ -56,7 +56,7 @@ public:
 
 	///calculateTemporalAabb calculates the enclosing aabb for the moving object over interval [0..timeStep)
 	///result is conservative
-	void calculateTemporalAabb(const btTransform& curTrans, const btVector3& linvel, const btVector3& angvel, btScalar timeStep, btVector3& temporalAabbMin, btVector3& temporalAabbMax) const;
+	void calculateTemporalAabb(const btTransform& curTrans,const btVector3& linvel,const btVector3& angvel,btScalar timeStep, btVector3& temporalAabbMin,btVector3& temporalAabbMax) const;
 
 
 
@@ -101,7 +101,7 @@ public:
 #ifndef __SPU__
 	virtual void	setLocalScaling(const btVector3& scaling) =0;
 	virtual const btVector3& getLocalScaling() const =0;
-	virtual void	calculateLocalInertia(btScalar mass, btVector3& inertia) const = 0;
+	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const = 0;
 
 
 //debugging support
@@ -131,16 +131,16 @@ public:
 	{
 		return m_userPointer;
 	}
-
-	void setUserData(int userData)
+	void setUserIndex(int index)
 	{
-		m_userData = userData;
+		m_userIndex = index;
 	}
 
-	int getUserData() const
+	int getUserIndex() const
 	{
-		return m_userData;
+		return m_userIndex;
 	}
+
 
 	virtual	int	calculateSerializeBufferSize() const;
 
@@ -149,7 +149,6 @@ public:
 
 	virtual void	serializeSingleShape(btSerializer* serializer) const;
 
-	virtual size_t getByteSize() const { return sizeof(this); }
 };	
 
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
@@ -157,8 +156,7 @@ struct	btCollisionShapeData
 {
 	char	*m_name;
 	int		m_shapeType;
-	int		m_userData;
-	//char	m_padding[4];
+	char	m_padding[4];
 };
 
 SIMD_FORCE_INLINE	int	btCollisionShape::calculateSerializeBufferSize() const

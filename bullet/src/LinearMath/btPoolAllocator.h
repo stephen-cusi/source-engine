@@ -16,32 +16,19 @@ subject to the following restrictions:
 #ifndef _BT_POOL_ALLOCATOR_H
 #define _BT_POOL_ALLOCATOR_H
 
-#include <string.h>
-
 #include "btScalar.h"
 #include "btAlignedAllocator.h"
+#include "btThreads.h"
 
-// The btPoolAllocator class allows to efficiently allocate a large pool of objects, instead of dynamically allocating them separately.
+///The btPoolAllocator class allows to efficiently allocate a large pool of objects, instead of dynamically allocating them separately.
 class btPoolAllocator
 {
 	int				m_elemSize;
 	int				m_maxElements;
 	int				m_freeCount;
-	void *			m_firstFree;
-	unsigned char *	m_pool;
-
-	void initPool()
-	{
-		unsigned char *p = m_pool;
-
-		// Loop through the pool and set up a pointer chain to use as free elements
-		int count = m_maxElements;
-		while (--count) {
-			*(void **)p = (p + m_elemSize);
-			p += m_elemSize;
-		}
-		*(void **)p = 0; // Set the very last element's pointer to NULL
-	}
+	void*			m_firstFree;
+	unsigned char*	m_pool;
+    btSpinMutex     m_mutex;  // only used if BT_THREADSAFE
 
 public:
 
@@ -49,18 +36,22 @@ public:
 		:m_elemSize(elemSize),
 		m_maxElements(maxElements)
 	{
-		m_pool = (unsigned char *)btAlignedAlloc(static_cast<unsigned int>(m_elemSize * m_maxElements), 16);
+		m_pool = (unsigned char*) btAlignedAlloc( static_cast<unsigned int>(m_elemSize*m_maxElements),16);
 
-		unsigned char *p = m_pool;
-		m_firstFree = p; // Set first free element to the pool
-		m_freeCount = m_maxElements;
-
-		initPool();
-	}
+		unsigned char* p = m_pool;
+        m_firstFree = p;
+        m_freeCount = m_maxElements;
+        int count = m_maxElements;
+        while (--count) {
+            *(void**)p = (p + m_elemSize);
+            p += m_elemSize;
+        }
+        *(void**)p = 0;
+    }
 
 	~btPoolAllocator()
 	{
-		btAlignedFree(m_pool);
+		btAlignedFree( m_pool);
 	}
 
 	int	getFreeCount() const
@@ -78,55 +69,45 @@ public:
 		return m_maxElements;
 	}
 
-	void *	allocate(int size=0)
+	void*	allocate(int size)
 	{
-		(void)size; // Avoid unsued parameter warning
-
+		// release mode fix
+		(void)size;
+        btMutexLock(&m_mutex);
 		btAssert(!size || size<=m_elemSize);
-		btAssert(m_freeCount>0);
-		void *result = m_firstFree;
-		m_firstFree = *(void **)m_firstFree; // Go up the pointer chain
-		--m_freeCount;
-		return result;
+		//btAssert(m_freeCount>0);  // should return null if all full
+        void* result = m_firstFree;
+        if (NULL != m_firstFree)
+        {
+            m_firstFree = *(void**)m_firstFree;
+            --m_freeCount;
+        }
+        btMutexUnlock(&m_mutex);
+        return result;
 	}
 
-	bool validPtr(void *ptr)
+	bool validPtr(void* ptr)
 	{
-		if (ptr)
-		{
-			if (((unsigned char *)ptr >= m_pool && (unsigned char *)ptr < m_pool + m_maxElements * m_elemSize))
+		if (ptr) {
+			if (((unsigned char*)ptr >= m_pool && (unsigned char*)ptr < m_pool + m_maxElements * m_elemSize))
 			{
 				return true;
 			}
 		}
-
 		return false;
 	}
 
-	void	freeMemory(void *ptr)
+	void	freeMemory(void* ptr)
 	{
 		 if (ptr) {
-			btAssert(validPtr(ptr));
+            btAssert((unsigned char*)ptr >= m_pool && (unsigned char*)ptr < m_pool + m_maxElements * m_elemSize);
 
-#if defined(BT_DEBUG)
-			memset(ptr, 0xDD, m_elemSize);
-#endif
-
-			*(void **)ptr = m_firstFree; // Link to the pointer chain
-			m_firstFree = ptr;
-			++m_freeCount;
-		}
-	}
-
-	/**
-	 * @brief "Frees" all elements
-	 */
-	void freeAll()
-	{
-		m_firstFree = m_pool;
-		m_freeCount = m_maxElements;
-
-		initPool();
+            btMutexLock(&m_mutex);
+            *(void**)ptr = m_firstFree;
+            m_firstFree = ptr;
+            ++m_freeCount;
+            btMutexUnlock(&m_mutex);
+        }
 	}
 
 	int	getElementSize() const
@@ -134,12 +115,12 @@ public:
 		return m_elemSize;
 	}
 
-	unsigned char *	getPoolAddress()
+	unsigned char*	getPoolAddress()
 	{
 		return m_pool;
 	}
 
-	const unsigned char *	getPoolAddress() const
+	const unsigned char*	getPoolAddress() const
 	{
 		return m_pool;
 	}

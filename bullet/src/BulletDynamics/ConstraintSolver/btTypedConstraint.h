@@ -31,10 +31,8 @@ subject to the following restrictions:
 
 
 class btSerializer;
-class btIDebugDraw;
 
 //Don't change any of the existing enum values, so add enum types at the end for serialization compatibility
-// Also reverse the names, wtf bullet why isn't it CONSTRAINT_TYPE_*
 enum btTypedConstraintType
 {
 	POINT2POINT_CONSTRAINT_TYPE=3,
@@ -46,8 +44,9 @@ enum btTypedConstraintType
 	D6_SPRING_CONSTRAINT_TYPE,
 	GEAR_CONSTRAINT_TYPE,
 	FIXED_CONSTRAINT_TYPE,
-	CONSTRAINT_TYPE_VEHICLEWHEEL, // btWheeledVehicle internal constraint
+	CONSTRAINT_TYPE_VEHICLEWHEEL,
 	CONSTRAINT_TYPE_USER,
+	D6_SPRING_2_CONSTRAINT_TYPE,
 	MAX_CONSTRAINT_TYPE
 };
 
@@ -69,6 +68,7 @@ enum btConstraintParams
 
 ATTRIBUTE_ALIGNED16(struct)	btJointFeedback
 {
+	BT_DECLARE_ALIGNED_ALLOCATOR();
 	btVector3	m_appliedForceBodyA;
 	btVector3	m_appliedTorqueBodyA;
 	btVector3	m_appliedForceBodyB;
@@ -147,11 +147,6 @@ public:
 		// lo and hi limits for variables (set to -/+ infinity on entry).
 		btScalar *m_lowerLimit,*m_upperLimit;
 
-		// findex vector for variables. see the LCP solver interface for a
-		// description of what this does. this is set to -1 on entry.
-		// note that the returned indexes are relative to the first index of
-		// the constraint.
-		int *findex;
 		// number of solver iterations
 		int m_numIterations;
 
@@ -340,8 +335,6 @@ public:
 	virtual	btScalar getParam(int num, int axis = -1) const = 0;
 	
 	virtual	int	calculateSerializeBufferSize() const;
-
-	virtual void debugDraw(btIDebugDraw *pDebugDrawer) {};
 
 	///fills the dataBuffer and returns the struct name (and 0 on failure)
 	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;

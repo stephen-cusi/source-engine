@@ -93,7 +93,7 @@ public:
 /**@brief Return the transform of the vector */
 	SIMD_FORCE_INLINE btVector3 operator()(const btVector3& x) const
 	{
-		return x.dot3(m_basis[0], m_basis[1], m_basis[2]) + m_origin;
+        return x.dot3(m_basis[0], m_basis[1], m_basis[2]) + m_origin;
 	}
 
   /**@brief Return the transform of the vector */
@@ -127,15 +127,15 @@ public:
 	
 	
   /**@brief Set from an array 
-   * @param m A pointer to a 15 element array (12 rotation(row major padded on the right by 1), and 3 translation */
+   * @param m A pointer to a 16 element array (12 rotation(row major padded on the right by 1), and 3 translation */
 	void setFromOpenGLMatrix(const btScalar *m)
 	{
 		m_basis.setFromOpenGLSubMatrix(m);
-		m_origin.setValue(m[12], m[13], m[14]);
+		m_origin.setValue(m[12],m[13],m[14]);
 	}
 
   /**@brief Fill an array representation
-   * @param m A pointer to a 15 element array (12 rotation(row major padded on the right by 1), and 3 translation */
+   * @param m A pointer to a 16 element array (12 rotation(row major padded on the right by 1), and 3 translation */
 	void getOpenGLMatrix(btScalar *m) const 
 	{
 		m_basis.getOpenGLSubMatrix(m);
@@ -245,7 +245,7 @@ btTransform::operator*(const btTransform& t) const
 SIMD_FORCE_INLINE bool operator==(const btTransform& t1, const btTransform& t2)
 {
    return ( t1.getBasis()  == t2.getBasis() &&
-			t1.getOrigin() == t2.getOrigin() );
+            t1.getOrigin() == t2.getOrigin() );
 }
 
 

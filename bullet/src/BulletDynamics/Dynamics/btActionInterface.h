@@ -27,11 +27,7 @@ class btActionInterface
 {
 protected:
 
-	static SIMD_FORCE_INLINE btRigidBody& getFixedBody() {
-		static btRigidBody s_fixed(0, 0,0);
-		s_fixed.setMassProps(btScalar(0.), btVector3(btScalar(0.), btScalar(0.), btScalar(0.)));
-		return s_fixed;
-	}
+	static btRigidBody& getFixedBody();
 	
 	
 public:
@@ -42,7 +38,7 @@ public:
 
 	virtual void updateAction( btCollisionWorld* collisionWorld, btScalar deltaTimeStep)=0;
 
-	virtual void debugDraw(btIDebugDraw* debugDrawer) {(void)(debugDrawer);}
+	virtual void debugDraw(btIDebugDraw* debugDrawer) = 0;
 
 };
 

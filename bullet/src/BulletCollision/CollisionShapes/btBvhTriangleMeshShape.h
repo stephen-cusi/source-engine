@@ -39,7 +39,11 @@ ATTRIBUTE_ALIGNED16(class) btBvhTriangleMeshShape : public btTriangleMeshShape
 
 	bool m_useQuantizedAabbCompression;
 	bool m_ownsBvh;
+#ifdef __clang__
+	bool m_pad[11] __attribute__((unused));////need padding due to alignment
+#else
 	bool m_pad[11];////need padding due to alignment
+#endif
 
 public:
 
@@ -49,7 +53,7 @@ public:
 	btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression, bool buildBvh = true);
 
 	///optionally pass in a larger bvh aabb, used for quantization. This allows for deformations within this aabb
-	btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression, const btVector3& bvhAabbMin, const btVector3& bvhAabbMax, bool buildBvh = true);
+	btBvhTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression,const btVector3& bvhAabbMin,const btVector3& bvhAabbMax, bool buildBvh = true);
 	
 	virtual ~btBvhTriangleMeshShape();
 
@@ -63,12 +67,12 @@ public:
 	void performRaycast (btTriangleCallback* callback, const btVector3& raySource, const btVector3& rayTarget);
 	void performConvexcast (btTriangleCallback* callback, const btVector3& boxSource, const btVector3& boxTarget, const btVector3& boxMin, const btVector3& boxMax);
 
-	virtual void	processAllTriangles(btTriangleCallback* callback, const btVector3& aabbMin, const btVector3& aabbMax) const;
+	virtual void	processAllTriangles(btTriangleCallback* callback,const btVector3& aabbMin,const btVector3& aabbMax) const;
 
-	void	refitTree(const btVector3& aabbMin, const btVector3& aabbMax);
+	void	refitTree(const btVector3& aabbMin,const btVector3& aabbMax);
 
 	///for a fast incremental refit of parts of the tree. Note: the entire AABB of the tree will become more conservative, it never shrinks
-	void	partialRefitTree(const btVector3& aabbMin, const btVector3& aabbMax);
+	void	partialRefitTree(const btVector3& aabbMin,const btVector3& aabbMax);
 
 	//debugging
 	virtual const char*	getName()const {return "BVHTRIANGLEMESH";}

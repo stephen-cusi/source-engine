@@ -36,8 +36,8 @@ extern "C"
 
 
 
-btSimpleDynamicsWorld::btSimpleDynamicsWorld(btDispatcher* dispatcher, btBroadphaseInterface* pairCache, btConstraintSolver* constraintSolver, btCollisionConfiguration* collisionConfiguration)
-:btDynamicsWorld(dispatcher, pairCache, collisionConfiguration),
+btSimpleDynamicsWorld::btSimpleDynamicsWorld(btDispatcher* dispatcher,btBroadphaseInterface* pairCache,btConstraintSolver* constraintSolver,btCollisionConfiguration* collisionConfiguration)
+:btDynamicsWorld(dispatcher,pairCache,collisionConfiguration),
 m_constraintSolver(constraintSolver),
 m_ownsConstraintSolver(false),
 m_gravity(0,0,-10)
@@ -52,7 +52,7 @@ btSimpleDynamicsWorld::~btSimpleDynamicsWorld()
 		btAlignedFree( m_constraintSolver);
 }
 
-int		btSimpleDynamicsWorld::stepSimulation( btScalar timeStep, int maxSubSteps, btScalar fixedTimeStep, btScalar fixedSubSteps)
+int		btSimpleDynamicsWorld::stepSimulation( btScalar timeStep,int maxSubSteps, btScalar fixedTimeStep, btScalar fixedSubSteps)
 {
 	(void)fixedTimeStep;
 	(void)maxSubSteps;
@@ -78,9 +78,9 @@ int		btSimpleDynamicsWorld::stepSimulation( btScalar timeStep, int maxSubSteps, 
 		
 		btContactSolverInfo infoGlobal;
 		infoGlobal.m_timeStep = timeStep;
-		m_constraintSolver->prepareSolve(0, numManifolds);
-		m_constraintSolver->solveGroup(&getCollisionObjectArray()[0], getNumCollisionObjects(), manifoldPtr, numManifolds,0,0, infoGlobal, m_debugDrawer, m_dispatcher1);
-		m_constraintSolver->allSolved(infoGlobal, m_debugDrawer);
+		m_constraintSolver->prepareSolve(0,numManifolds);
+		m_constraintSolver->solveGroup(&getCollisionObjectArray()[0],getNumCollisionObjects(),manifoldPtr, numManifolds,0,0,infoGlobal,m_debugDrawer, m_dispatcher1);
+		m_constraintSolver->allSolved(infoGlobal,m_debugDrawer);
 	}
 
 	///integrate transforms
@@ -156,13 +156,13 @@ void	btSimpleDynamicsWorld::addRigidBody(btRigidBody* body)
 	}
 }
 
-void	btSimpleDynamicsWorld::addRigidBody(btRigidBody* body, short group, short mask)
+void	btSimpleDynamicsWorld::addRigidBody(btRigidBody* body, int group, int mask)
 {
 	body->setGravity(m_gravity);
 
 	if (body->getCollisionShape())
 	{
-		addCollisionObject(body, group, mask);
+		addCollisionObject(body,group,mask);
 	}
 }
 
@@ -194,10 +194,10 @@ void	btSimpleDynamicsWorld::updateAabbs()
 		{
 			if (body->isActive() && (!body->isStaticObject()))
 			{
-				btVector3 minAabb, maxAabb;
-				colObj->getCollisionShape()->getAabb(colObj->getWorldTransform(), minAabb, maxAabb);
+				btVector3 minAabb,maxAabb;
+				colObj->getCollisionShape()->getAabb(colObj->getWorldTransform(), minAabb,maxAabb);
 				btBroadphaseInterface* bp = getBroadphase();
-				bp->setAabb(body->getBroadphaseHandle(), minAabb, maxAabb, m_dispatcher1);
+				bp->setAabb(body->getBroadphaseHandle(),minAabb,maxAabb, m_dispatcher1);
 			}
 		}
 	}
@@ -238,7 +238,7 @@ void	btSimpleDynamicsWorld::predictUnconstraintMotion(btScalar timeStep)
 					body->applyGravity();
 					body->integrateVelocities( timeStep);
 					body->applyDamping(timeStep);
-					body->predictIntegratedTransform(timeStep, body->getInterpolationWorldTransform());
+					body->predictIntegratedTransform(timeStep,body->getInterpolationWorldTransform());
 				}
 			}
 		}

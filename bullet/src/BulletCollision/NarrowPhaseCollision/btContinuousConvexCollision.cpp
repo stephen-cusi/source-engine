@@ -13,7 +13,6 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-#define BT_USE_SSE_IN_API
 
 #include "btContinuousConvexCollision.h"
 #include "BulletCollision/CollisionShapes/btConvexShape.h"
@@ -26,18 +25,19 @@ subject to the following restrictions:
 #include "BulletCollision/CollisionShapes/btStaticPlaneShape.h"
 
 
-btContinuousConvexCollision::btContinuousConvexCollision ( const btConvexShape*	convexA, const btConvexShape*	convexB, btSimplexSolverInterface* simplexSolver, btConvexPenetrationDepthSolver* penetrationDepthSolver)
+
+btContinuousConvexCollision::btContinuousConvexCollision ( const btConvexShape*	convexA,const btConvexShape*	convexB,btSimplexSolverInterface* simplexSolver, btConvexPenetrationDepthSolver* penetrationDepthSolver)
 :m_simplexSolver(simplexSolver),
 m_penetrationDepthSolver(penetrationDepthSolver),
-m_convexA(convexA), m_convexB1(convexB), m_planeShape(0)
+m_convexA(convexA),m_convexB1(convexB),m_planeShape(0)
 {
 }
 
 
-btContinuousConvexCollision::btContinuousConvexCollision( const btConvexShape*	convexA, const btStaticPlaneShape*	plane)
+btContinuousConvexCollision::btContinuousConvexCollision( const btConvexShape*	convexA,const btStaticPlaneShape*	plane)
 :m_simplexSolver(0),
 m_penetrationDepthSolver(0),
-m_convexA(convexA), m_convexB1(0), m_planeShape(plane)
+m_convexA(convexA),m_convexB1(0),m_planeShape(plane)
 {
 }
 
@@ -46,16 +46,16 @@ m_convexA(convexA), m_convexB1(0), m_planeShape(plane)
 /// You don't want your game ever to lock-up.
 #define MAX_ITERATIONS 64
 
-void btContinuousConvexCollision::computeClosestPoints( const btTransform& transA, const btTransform& transB, btPointCollector& pointCollector)
+void btContinuousConvexCollision::computeClosestPoints( const btTransform& transA, const btTransform& transB,btPointCollector& pointCollector)
 {
 	if (m_convexB1)
 	{
 		m_simplexSolver->reset();
-		btGjkPairDetector gjk(m_convexA, m_convexB1, m_convexA->getShapeType(), m_convexB1->getShapeType(), m_convexA->getMargin(), m_convexB1->getMargin(), m_simplexSolver, m_penetrationDepthSolver);		
+		btGjkPairDetector gjk(m_convexA,m_convexB1,m_convexA->getShapeType(),m_convexB1->getShapeType(),m_convexA->getMargin(),m_convexB1->getMargin(),m_simplexSolver,m_penetrationDepthSolver);		
 		btGjkPairDetector::ClosestPointInput input;
 		input.m_transformA = transA;
 		input.m_transformB = transB;
-		gjk.getClosestPoints(input, pointCollector,0);
+		gjk.getClosestPoints(input,pointCollector,0);
 	} else
 	{
 		//convex versus plane
@@ -97,9 +97,9 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 
 
 	/// compute linear and angular velocity for this interval, to interpolate
-	btVector3 linVelA, angVelA, linVelB, angVelB;
-	btTransformUtil::calculateVelocity(fromA, toA, btScalar(1.), linVelA, angVelA);
-	btTransformUtil::calculateVelocity(fromB, toB, btScalar(1.), linVelB, angVelB);
+	btVector3 linVelA,angVelA,linVelB,angVelB;
+	btTransformUtil::calculateVelocity(fromA,toA,btScalar(1.),linVelA,angVelA);
+	btTransformUtil::calculateVelocity(fromB,toB,btScalar(1.),linVelB,angVelB);
 
 
 	btScalar boundingRadiusA = m_convexA->getAngularMotionDisc();
@@ -110,28 +110,10 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 
 	btScalar relLinVelocLength = (linVelB-linVelA).length();
 	
-	if ((relLinVelocLength + maxAngularProjectedVelocity) == 0.f)
-	{
-		// Check for collision
-		btPointCollector collector;
-		computeClosestPoints(fromA, fromB, collector);
-		if (!collector.m_hasResult)
-			return false;
+	if ((relLinVelocLength+maxAngularProjectedVelocity) == 0.f)
+		return false;
 
-		btScalar dist = collector.m_distance + result.m_allowedPenetration;
-		if (dist < 0.001f) {
-			result.m_fraction = 0.f;
-			result.m_normal = collector.m_normalOnBInWorld;
-			result.m_hitPoint = collector.m_pointInWorld;
-			result.m_penetrationDist = dist - result.m_allowedPenetration;
-		}
-		else
-		{
-			result.m_fraction = 1.f;
-		}
 
-		return true;
-	}
 
 	btScalar lambda = btScalar(0.);
 	btVector3 v(1,0,0);
@@ -139,7 +121,7 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 	int maxIter = MAX_ITERATIONS;
 
 	btVector3 n;
-	n.setValue(btScalar(0.), btScalar(0.), btScalar(0.));
+	n.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
 	bool hasResult = false;
 	btVector3 c;
 
@@ -157,7 +139,7 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 
 	{
 	
-		computeClosestPoints(fromA, fromB, pointCollector1);
+		computeClosestPoints(fromA,fromB,pointCollector1);
 
 		hasResult = pointCollector1.m_hasResult;
 		c = pointCollector1.m_pointInWorld;
@@ -177,7 +159,7 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 		{
 			if (result.m_debugDrawer)
 			{
-				result.m_debugDrawer->drawSphere(c,0.2f, btVector3(1,1,1));
+				result.m_debugDrawer->drawSphere(c,0.2f,btVector3(1,1,1));
 			}
 			btScalar dLambda = btScalar(0.);
 
@@ -213,21 +195,21 @@ bool	btContinuousConvexCollision::calcTimeOfImpact(
 			
 
 			//interpolate to next lambda
-			btTransform interpolatedTransA, interpolatedTransB, relativeTrans;
+			btTransform interpolatedTransA,interpolatedTransB,relativeTrans;
 
-			btTransformUtil::integrateTransform(fromA, linVelA, angVelA, lambda, interpolatedTransA);
-			btTransformUtil::integrateTransform(fromB, linVelB, angVelB, lambda, interpolatedTransB);
+			btTransformUtil::integrateTransform(fromA,linVelA,angVelA,lambda,interpolatedTransA);
+			btTransformUtil::integrateTransform(fromB,linVelB,angVelB,lambda,interpolatedTransB);
 			relativeTrans = interpolatedTransB.inverseTimes(interpolatedTransA);
 
 			if (result.m_debugDrawer)
 			{
-				result.m_debugDrawer->drawSphere(interpolatedTransA.getOrigin(),0.2f, btVector3(1,0,0));
+				result.m_debugDrawer->drawSphere(interpolatedTransA.getOrigin(),0.2f,btVector3(1,0,0));
 			}
 
 			result.DebugDraw( lambda );
 
 			btPointCollector	pointCollector;
-			computeClosestPoints(interpolatedTransA, interpolatedTransB, pointCollector);
+			computeClosestPoints(interpolatedTransA,interpolatedTransB,pointCollector);
 
 			if (pointCollector.m_hasResult)
 			{

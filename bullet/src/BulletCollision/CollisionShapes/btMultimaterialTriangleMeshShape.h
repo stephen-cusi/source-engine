@@ -25,7 +25,6 @@ subject to the following restrictions:
 ATTRIBUTE_ALIGNED16(class) btMultimaterialTriangleMeshShape : public btBvhTriangleMeshShape
 {
     btAlignedObjectArray <btMaterial*> m_materialList;
-    int ** m_triangleMaterials;
 
 public:
 
@@ -64,7 +63,7 @@ public:
         }
 
 	///optionally pass in a larger bvh aabb, used for quantization. This allows for deformations within this aabb
-	btMultimaterialTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression, const btVector3& bvhAabbMin, const btVector3& bvhAabbMax, bool buildBvh = true):
+	btMultimaterialTriangleMeshShape(btStridingMeshInterface* meshInterface, bool useQuantizedAabbCompression,const btVector3& bvhAabbMin,const btVector3& bvhAabbMax, bool buildBvh = true):
         btBvhTriangleMeshShape(meshInterface, useQuantizedAabbCompression, bvhAabbMin, bvhAabbMax, buildBvh)
         {
             m_shapeType = MULTIMATERIAL_TRIANGLE_MESH_PROXYTYPE;

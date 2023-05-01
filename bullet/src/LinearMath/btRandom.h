@@ -17,8 +17,6 @@ subject to the following restrictions:
 #ifndef BT_GEN_RANDOM_H
 #define BT_GEN_RANDOM_H
 
-#include "btScalar.h"
-
 #ifdef MT19937
 
 #include <limits.h>

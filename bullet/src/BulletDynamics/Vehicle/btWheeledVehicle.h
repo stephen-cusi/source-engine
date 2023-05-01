@@ -53,7 +53,7 @@ class btWheeledVehicle : public btActionInterface {
 		// Destroy/create the special constraint required by this
 		void createConstraint(btVehicleWheel &wheel);
 		void destroyConstraint(btVehicleWheel &wheel);
-		
+
 		const btVehicleWheel &getWheel(int idx) const;
 		btVehicleWheel &getWheel(int idx);
 

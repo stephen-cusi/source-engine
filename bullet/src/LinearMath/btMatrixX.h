@@ -19,14 +19,13 @@ subject to the following restrictions:
 
 #include "LinearMath/btQuickprof.h"
 #include "LinearMath/btAlignedObjectArray.h"
+#include <stdio.h>
 
 //#define BT_DEBUG_OSTREAM
 #ifdef BT_DEBUG_OSTREAM
 #include <iostream>
 #include <iomanip>      // std::setw
 #endif //BT_DEBUG_OSTREAM
-
-#include <stdio.h>
 
 class btIntSortPredicate
 {
@@ -96,7 +95,7 @@ struct btVectorX
 						{
 							T temp;
 							temp = scale / absxi;
-							ssq = ssq * (temp * temp) + 1.0;
+							ssq = ssq * (temp * temp) + BT_ONE;
 							scale = absxi;
 						}
 						else
@@ -356,11 +355,11 @@ struct btMatrixX
 				for (int i=0; i < res.rows(); ++i)
 				{
 					T dotProd=0;
-					T dotProd2=0;
-					int waste=0,waste2=0;
+//					T dotProd2=0;
+					//int waste=0,waste2=0;
 
 					{
-						bool useOtherCol = true;
+//						bool useOtherCol = true;
 						{
 							for (int v=0;v<rows();v++)
 							{

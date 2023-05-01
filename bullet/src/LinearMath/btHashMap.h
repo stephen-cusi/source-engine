@@ -66,7 +66,7 @@ struct btHashString
 	bool equals(const btHashString& other) const
 	{
 		return (m_string == other.m_string) ||
-			(0==portableStringCompare(m_string, other.m_string));
+			(0==portableStringCompare(m_string,other.m_string));
 
 	}
 
@@ -395,7 +395,24 @@ protected:
 		return &m_valueArray[index];
 	}
 
+    Key getKeyAtIndex(int index)
+    {
+        btAssert(index < m_keyArray.size());
+        return m_keyArray[index];
+    }
+    
+    const Key getKeyAtIndex(int index) const
+    {
+        btAssert(index < m_keyArray.size());
+        return m_keyArray[index];
+    }
+
+
 	Value* operator[](const Key& key) {
+		return find(key);
+	}
+
+	const Value* operator[](const Key& key) const {
 		return find(key);
 	}
 

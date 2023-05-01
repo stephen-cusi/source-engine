@@ -18,10 +18,9 @@ struct btWheelInfo;
 /// btVehicleRaycaster is provides interface for between vehicle simulation and raycasting
 struct btVehicleRaycaster
 {
-	virtual ~btVehicleRaycaster()
-	{
-	}
-
+virtual ~btVehicleRaycaster()
+{
+}
 	struct btVehicleRaycasterResult
 	{
 		btVehicleRaycasterResult() :m_distFraction(btScalar(-1.)){};
@@ -30,7 +29,7 @@ struct btVehicleRaycaster
 		btScalar	m_distFraction;
 	};
 
-	virtual void* castRay(btWheelInfo *wheel, const btVector3& from, const btVector3& to, btVehicleRaycasterResult& result) = 0;
+	virtual void* castRay(btWheelInfo *wheel, const btVector3& from,const btVector3& to, btVehicleRaycasterResult& result) = 0;
 
 };
 

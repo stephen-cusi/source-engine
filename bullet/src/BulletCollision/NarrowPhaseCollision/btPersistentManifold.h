@@ -29,7 +29,7 @@ struct btCollisionResult;
 extern btScalar gContactBreakingThreshold;
 
 typedef bool (*ContactDestroyedCallback)(void* userPersistentData);
-typedef bool (*ContactProcessedCallback)(btManifoldPoint& cp, void* body0, void* body1);
+typedef bool (*ContactProcessedCallback)(btManifoldPoint& cp,void* body0,void* body1);
 extern ContactDestroyedCallback	gContactDestroyedCallback;
 extern ContactProcessedCallback gContactProcessedCallback;
 
@@ -51,8 +51,8 @@ enum btContactManifoldTypes
 ///note that some pairs of objects might have more then one contact manifold.
 
 
-ATTRIBUTE_ALIGNED128( class) btPersistentManifold : public btTypedObject
-//ATTRIBUTE_ALIGNED16( class) btPersistentManifold : public btTypedObject
+//ATTRIBUTE_ALIGNED128( class) btPersistentManifold : public btTypedObject
+ATTRIBUTE_ALIGNED16( class) btPersistentManifold : public btTypedObject
 {
 
 	btManifoldPoint m_pointCache[MANIFOLD_CACHE_SIZE];
@@ -70,7 +70,7 @@ ATTRIBUTE_ALIGNED128( class) btPersistentManifold : public btTypedObject
 	/// sort cached points so most isolated points come first
 	int	sortCachedPoints(const btManifoldPoint& pt);
 
-	int		findContactPoint(const btManifoldPoint* unUsed, int numUnused, const btManifoldPoint& pt);
+	int		findContactPoint(const btManifoldPoint* unUsed, int numUnused,const btManifoldPoint& pt);
 
 public:
 
@@ -83,9 +83,9 @@ public:
 
 	btPersistentManifold();
 
-	btPersistentManifold(const btCollisionObject* body0, const btCollisionObject* body1, int, btScalar contactBreakingThreshold, btScalar contactProcessingThreshold)
+	btPersistentManifold(const btCollisionObject* body0,const btCollisionObject* body1,int , btScalar contactBreakingThreshold,btScalar contactProcessingThreshold)
 		: btTypedObject(BT_PERSISTENT_MANIFOLD_TYPE),
-	m_body0(body0), m_body1(body1), m_cachedPoints(0),
+	m_body0(body0),m_body1(body1),m_cachedPoints(0),
 		m_contactBreakingThreshold(contactBreakingThreshold),
 		m_contactProcessingThreshold(contactProcessingThreshold)
 	{
@@ -94,7 +94,7 @@ public:
 	SIMD_FORCE_INLINE const btCollisionObject* getBody0() const { return m_body0;}
 	SIMD_FORCE_INLINE const btCollisionObject* getBody1() const { return m_body1;}
 
-	void	setBodies(const btCollisionObject* body0, const btCollisionObject* body1)
+	void	setBodies(const btCollisionObject* body0,const btCollisionObject* body1)
 	{
 		m_body0 = body0;
 		m_body1 = body1;
@@ -163,7 +163,7 @@ public:
 			//get rid of duplicated userPersistentData pointer
 			m_pointCache[lastUsedIndex].m_userPersistentData = 0;
 			m_pointCache[lastUsedIndex].m_appliedImpulse = 0.f;
-			m_pointCache[lastUsedIndex].m_lateralFrictionInitialized = false;
+			m_pointCache[lastUsedIndex].m_contactPointFlags = 0;
 			m_pointCache[lastUsedIndex].m_appliedImpulseLateral1 = 0.f;
 			m_pointCache[lastUsedIndex].m_appliedImpulseLateral2 = 0.f;
 			m_pointCache[lastUsedIndex].m_lifeTime = 0;
@@ -172,7 +172,7 @@ public:
 		btAssert(m_pointCache[lastUsedIndex].m_userPersistentData==0);
 		m_cachedPoints--;
 	}
-	void replaceContactPoint(const btManifoldPoint& newPoint, int insertIndex)
+	void replaceContactPoint(const btManifoldPoint& newPoint,int insertIndex)
 	{
 		btAssert(validContactDistance(newPoint));
 
@@ -190,16 +190,11 @@ public:
 		void* cache = m_pointCache[insertIndex].m_userPersistentData;
 		
 		m_pointCache[insertIndex] = newPoint;
-
 		m_pointCache[insertIndex].m_userPersistentData = cache;
 		m_pointCache[insertIndex].m_appliedImpulse = appliedImpulse;
 		m_pointCache[insertIndex].m_appliedImpulseLateral1 = appliedLateralImpulse1;
 		m_pointCache[insertIndex].m_appliedImpulseLateral2 = appliedLateralImpulse2;
 		
-		m_pointCache[insertIndex].m_appliedImpulse =  appliedImpulse;
-		m_pointCache[insertIndex].m_appliedImpulseLateral1 = appliedLateralImpulse1;
-		m_pointCache[insertIndex].m_appliedImpulseLateral2 = appliedLateralImpulse2;
-
 
 		m_pointCache[insertIndex].m_lifeTime = lifeTime;
 #else
@@ -215,7 +210,7 @@ public:
 		return pt.m_distance1 <= getContactBreakingThreshold();
 	}
 	/// calculated new worldspace coordinates and depth, and reject points that exceed the collision margin
-	void	refreshContactPoints(  const btTransform& trA, const btTransform& trB);
+	void	refreshContactPoints(  const btTransform& trA,const btTransform& trB);
 
 	
 	SIMD_FORCE_INLINE	void	clearManifold()

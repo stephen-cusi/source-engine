@@ -22,7 +22,6 @@ subject to the following restrictions:
 
 
 ///for btTriangleInfo m_flags
-// DrChat: DON'T CHANGE THESE WITHOUT CHANGING btInternalEdgeUtility.cpp (it depends on these numbers being constant)
 #define TRI_INFO_V0V1_CONVEX 1
 #define TRI_INFO_V1V2_CONVEX 2
 #define TRI_INFO_V2V0_CONVEX 4
@@ -41,25 +40,18 @@ struct	btTriangleInfo
 		m_edgeV0V1Angle = SIMD_2_PI;
 		m_edgeV1V2Angle = SIMD_2_PI;
 		m_edgeV2V0Angle = SIMD_2_PI;
-		m_flags = 0;
+		m_flags=0;
 	}
 
 	int			m_flags;
 
-	union {
-		btScalar	m_edgeAngles[3];
-
-		struct {
-			btScalar	m_edgeV0V1Angle;
-			btScalar	m_edgeV1V2Angle;
-			btScalar	m_edgeV2V0Angle;
-		};
-	};
-	
+	btScalar	m_edgeV0V1Angle;
+	btScalar	m_edgeV1V2Angle;
+	btScalar	m_edgeV2V0Angle;
 
 };
 
-typedef btHashMap<btHashInt, btTriangleInfo> btInternalTriangleInfoMap;
+typedef btHashMap<btHashInt,btTriangleInfo> btInternalTriangleInfoMap;
 
 
 ///The btTriangleInfoMap stores edge angle information for some triangles. You can compute this information yourself or using btGenerateInternalEdgeInfo.
@@ -145,13 +137,13 @@ SIMD_FORCE_INLINE	const char*	btTriangleInfoMap::serialize(void* dataBuffer, btS
 		//serialize an int buffer
 		int sz = sizeof(int);
 		int numElem = tmapData->m_hashTableSize;
-		btChunk* chunk = serializer->allocate(sz, numElem);
+		btChunk* chunk = serializer->allocate(sz,numElem);
 		int* memPtr = (int*)chunk->m_oldPtr;
-		for (int i=0;i<numElem;i++, memPtr++)
+		for (int i=0;i<numElem;i++,memPtr++)
 		{
 			*memPtr = m_hashTable[i];
 		}
-		serializer->finalizeChunk(chunk, "int", BT_ARRAY_CODE, (void*)&m_hashTable[0]);
+		serializer->finalizeChunk(chunk,"int",BT_ARRAY_CODE,(void*)&m_hashTable[0]);
 
 	}
 
@@ -161,13 +153,13 @@ SIMD_FORCE_INLINE	const char*	btTriangleInfoMap::serialize(void* dataBuffer, btS
 	{
 		int sz = sizeof(int);
 		int numElem = tmapData->m_nextSize;
-		btChunk* chunk = serializer->allocate(sz, numElem);
+		btChunk* chunk = serializer->allocate(sz,numElem);
 		int* memPtr = (int*)chunk->m_oldPtr;
-		for (int i=0;i<numElem;i++, memPtr++)
+		for (int i=0;i<numElem;i++,memPtr++)
 		{
 			*memPtr = m_next[i];
 		}
-		serializer->finalizeChunk(chunk, "int", BT_ARRAY_CODE, (void*)&m_next[0]);
+		serializer->finalizeChunk(chunk,"int",BT_ARRAY_CODE,(void*)&m_next[0]);
 	}
 	
 	tmapData->m_numValues = m_valueArray.size();
@@ -176,16 +168,16 @@ SIMD_FORCE_INLINE	const char*	btTriangleInfoMap::serialize(void* dataBuffer, btS
 	{
 		int sz = sizeof(btTriangleInfoData);
 		int numElem = tmapData->m_numValues;
-		btChunk* chunk = serializer->allocate(sz, numElem);
+		btChunk* chunk = serializer->allocate(sz,numElem);
 		btTriangleInfoData* memPtr = (btTriangleInfoData*)chunk->m_oldPtr;
-		for (int i=0;i<numElem;i++, memPtr++)
+		for (int i=0;i<numElem;i++,memPtr++)
 		{
 			memPtr->m_edgeV0V1Angle = (float)m_valueArray[i].m_edgeV0V1Angle;
 			memPtr->m_edgeV1V2Angle = (float)m_valueArray[i].m_edgeV1V2Angle;
 			memPtr->m_edgeV2V0Angle = (float)m_valueArray[i].m_edgeV2V0Angle;
 			memPtr->m_flags = m_valueArray[i].m_flags;
 		}
-		serializer->finalizeChunk(chunk, "btTriangleInfoData", BT_ARRAY_CODE, (void*) &m_valueArray[0]);
+		serializer->finalizeChunk(chunk,"btTriangleInfoData",BT_ARRAY_CODE,(void*) &m_valueArray[0]);
 	}
 	
 	tmapData->m_numKeys = m_keyArray.size();
@@ -194,13 +186,13 @@ SIMD_FORCE_INLINE	const char*	btTriangleInfoMap::serialize(void* dataBuffer, btS
 	{
 		int sz = sizeof(int);
 		int numElem = tmapData->m_numValues;
-		btChunk* chunk = serializer->allocate(sz, numElem);
+		btChunk* chunk = serializer->allocate(sz,numElem);
 		int* memPtr = (int*)chunk->m_oldPtr;
-		for (int i=0;i<numElem;i++, memPtr++)
+		for (int i=0;i<numElem;i++,memPtr++)
 		{
 			*memPtr = m_keyArray[i].getUid1();
 		}
-		serializer->finalizeChunk(chunk, "int", BT_ARRAY_CODE, (void*) &m_keyArray[0]);
+		serializer->finalizeChunk(chunk,"int",BT_ARRAY_CODE,(void*) &m_keyArray[0]);
 
 	}
 	return "btTriangleInfoMapData";
@@ -238,7 +230,7 @@ SIMD_FORCE_INLINE	void	btTriangleInfoMap::deSerialize(btTriangleInfoMapData& tma
 		m_valueArray[i].m_flags = tmapData.m_valueArrayPtr[i].m_flags;
 	}
 	
-	m_keyArray.resize(tmapData.m_numKeys, btHashInt(0));
+	m_keyArray.resize(tmapData.m_numKeys,btHashInt(0));
 	for (i=0;i<tmapData.m_numKeys;i++)
 	{
 		m_keyArray[i].setUid1(tmapData.m_keyArrayPtr[i]);

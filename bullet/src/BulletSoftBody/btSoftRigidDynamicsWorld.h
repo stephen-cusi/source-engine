@@ -48,17 +48,17 @@ protected:
 
 public:
 
-	btSoftRigidDynamicsWorld(btDispatcher* dispatcher, btBroadphaseInterface* pairCache, btConstraintSolver* constraintSolver, btCollisionConfiguration* collisionConfiguration, btSoftBodySolver *softBodySolver = 0 );
+	btSoftRigidDynamicsWorld(btDispatcher* dispatcher,btBroadphaseInterface* pairCache,btConstraintSolver* constraintSolver, btCollisionConfiguration* collisionConfiguration, btSoftBodySolver *softBodySolver = 0 );
 
 	virtual ~btSoftRigidDynamicsWorld();
 
 	virtual void	debugDrawWorld();
 
-	void	addSoftBody(btSoftBody* body, short int collisionFilterGroup=btBroadphaseProxy::DefaultFilter, short int collisionFilterMask=btBroadphaseProxy::AllFilter);
+	void	addSoftBody(btSoftBody* body, int collisionFilterGroup=btBroadphaseProxy::DefaultFilter, int collisionFilterMask=btBroadphaseProxy::AllFilter);
 
 	void	removeSoftBody(btSoftBody* body);
 
-	///removeCollisionObject will first check if it is a soft body, if so call removeSoftBody otherwise call btDiscreteDynamicsWorld::removeCollisionObject
+	///removeCollisionObject will first check if it is a rigid body, if so call removeRigidBody otherwise call btDiscreteDynamicsWorld::removeCollisionObject
 	virtual void	removeCollisionObject(btCollisionObject* collisionObject);
 
 	int		getDrawFlags() const { return(m_drawFlags); }
@@ -94,7 +94,7 @@ public:
 	/// rayTestSingle performs a raycast call and calls the resultCallback. It is used internally by rayTest.
 	/// In a future implementation, we consider moving the ray test as a virtual method in btCollisionShape.
 	/// This allows more customization.
-	static void	rayTestSingle(const btTransform& rayFromTrans, const btTransform& rayToTrans,
+	static void	rayTestSingle(const btTransform& rayFromTrans,const btTransform& rayToTrans,
 					  btCollisionObject* collisionObject,
 					  const btCollisionShape* collisionShape,
 					  const btTransform& colObjWorldTransform,

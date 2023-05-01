@@ -99,7 +99,7 @@ struct	btSoftBodyHelpers
 		int fixeds,
 		bool gendiags,
 		float* tex_coords=0);
-	static	float	CalculateUV(int resx, int resy, int ix, int iy, int id);
+	static	float	CalculateUV(int resx,int resy,int ix,int iy,int id);
 	/* Create an ellipsoid													*/ 
 	static	btSoftBody*		CreateEllipsoid(btSoftBodyWorldInfo& worldInfo,
 		const btVector3& center,
@@ -137,7 +137,12 @@ struct	btSoftBodyHelpers
 													bool bfacelinks,
 													bool btetralinks,
 													bool bfacesfromtetras);
-	
+
+	/// Sort the list of links to move link calculations that are dependent upon earlier
+	/// ones as far as possible away from the calculation of those values
+	/// This tends to make adjacent loop iterations not dependent upon one another,
+	/// so out-of-order processors can execute instructions from multiple iterations at once
+	static void ReoptimizeLinkOrder(btSoftBody *psb );
 };
 
 #endif //BT_SOFT_BODY_HELPERS_H

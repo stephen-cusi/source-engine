@@ -23,14 +23,17 @@ http://gimpact.sf.net
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "LinearMath/btTransformUtil.h"
 #include "LinearMath/btTransformUtil.h"
-#include "LinearMath/btIDebugDraw.h"
 #include <new>
 
 
 
 #define D6_USE_OBSOLETE_METHOD false
 #define D6_USE_FRAME_OFFSET true
-#define GENERIC_D6_DISABLE_WARMSTARTING 1
+
+
+
+
+
 
 btGeneric6DofConstraint::btGeneric6DofConstraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB, bool useLinearReferenceFrameA)
 : btTypedConstraint(D6_CONSTRAINT_TYPE, rbA, rbB)
@@ -39,45 +42,46 @@ btGeneric6DofConstraint::btGeneric6DofConstraint(btRigidBody& rbA, btRigidBody& 
 m_useLinearReferenceFrameA(useLinearReferenceFrameA),
 m_useOffsetForConstraintFrame(D6_USE_FRAME_OFFSET),
 m_flags(0),
-m_useSolveConstraintObsolete(D6_USE_OBSOLETE_METHOD),
-m_angularOnly(false),
-m_linearOnly(false)
+m_useSolveConstraintObsolete(D6_USE_OBSOLETE_METHOD)
 {
 	calculateTransforms();
 }
 
+
+
 btGeneric6DofConstraint::btGeneric6DofConstraint(btRigidBody& rbB, const btTransform& frameInB, bool useLinearReferenceFrameB)
-		: btTypedConstraint(D6_CONSTRAINT_TYPE, getFixedBody(), rbB),
+        : btTypedConstraint(D6_CONSTRAINT_TYPE, getFixedBody(), rbB),
 		m_frameInB(frameInB),
 		m_useLinearReferenceFrameA(useLinearReferenceFrameB),
 		m_useOffsetForConstraintFrame(D6_USE_FRAME_OFFSET),
 		m_flags(0),
-		m_useSolveConstraintObsolete(false),
-		m_angularOnly(false),
-		m_linearOnly(false)
+		m_useSolveConstraintObsolete(false)
 {
 	///not providing rigidbody A means implicitly using worldspace for body A
 	m_frameInA = rbB.getCenterOfMassTransform() * m_frameInB;
 	calculateTransforms();
 }
 
-// Get matrix element
-// Index first goes by row, then it goes by column
-// Ex.
-// [0] [3] [6]
-// [1] [4] [7]
-// [2] [5] [8]
+
+
+
+#define GENERIC_D6_DISABLE_WARMSTARTING 1
+
+
+
+btScalar btGetMatrixElem(const btMatrix3x3& mat, int index);
 btScalar btGetMatrixElem(const btMatrix3x3& mat, int index)
 {
-	int i = index % 3; // Row
-	int j = index / 3; // Column
-	btAssert(i < 3 && j < 3); // Validity check
-
+	int i = index%3;
+	int j = index/3;
 	return mat[i][j];
 }
 
+
+
 ///MatrixToEulerXYZ from http://www.geometrictools.com/LibFoundation/Mathematics/Wm4Matrix3.inl.html
-bool	matrixToEulerXYZ(const btMatrix3x3& mat, btVector3& xyz)
+bool	matrixToEulerXYZ(const btMatrix3x3& mat,btVector3& xyz);
+bool	matrixToEulerXYZ(const btMatrix3x3& mat,btVector3& xyz)
 {
 	//	// rot =  cy*cz          -cy*sz           sy
 	//	//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
@@ -89,15 +93,15 @@ bool	matrixToEulerXYZ(const btMatrix3x3& mat, btVector3& xyz)
 	{
 		if (fi > btScalar(-1.0f))
 		{
-			xyz[0] = btAtan2(-btGetMatrixElem(mat,5), btGetMatrixElem(mat,8));
+			xyz[0] = btAtan2(-btGetMatrixElem(mat,5),btGetMatrixElem(mat,8));
 			xyz[1] = btAsin(btGetMatrixElem(mat,2));
-			xyz[2] = btAtan2(-btGetMatrixElem(mat,1), btGetMatrixElem(mat,0));
+			xyz[2] = btAtan2(-btGetMatrixElem(mat,1),btGetMatrixElem(mat,0));
 			return true;
 		}
 		else
 		{
-			// WARNING.  Not unique.  XA - ZA = -atan2(r10, r11)
-			xyz[0] = -btAtan2(btGetMatrixElem(mat,3), btGetMatrixElem(mat,4));
+			// WARNING.  Not unique.  XA - ZA = -atan2(r10,r11)
+			xyz[0] = -btAtan2(btGetMatrixElem(mat,3),btGetMatrixElem(mat,4));
 			xyz[1] = -SIMD_HALF_PI;
 			xyz[2] = btScalar(0.0);
 			return false;
@@ -105,8 +109,8 @@ bool	matrixToEulerXYZ(const btMatrix3x3& mat, btVector3& xyz)
 	}
 	else
 	{
-		// WARNING.  Not unique.  XAngle + ZAngle = atan2(r10, r11)
-		xyz[0] = btAtan2(btGetMatrixElem(mat,3), btGetMatrixElem(mat,4));
+		// WARNING.  Not unique.  XAngle + ZAngle = atan2(r10,r11)
+		xyz[0] = btAtan2(btGetMatrixElem(mat,3),btGetMatrixElem(mat,4));
 		xyz[1] = SIMD_HALF_PI;
 		xyz[2] = 0.0;
 	}
@@ -117,41 +121,41 @@ bool	matrixToEulerXYZ(const btMatrix3x3& mat, btVector3& xyz)
 
 int btRotationalLimitMotor::testLimitValue(btScalar test_value)
 {
-	// Invalid! Don't apply any forces.
 	if(m_loLimit>m_hiLimit)
 	{
 		m_currentLimit = 0;//Free from violation
 		return 0;
 	}
-
-	m_currentLimit = 0; // Free from violation
-
 	if (test_value < m_loLimit)
 	{
-		m_currentLimit = 1; // low limit violation
+		m_currentLimit = 1;//low limit violation
 		m_currentLimitError =  test_value - m_loLimit;
+		if(m_currentLimitError>SIMD_PI) 
+			m_currentLimitError-=SIMD_2_PI;
+		else if(m_currentLimitError<-SIMD_PI) 
+			m_currentLimitError+=SIMD_2_PI;
+		return 1;
 	}
-	else if (test_value > m_hiLimit)
+	else if (test_value> m_hiLimit)
 	{
-		m_currentLimit = 2; // High limit violation
+		m_currentLimit = 2;//High limit violation
 		m_currentLimitError = test_value - m_hiLimit;
-	}
+		if(m_currentLimitError>SIMD_PI) 
+			m_currentLimitError-=SIMD_2_PI;
+		else if(m_currentLimitError<-SIMD_PI) 
+			m_currentLimitError+=SIMD_2_PI;
+		return 2;
+	};
 
-	// Normalize it
-	if (m_currentLimit) {
-		if (m_currentLimitError > SIMD_PI)
-			m_currentLimitError -= SIMD_2_PI;
-		else if (m_currentLimitError < -SIMD_PI)
-			m_currentLimitError += SIMD_2_PI;
-	}
+	m_currentLimit = 0;//Free from violation
+	return 0;
 
-	return m_currentLimit;
 }
 
 
 
 btScalar btRotationalLimitMotor::solveAngularLimits(
-	btScalar timeStep, btVector3& axis, btScalar jacDiagABInv,
+	btScalar timeStep,btVector3& axis,btScalar jacDiagABInv,
 	btRigidBody * body0, btRigidBody * body1 )
 {
 	if (needApplyTorques()==false) return 0.0f;
@@ -175,6 +179,8 @@ btScalar btRotationalLimitMotor::solveAngularLimits(
 
 	btVector3 vel_diff;
 	vel_diff = angVelA-angVelB;
+
+
 
 	btScalar rel_vel = axis.dot(vel_diff);
 
@@ -267,8 +273,8 @@ int btTranslationalLimitMotor::testLimitValue(int limitIndex, btScalar test_valu
 btScalar btTranslationalLimitMotor::solveLinearAxis(
 	btScalar timeStep,
 	btScalar jacDiagABInv,
-	btRigidBody& body1, const btVector3 &pointInA,
-	btRigidBody& body2, const btVector3 &pointInB,
+	btRigidBody& body1,const btVector3 &pointInA,
+	btRigidBody& body2,const btVector3 &pointInB,
 	int limit_index,
 	const btVector3 & axis_normal_on_a,
 	const btVector3 & anchorPos)
@@ -325,6 +331,9 @@ btScalar btTranslationalLimitMotor::solveLinearAxis(
 
 	btScalar normalImpulse= m_limitSoftness*(m_restitution*depth/timeStep - m_damping*rel_vel) * jacDiagABInv;
 
+
+
+
 	btScalar oldNormalImpulse = m_accumulatedImpulse[limit_index];
 	btScalar sum = oldNormalImpulse + normalImpulse;
 	m_accumulatedImpulse[limit_index] = sum > hi ? btScalar(0.) : sum < lo ? btScalar(0.) : sum;
@@ -339,90 +348,51 @@ btScalar btTranslationalLimitMotor::solveLinearAxis(
 	return normalImpulse;
 }
 
-//////////////////////////// End btTranslationalLimitMotor ////////////////////////////////////
-
-void btGeneric6DofConstraint::debugDraw(btIDebugDraw *drawer)
-{
-	bool drawFrames = (drawer->getDebugMode() & btIDebugDraw::DBG_DrawConstraints) != 0;
-	bool drawLimits = (drawer->getDebugMode() & btIDebugDraw::DBG_DrawConstraintLimits) != 0;
-
-	btTransform tr = getCalculatedTransformA();
-	if (drawFrames) drawer->drawTransform(tr, m_dbgDrawSize);
-	tr = getCalculatedTransformB();
-	if (drawFrames) drawer->drawTransform(tr, m_dbgDrawSize);
-	if (drawLimits) {
-		tr = getCalculatedTransformA();
-		const btVector3& center = getCalculatedTransformB().getOrigin();
-		btVector3 up = tr.getBasis().getColumn(2);
-		btVector3 axis = tr.getBasis().getColumn(0);
-		btScalar minTh = getRotationalLimitMotor(1)->m_loLimit;
-		btScalar maxTh = getRotationalLimitMotor(1)->m_hiLimit;
-		btScalar minPs = getRotationalLimitMotor(2)->m_loLimit;
-		btScalar maxPs = getRotationalLimitMotor(2)->m_hiLimit;
-		drawer->drawSpherePatch(center, up, axis, m_dbgDrawSize * btScalar(.9f), minTh, maxTh, minPs, maxPs, btVector3(0, 0, 0));
-		axis = tr.getBasis().getColumn(1);
-		btScalar ay = getAngle(1);
-		btScalar az = getAngle(2);
-		btScalar cy = btCos(ay);
-		btScalar sy = btSin(ay);
-		btScalar cz = btCos(az);
-		btScalar sz = btSin(az);
-		btVector3 ref;
-		ref[0] = cy*cz*axis[0] + cy*sz*axis[1] - sy*axis[2];
-		ref[1] = -sz*axis[0] + cz*axis[1];
-		ref[2] = cz*sy*axis[0] + sz*sy*axis[1] + cy*axis[2];
-		tr = getCalculatedTransformB();
-		btVector3 normal = -tr.getBasis().getColumn(0);
-		btScalar minFi = getRotationalLimitMotor(0)->m_loLimit;
-		btScalar maxFi = getRotationalLimitMotor(0)->m_hiLimit;
-		if (minFi > maxFi) {
-			drawer->drawArc(center, normal, ref, m_dbgDrawSize, m_dbgDrawSize, -SIMD_PI, SIMD_PI, btVector3(0, 0, 0), false);
-		} else if (minFi < maxFi) {
-			drawer->drawArc(center, normal, ref, m_dbgDrawSize, m_dbgDrawSize, minFi, maxFi, btVector3(0, 0, 0), true);
-		}
-		tr = getCalculatedTransformA();
-		btVector3 bbMin = getTranslationalLimitMotor()->m_lowerLimit;
-		btVector3 bbMax = getTranslationalLimitMotor()->m_upperLimit;
-		drawer->drawBox(bbMin, bbMax, tr, btVector3(0, 0, 0));
-	}
-}
+//////////////////////////// btTranslationalLimitMotor ////////////////////////////////////
 
 void btGeneric6DofConstraint::calculateAngleInfo()
 {
-	btQuaternion qA = m_calculatedTransformA.getRotation();
-	btQuaternion qB = m_calculatedTransformB.getRotation();
-	btQuaternion qAB = qA.inverse() * qB;
+	btMatrix3x3 relative_frame = m_calculatedTransformA.getBasis().inverse()*m_calculatedTransformB.getBasis();
+	matrixToEulerXYZ(relative_frame,m_calculatedAxisAngleDiff);
+	// in euler angle mode we do not actually constrain the angular velocity
+	// along the axes axis[0] and axis[2] (although we do use axis[1]) :
+	//
+	//    to get			constrain w2-w1 along		...not
+	//    ------			---------------------		------
+	//    d(angle[0])/dt = 0	ax[1] x ax[2]			ax[0]
+	//    d(angle[1])/dt = 0	ax[1]
+	//    d(angle[2])/dt = 0	ax[0] x ax[1]			ax[2]
+	//
+	// constraining w2-w1 along an axis 'a' means that a'*(w2-w1)=0.
+	// to prove the result for angle[0], write the expression for angle[0] from
+	// GetInfo1 then take the derivative. to prove this for angle[2] it is
+	// easier to take the euler rate expression for d(angle[2])/dt with respect
+	// to the components of w and set that to 0.
+	btVector3 axis0 = m_calculatedTransformB.getBasis().getColumn(0);
+	btVector3 axis2 = m_calculatedTransformA.getBasis().getColumn(2);
 
-	// Get the difference in euler angles
-	m_calculatedAxisAngleDiff.setValue(
-		btScalar(-2) * btAsin(qAB.x()),
-		btScalar(-2) * btAsin(qAB.y()),
-		btScalar(-2) * btAsin(qAB.z())
-	);
-	if (qAB.w() < btScalar(0))
-		m_calculatedAxisAngleDiff *= -1;
+	m_calculatedAxis[1] = axis2.cross(axis0);
+	m_calculatedAxis[0] = m_calculatedAxis[1].cross(axis2);
+	m_calculatedAxis[2] = axis0.cross(m_calculatedAxis[1]);
 
-	// Calculate the axes
-	btQuaternion qHalfAB = btQuaternion::getIdentity().slerp(qAB, 0.5);
-	btMatrix3x3 axes = m_calculatedTransformA.getBasis() * btMatrix3x3(qHalfAB);
+	m_calculatedAxis[0].normalize();
+	m_calculatedAxis[1].normalize();
+	m_calculatedAxis[2].normalize();
 
-	m_calculatedAxis[0] = axes.getColumn(0);
-	m_calculatedAxis[1] = axes.getColumn(1);
-	m_calculatedAxis[2] = axes.getColumn(2);
 }
 
 void btGeneric6DofConstraint::calculateTransforms()
 {
-	calculateTransforms(m_rbA.getCenterOfMassTransform(), m_rbB.getCenterOfMassTransform());
+	calculateTransforms(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform());
 }
 
-void btGeneric6DofConstraint::calculateTransforms(const btTransform& transA, const btTransform& transB)
+void btGeneric6DofConstraint::calculateTransforms(const btTransform& transA,const btTransform& transB)
 {
 	m_calculatedTransformA = transA * m_frameInA;
 	m_calculatedTransformB = transB * m_frameInB;
 	calculateLinearInfo();
 	calculateAngleInfo();
-	if (m_useOffsetForConstraintFrame)
+	if(m_useOffsetForConstraintFrame)
 	{	//  get weight factors depending on masses
 		btScalar miA = getRigidBodyA().getInvMass();
 		btScalar miB = getRigidBodyB().getInvMass();
@@ -443,42 +413,47 @@ void btGeneric6DofConstraint::calculateTransforms(const btTransform& transA, con
 
 
 void btGeneric6DofConstraint::buildLinearJacobian(
-	btJacobianEntry & jacLinear, const btVector3 & normalWorld,
-	const btVector3 & pivotAInW, const btVector3 & pivotBInW)
+	btJacobianEntry & jacLinear,const btVector3 & normalWorld,
+	const btVector3 & pivotAInW,const btVector3 & pivotBInW)
 {
 	new (&jacLinear) btJacobianEntry(
-		m_rbA.getCenterOfMassTransform().getBasis().transpose(),
-		m_rbB.getCenterOfMassTransform().getBasis().transpose(),
-		pivotAInW - m_rbA.getCenterOfMassPosition(),
-		pivotBInW - m_rbB.getCenterOfMassPosition(),
-		normalWorld,
-		m_rbA.getInvInertiaDiagLocal(),
-		m_rbA.getInvMass(),
-		m_rbB.getInvInertiaDiagLocal(),
-		m_rbB.getInvMass());
+        m_rbA.getCenterOfMassTransform().getBasis().transpose(),
+        m_rbB.getCenterOfMassTransform().getBasis().transpose(),
+        pivotAInW - m_rbA.getCenterOfMassPosition(),
+        pivotBInW - m_rbB.getCenterOfMassPosition(),
+        normalWorld,
+        m_rbA.getInvInertiaDiagLocal(),
+        m_rbA.getInvMass(),
+        m_rbB.getInvInertiaDiagLocal(),
+        m_rbB.getInvMass());
 }
 
-void btGeneric6DofConstraint::buildAngularJacobian(btJacobianEntry & jacAngular, const btVector3 & jointAxisW)
+
+
+void btGeneric6DofConstraint::buildAngularJacobian(
+	btJacobianEntry & jacAngular,const btVector3 & jointAxisW)
 {
 	 new (&jacAngular)	btJacobianEntry(jointAxisW,
-									  m_rbA.getCenterOfMassTransform().getBasis().transpose(),
-									  m_rbB.getCenterOfMassTransform().getBasis().transpose(),
-									  m_rbA.getInvInertiaDiagLocal(),
-									  m_rbB.getInvInertiaDiagLocal());
+                                      m_rbA.getCenterOfMassTransform().getBasis().transpose(),
+                                      m_rbB.getCenterOfMassTransform().getBasis().transpose(),
+                                      m_rbA.getInvInertiaDiagLocal(),
+                                      m_rbB.getInvInertiaDiagLocal());
+
 }
+
+
 
 bool btGeneric6DofConstraint::testAngularLimitMotor(int axis_index)
 {
-	btRotationalLimitMotor &motor = m_angularLimits[axis_index];
-
 	btScalar angle = m_calculatedAxisAngleDiff[axis_index];
-	angle = btAdjustAngleToLimits(angle, motor.m_loLimit, motor.m_hiLimit);
-	motor.m_currentPosition = angle;
-
+	angle = btAdjustAngleToLimits(angle, m_angularLimits[axis_index].m_loLimit, m_angularLimits[axis_index].m_hiLimit);
+	m_angularLimits[axis_index].m_currentPosition = angle;
 	//test limits
-	motor.testLimitValue(angle);
-	return motor.needApplyTorques();
+	m_angularLimits[axis_index].testLimitValue(angle);
+	return m_angularLimits[axis_index].needApplyTorques();
 }
+
+
 
 void btGeneric6DofConstraint::buildJacobian()
 {
@@ -494,7 +469,7 @@ void btGeneric6DofConstraint::buildJacobian()
 			m_angularLimits[i].m_accumulatedImpulse = btScalar(0.);
 		}
 		//calculates transform
-		calculateTransforms(m_rbA.getCenterOfMassTransform(), m_rbB.getCenterOfMassTransform());
+		calculateTransforms(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform());
 
 		//  const btVector3& pivotAInW = m_calculatedTransformA.getOrigin();
 		//  const btVector3& pivotBInW = m_calculatedTransformB.getOrigin();
@@ -519,9 +494,8 @@ void btGeneric6DofConstraint::buildJacobian()
 						normalWorld = m_calculatedTransformB.getBasis().getColumn(i);
 
 					buildLinearJacobian(
-						m_jacLinear[i], normalWorld ,
-						pivotAInW, pivotBInW);
-
+						m_jacLinear[i],normalWorld ,
+						pivotAInW,pivotBInW);
 				}
 			}
 
@@ -534,7 +508,7 @@ void btGeneric6DofConstraint::buildJacobian()
 				{
 					normalWorld = this->getAxis(i);
 					// Create angular atom
-					buildAngularJacobian(m_jacAng[i], normalWorld);
+					buildAngularJacobian(m_jacAng[i],normalWorld);
 				}
 			}
 
@@ -553,27 +527,25 @@ void btGeneric6DofConstraint::getInfo1 (btConstraintInfo1* info)
 	} else
 	{
 		//prepare constraint
-		calculateTransforms(m_rbA.getCenterOfMassTransform(), m_rbB.getCenterOfMassTransform());
+		calculateTransforms(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform());
 		info->m_numConstraintRows = 0;
 		info->nub = 6;
 		int i;
-
 		//test linear limits
 		if (!m_angularOnly)
-			for (i = 0; i < 3; i++)
+			for(i = 0; i < 3; i++)
 			{
-				if (m_linearLimits.needApplyForce(i))
+				if(m_linearLimits.needApplyForce(i))
 				{
 					info->m_numConstraintRows++;
 					info->nub--;
 				}
 			}
-
 		//test angular limits
-		if (!m_linearOnly)
-			for (i = 0; i < 3; i++)
+		if (!m_angularOnly)
+			for (i=0;i<3 ;i++ )
 			{
-				if (testAngularLimitMotor(i))
+				if(testAngularLimitMotor(i))
 				{
 					info->m_numConstraintRows++;
 					info->nub--;
@@ -601,6 +573,7 @@ void btGeneric6DofConstraint::getInfo2 (btConstraintInfo2* info)
 {
 	btAssert(!m_useSolveConstraintObsolete);
 
+	int row = 0;
 	const btTransform& transA = m_rbA.getCenterOfMassTransform();
 	const btTransform& transB = m_rbB.getCenterOfMassTransform();
 	const btVector3& linVelA = m_rbA.getLinearVelocity();
@@ -610,34 +583,28 @@ void btGeneric6DofConstraint::getInfo2 (btConstraintInfo2* info)
 
 	if(m_useOffsetForConstraintFrame)
 	{ // for stability better to solve angular limits first
-		int row = 0;
-
 		if (!m_linearOnly)
-			row = setAngularLimits(info, 0, transA, transB, linVelA, linVelB, angVelA, angVelB);
-
+			row = setAngularLimits(info, 0,transA,transB,linVelA,linVelB,angVelA,angVelB);
 		if (!m_angularOnly)
-			row = setLinearLimits(info, row, transA, transB, linVelA, linVelB, angVelA, angVelB);
+			row = setLinearLimits(info, row, transA,transB,linVelA,linVelB,angVelA,angVelB);
 	}
 	else
 	{ // leave old version for compatibility
-		int row = 0;
-
 		if (!m_linearOnly)
-			row = setLinearLimits(info, 0, transA, transB, linVelA, linVelB, angVelA, angVelB);
-
+			row = setLinearLimits(info, 0, transA,transB,linVelA,linVelB,angVelA,angVelB);
 		if (!m_angularOnly)
-			row = setAngularLimits(info, row, transA, transB, linVelA, linVelB, angVelA, angVelB);
+			row = setAngularLimits(info, row,transA,transB,linVelA,linVelB,angVelA,angVelB);
 	}
 
 }
 
 
-void btGeneric6DofConstraint::getInfo2NonVirtual (btConstraintInfo2* info, const btTransform& transA, const btTransform& transB, const btVector3& linVelA, const btVector3& linVelB, const btVector3& angVelA, const btVector3& angVelB)
+void btGeneric6DofConstraint::getInfo2NonVirtual (btConstraintInfo2* info, const btTransform& transA,const btTransform& transB,const btVector3& linVelA,const btVector3& linVelB,const btVector3& angVelA,const btVector3& angVelB)
 {
 	
 	btAssert(!m_useSolveConstraintObsolete);
 	//prepare constraint
-	calculateTransforms(transA, transB);
+	calculateTransforms(transA,transB);
 
 	int i;
 	for (i=0;i<3 ;i++ )
@@ -647,24 +614,24 @@ void btGeneric6DofConstraint::getInfo2NonVirtual (btConstraintInfo2* info, const
 
 	if(m_useOffsetForConstraintFrame)
 	{ // for stability better to solve angular limits first
-		int row = setAngularLimits(info, 0, transA, transB, linVelA, linVelB, angVelA, angVelB);
-		setLinearLimits(info, row, transA, transB, linVelA, linVelB, angVelA, angVelB);
+		int row = setAngularLimits(info, 0,transA,transB,linVelA,linVelB,angVelA,angVelB);
+		setLinearLimits(info, row, transA,transB,linVelA,linVelB,angVelA,angVelB);
 	}
 	else
 	{ // leave old version for compatibility
-		int row = setLinearLimits(info, 0, transA, transB, linVelA, linVelB, angVelA, angVelB);
-		setAngularLimits(info, row, transA, transB, linVelA, linVelB, angVelA, angVelB);
+		int row = setLinearLimits(info, 0, transA,transB,linVelA,linVelB,angVelA,angVelB);
+		setAngularLimits(info, row,transA,transB,linVelA,linVelB,angVelA,angVelB);
 	}
 }
 
 
 
-int btGeneric6DofConstraint::setLinearLimits(btConstraintInfo2* info, int row, const btTransform& transA, const btTransform& transB, const btVector3& linVelA, const btVector3& linVelB, const btVector3& angVelA, const btVector3& angVelB)
+int btGeneric6DofConstraint::setLinearLimits(btConstraintInfo2* info, int row, const btTransform& transA,const btTransform& transB,const btVector3& linVelA,const btVector3& linVelB,const btVector3& angVelA,const btVector3& angVelB)
 {
 //	int row = 0;
 	//solve linear limits
 	btRotationalLimitMotor limot;
-	for (int i = 0; i < 3; i++)
+	for (int i=0;i<3 ;i++ )
 	{
 		if(m_linearLimits.needApplyForce(i))
 		{ // re-use rotational motor code
@@ -694,11 +661,11 @@ int btGeneric6DofConstraint::setLinearLimits(btConstraintInfo2* info, int row, c
 				{
 					rotAllowed = 0;
 				}
-				row += get_limit_motor_info2(&limot, transA, transB, linVelA, linVelB, angVelA, angVelB, info, row, axis, 0, rotAllowed);
+				row += get_limit_motor_info2(&limot, transA,transB,linVelA,linVelB,angVelA,angVelB, info, row, axis, 0, rotAllowed);
 			}
 			else
 			{
-				row += get_limit_motor_info2(&limot, transA, transB, linVelA, linVelB, angVelA, angVelB, info, row, axis, 0);
+				row += get_limit_motor_info2(&limot, transA,transB,linVelA,linVelB,angVelA,angVelB, info, row, axis, 0);
 			}
 		}
 	}
@@ -707,16 +674,16 @@ int btGeneric6DofConstraint::setLinearLimits(btConstraintInfo2* info, int row, c
 
 
 
-int btGeneric6DofConstraint::setAngularLimits(btConstraintInfo2 *info, int row_offset, const btTransform& transA, const btTransform& transB, const btVector3& linVelA, const btVector3& linVelB, const btVector3& angVelA, const btVector3& angVelB)
+int btGeneric6DofConstraint::setAngularLimits(btConstraintInfo2 *info, int row_offset, const btTransform& transA,const btTransform& transB,const btVector3& linVelA,const btVector3& linVelB,const btVector3& angVelA,const btVector3& angVelB)
 {
+	btGeneric6DofConstraint * d6constraint = this;
 	int row = row_offset;
 	//solve angular limits
 	for (int i=0;i<3 ;i++ )
 	{
-		if (getRotationalLimitMotor(i)->needApplyTorques())
+		if(d6constraint->getRotationalLimitMotor(i)->needApplyTorques())
 		{
-			// Rotation axis
-			btVector3 axis = m_calculatedAxis[i];
+			btVector3 axis = d6constraint->getAxis(i);
 			int flags = m_flags >> ((i + 3) * BT_6DOF_FLAGS_AXIS_SHIFT);
 			if(!(flags & BT_6DOF_FLAGS_CFM_NORM))
 			{
@@ -730,8 +697,8 @@ int btGeneric6DofConstraint::setAngularLimits(btConstraintInfo2 *info, int row_o
 			{
 				m_angularLimits[i].m_stopERP = info->erp;
 			}
-			row += get_limit_motor_info2(&m_angularLimits[i],
-												transA, transB, linVelA, linVelB, angVelA, angVelB, info, row, axis, true);
+			row += get_limit_motor_info2(d6constraint->getRotationalLimitMotor(i),
+												transA,transB,linVelA,linVelB,angVelA,angVelB, info,row,axis,1);
 		}
 	}
 
@@ -760,8 +727,6 @@ void btGeneric6DofConstraint::setFrames(const btTransform& frameA, const btTrans
 
 btVector3 btGeneric6DofConstraint::getAxis(int axis_index) const
 {
-	btAssert(axis_index >= 0 && axis_index < 3); // Bounds check
-
 	return m_calculatedAxis[axis_index];
 }
 
@@ -815,27 +780,26 @@ void btGeneric6DofConstraint::calculateLinearInfo()
 
 int btGeneric6DofConstraint::get_limit_motor_info2(
 	btRotationalLimitMotor * limot,
-	const btTransform& transA, const btTransform& transB, const btVector3& linVelA, const btVector3& linVelB, const btVector3& angVelA, const btVector3& angVelB,
-	btConstraintInfo2 *info, int row, btVector3& ax1, int rotational, int rotAllowed)
+	const btTransform& transA,const btTransform& transB,const btVector3& linVelA,const btVector3& linVelB,const btVector3& angVelA,const btVector3& angVelB,
+	btConstraintInfo2 *info, int row, btVector3& ax1, int rotational,int rotAllowed)
 {
-	int srow = row * info->rowskip;
-	int powered = limot->m_enableMotor;
-	int limit = limot->m_currentLimit; // 0 = not currently limited
-	if (powered || limit)
-	{   // if the joint is powered, or has joint limits, add in the extra row
-		btScalar *J1 = rotational ? info->m_J1angularAxis : info->m_J1linearAxis;
-		btScalar *J2 = rotational ? info->m_J2angularAxis : info->m_J2linearAxis;
-		J1[srow+0] = ax1[0];
-		J1[srow+1] = ax1[1];
-		J1[srow+2] = ax1[2];
+    int srow = row * info->rowskip;
+    int powered = limot->m_enableMotor;
+    int limit = limot->m_currentLimit;
+    if (powered || limit)
+    {   // if the joint is powered, or has joint limits, add in the extra row
+        btScalar *J1 = rotational ? info->m_J1angularAxis : info->m_J1linearAxis;
+        btScalar *J2 = rotational ? info->m_J2angularAxis : info->m_J2linearAxis;
+        J1[srow+0] = ax1[0];
+        J1[srow+1] = ax1[1];
+        J1[srow+2] = ax1[2];
 
-		J2[srow+0] = -ax1[0];
-		J2[srow+1] = -ax1[1];
-		J2[srow+2] = -ax1[2];
+        J2[srow+0] = -ax1[0];
+        J2[srow+1] = -ax1[1];
+        J2[srow+2] = -ax1[2];
 
-		// Linear only
-		if(!rotational)
-		{
+		if((!rotational))
+        {
 			if (m_useOffsetForConstraintFrame)
 			{
 				btVector3 tmpA, tmpB, relA, relB;
@@ -881,17 +845,16 @@ int btGeneric6DofConstraint::get_limit_motor_info2(
 				info->m_J2angularAxis[srow+1] = ltd[1];
 				info->m_J2angularAxis[srow+2] = ltd[2];
 			}
-		}
-
-		// if we're limited low and high simultaneously, the joint motor is
-		// ineffective
-		if (limit && (limot->m_loLimit == limot->m_hiLimit)) powered = 0;
-		info->m_constraintError[srow] = btScalar(0.f);
-		if (powered)
-		{
+        }
+        // if we're limited low and high simultaneously, the joint motor is
+        // ineffective
+        if (limit && (limot->m_loLimit == limot->m_hiLimit)) powered = 0;
+        info->m_constraintError[srow] = btScalar(0.f);
+        if (powered)
+        {
 			info->cfm[srow] = limot->m_normalCFM;
-			if(!limit)
-			{
+            if(!limit)
+            {
 				btScalar tag_vel = rotational ? limot->m_targetVelocity : -limot->m_targetVelocity;
 
 				btScalar mot_fact = getMotorFactor(	limot->m_currentPosition, 
@@ -900,14 +863,13 @@ int btGeneric6DofConstraint::get_limit_motor_info2(
 													tag_vel, 
 													info->fps * limot->m_stopERP);
 				info->m_constraintError[srow] += mot_fact * limot->m_targetVelocity;
-				info->m_lowerLimit[srow] = -limot->m_maxMotorForce;
-				info->m_upperLimit[srow] = limot->m_maxMotorForce;
-			}
-		}
-
-		if(limit)
-		{
-			btScalar k = info->fps * limot->m_stopERP;
+                info->m_lowerLimit[srow] = -limot->m_maxMotorForce;
+                info->m_upperLimit[srow] = limot->m_maxMotorForce;
+            }
+        }
+        if(limit)
+        {
+            btScalar k = info->fps * limot->m_stopERP;
 			if(!rotational)
 			{
 				info->m_constraintError[srow] += k * limot->m_currentLimitError;
@@ -917,69 +879,68 @@ int btGeneric6DofConstraint::get_limit_motor_info2(
 				info->m_constraintError[srow] += -k * limot->m_currentLimitError;
 			}
 			info->cfm[srow] = limot->m_stopCFM;
-			if (limot->m_loLimit == limot->m_hiLimit)
-			{   // limited low and high simultaneously
-				info->m_lowerLimit[srow] = -SIMD_INFINITY;
-				info->m_upperLimit[srow] = SIMD_INFINITY;
-			}
-			else
-			{
-				if (limit == 1)
-				{
-					info->m_lowerLimit[srow] = 0;
-					info->m_upperLimit[srow] = SIMD_INFINITY;
-				}
-				else
-				{
-					info->m_lowerLimit[srow] = -SIMD_INFINITY;
-					info->m_upperLimit[srow] = 0;
-				}
-
-				// deal with bounce
-				if (limot->m_bounce > 0)
-				{
-					// calculate joint velocity
-					btScalar vel;
-					if (rotational)
-					{
-						vel = angVelA.dot(ax1);
-						//make sure that if no body -> angVelB == zero vec
-						//if (body1)
-							vel -= angVelB.dot(ax1);
-					}
-					else
-					{
-						vel = linVelA.dot(ax1);
-						//make sure that if no body -> angVelB == zero vec
-						//if (body1)
-							vel -= linVelB.dot(ax1);
-					}
-					// only apply bounce if the velocity is incoming, and if the
-					// resulting c[] exceeds what we already have.
-					if (limit == 1)
-					{
-						if (vel < 0)
-						{
-							btScalar newc = -limot->m_bounce* vel;
-							if (newc > info->m_constraintError[srow]) 
+            if (limot->m_loLimit == limot->m_hiLimit)
+            {   // limited low and high simultaneously
+                info->m_lowerLimit[srow] = -SIMD_INFINITY;
+                info->m_upperLimit[srow] = SIMD_INFINITY;
+            }
+            else
+            {
+                if (limit == 1)
+                {
+                    info->m_lowerLimit[srow] = 0;
+                    info->m_upperLimit[srow] = SIMD_INFINITY;
+                }
+                else
+                {
+                    info->m_lowerLimit[srow] = -SIMD_INFINITY;
+                    info->m_upperLimit[srow] = 0;
+                }
+                // deal with bounce
+                if (limot->m_bounce > 0)
+                {
+                    // calculate joint velocity
+                    btScalar vel;
+                    if (rotational)
+                    {
+                        vel = angVelA.dot(ax1);
+//make sure that if no body -> angVelB == zero vec
+//                        if (body1)
+                            vel -= angVelB.dot(ax1);
+                    }
+                    else
+                    {
+                        vel = linVelA.dot(ax1);
+//make sure that if no body -> angVelB == zero vec
+//                        if (body1)
+                            vel -= linVelB.dot(ax1);
+                    }
+                    // only apply bounce if the velocity is incoming, and if the
+                    // resulting c[] exceeds what we already have.
+                    if (limit == 1)
+                    {
+                        if (vel < 0)
+                        {
+                            btScalar newc = -limot->m_bounce* vel;
+                            if (newc > info->m_constraintError[srow]) 
 								info->m_constraintError[srow] = newc;
-						}
-					}
-					else
-					{
-						if (vel > 0)
-						{
-							btScalar newc = -limot->m_bounce * vel;
-							if (newc < info->m_constraintError[srow]) 
+                        }
+                    }
+                    else
+                    {
+                        if (vel > 0)
+                        {
+                            btScalar newc = -limot->m_bounce * vel;
+                            if (newc < info->m_constraintError[srow]) 
 								info->m_constraintError[srow] = newc;
-						}
-					}
-				}
-			}
-		}
-		return 1;
-	}
-	else return 0;
+                        }
+                    }
+                }
+            }
+        }
+        return 1;
+    }
+    else return 0;
 }
 
 
@@ -1090,7 +1051,7 @@ btScalar btGeneric6DofConstraint::getParam(int num, int axis) const
 
  
 
-void btGeneric6DofConstraint::setAxis(const btVector3& axis1, const btVector3& axis2)
+void btGeneric6DofConstraint::setAxis(const btVector3& axis1,const btVector3& axis2)
 {
 	btVector3 zAxis = axis1.normalized();
 	btVector3 yAxis = axis2.normalized();
@@ -1099,8 +1060,8 @@ void btGeneric6DofConstraint::setAxis(const btVector3& axis1, const btVector3& a
 	btTransform frameInW;
 	frameInW.setIdentity();
 	frameInW.getBasis().setValue(	xAxis[0], yAxis[0], zAxis[0],	
-									xAxis[1], yAxis[1], zAxis[1],
-								   xAxis[2], yAxis[2], zAxis[2]);
+	                                xAxis[1], yAxis[1], zAxis[1],
+	                               xAxis[2], yAxis[2], zAxis[2]);
 	
 	// now get constraint frame in local coordinate systems
 	m_frameInA = m_rbA.getCenterOfMassTransform().inverse() * frameInW;

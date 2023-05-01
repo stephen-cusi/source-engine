@@ -63,7 +63,7 @@ long _maxdot_large( const float *vv, const float *vec, unsigned long count, floa
     float4 stack_array[ STACK_ARRAY_COUNT ];
     
 #if DEBUG
-    memset( stack_array, -1, STACK_ARRAY_COUNT * sizeof(stack_array[0]) );
+    //memset( stack_array, -1, STACK_ARRAY_COUNT * sizeof(stack_array[0]) );
 #endif
     
     size_t index;
@@ -323,7 +323,7 @@ long _maxdot_large( const float *vv, const float *vec, unsigned long count, floa
         index += localCount/4;
 #else
         {
-            for( unsigned int i=0; i<localCount/4; i++, index++)   
+            for( unsigned int i=0; i<localCount/4; i++,index++)   
             { // do four dot products at a time. Carefully avoid touching the w element.
                 float4 v0 = vertices[0];
                 float4 v1 = vertices[1];
@@ -448,7 +448,7 @@ long _mindot_large( const float *vv, const float *vec, unsigned long count, floa
     float4 stack_array[ STACK_ARRAY_COUNT ];
     
 #if DEBUG
-    memset( stack_array, -1, STACK_ARRAY_COUNT * sizeof(stack_array[0]) );
+    //memset( stack_array, -1, STACK_ARRAY_COUNT * sizeof(stack_array[0]) );
 #endif
     
     size_t index;
@@ -710,7 +710,7 @@ long _mindot_large( const float *vv, const float *vec, unsigned long count, floa
         index += localCount/4;
 #else
         {
-            for( unsigned int i=0; i<localCount/4; i++, index++)   
+            for( unsigned int i=0; i<localCount/4; i++,index++)   
             { // do four dot products at a time. Carefully avoid touching the w element.
                 float4 v0 = vertices[0];
                 float4 v1 = vertices[1];
@@ -825,9 +825,7 @@ long _mindot_large( const float *vv, const float *vec, unsigned long count, floa
 #define ARM_NEON_GCC_COMPATIBILITY  1
 #include <arm_neon.h>
 #include <sys/types.h>
-#ifdef __APPLE__
 #include <sys/sysctl.h> //for sysctlbyname
-#endif
 
 static long _maxdot_large_v0( const float *vv, const float *vec, unsigned long count, float *dotResult );
 static long _maxdot_large_v1( const float *vv, const float *vec, unsigned long count, float *dotResult );

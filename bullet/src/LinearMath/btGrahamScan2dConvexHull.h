@@ -58,8 +58,8 @@ struct btAngleCompareFunc {
 
 inline void GrahamScanConvexHull2D(btAlignedObjectArray<GrahamVector3>& originalPoints, btAlignedObjectArray<GrahamVector3>& hull, const btVector3& normalAxis)
 {
-	btVector3 axis0, axis1;
-	btPlaneSpace1(normalAxis, axis0, axis1);
+	btVector3 axis0,axis1;
+	btPlaneSpace1(normalAxis,axis0,axis1);
 	
 
 	if (originalPoints.size()<=1)
@@ -77,7 +77,7 @@ inline void GrahamScanConvexHull2D(btAlignedObjectArray<GrahamVector3>& original
 		btScalar projR = originalPoints[0].dot(axis0);
 		if (projL < projR)
 		{
-			originalPoints.swap(0, i);
+			originalPoints.swap(0,i);
 		}
 	}
 
@@ -85,14 +85,22 @@ inline void GrahamScanConvexHull2D(btAlignedObjectArray<GrahamVector3>& original
 	originalPoints[0].m_angle = -1e30f;
 	for (int i=1;i<originalPoints.size();i++)
 	{
-		btVector3 xvec = axis0;
-		btVector3 ar = originalPoints[i]-originalPoints[0];
-		originalPoints[i].m_angle = btCross(xvec, ar).dot(normalAxis) / ar.length();
+	    btVector3 ar = originalPoints[i]-originalPoints[0];
+	    btScalar ar1 = axis1.dot(ar);
+	    btScalar ar0 = axis0.dot(ar);
+	    if( ar1*ar1+ar0*ar0 < FLT_EPSILON ) 
+	    {
+	      originalPoints[i].m_angle = 0.0f;
+	    }
+	    else
+	    {
+	      originalPoints[i].m_angle = btAtan2Fast(ar1, ar0);
+	    }
 	}
 
 	//step 2: sort all points, based on 'angle' with this anchor
 	btAngleCompareFunc comp(originalPoints[0]);
-	originalPoints.quickSortInternal(comp,1, originalPoints.size()-1);
+	originalPoints.quickSortInternal(comp,1,originalPoints.size()-1);
 
 	int i;
 	for (i = 0; i<2; i++) 
@@ -105,12 +113,17 @@ inline void GrahamScanConvexHull2D(btAlignedObjectArray<GrahamVector3>& original
 		while (!isConvex&& hull.size()>1) {
 			btVector3& a = hull[hull.size()-2];
 			btVector3& b = hull[hull.size()-1];
-			isConvex = btCross(a-b, a-originalPoints[i]).dot(normalAxis)> 0;
+			isConvex = btCross(a-b,a-originalPoints[i]).dot(normalAxis)> 0;
 			if (!isConvex)
 				hull.pop_back();
 			else 
 				hull.push_back(originalPoints[i]);
 		}
+
+	    if( hull.size() == 1 )
+	    {
+	      hull.push_back( originalPoints[i] );
+	    }
 	}
 }
 

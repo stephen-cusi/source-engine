@@ -53,6 +53,7 @@ SIMD_FORCE_INLINE bool operator==(const btCompoundShapeChild& c1, const btCompou
 /// Currently, removal of child shapes is only supported when disabling the aabb tree (pass 'false' in the constructor of btCompoundShape)
 ATTRIBUTE_ALIGNED16(class) btCompoundShape	: public btCollisionShape
 {
+protected:
 	btAlignedObjectArray<btCompoundShapeChild> m_children;
 	btVector3						m_localAabbMin;
 	btVector3						m_localAabbMax;
@@ -64,17 +65,16 @@ ATTRIBUTE_ALIGNED16(class) btCompoundShape	: public btCollisionShape
 
 	btScalar	m_collisionMargin;
 
-protected:
 	btVector3	m_localScaling;
 
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-	btCompoundShape(bool enableDynamicAabbTree = true);
+	explicit btCompoundShape(bool enableDynamicAabbTree = true, const int initialChildCapacity = 0);
 
 	virtual ~btCompoundShape();
 
-	void	addChildShape(const btTransform& localTransform, btCollisionShape* shape);
+	void	addChildShape(const btTransform& localTransform,btCollisionShape* shape);
 
 	/// Remove all children shapes that contain the specified shape
 	virtual void removeChildShape(btCollisionShape* shape);
@@ -89,17 +89,10 @@ public:
 
 	btCollisionShape* getChildShape(int index)
 	{
-		if (index < 0 || index > m_children.size())
-			return NULL;
-
 		return m_children[index].m_childShape;
 	}
-
 	const btCollisionShape* getChildShape(int index) const
 	{
-		if (index < 0 || index > m_children.size())
-			return NULL;
-
 		return m_children[index].m_childShape;
 	}
 
@@ -122,7 +115,7 @@ public:
 	}
 
 	///getAabb's default implementation is brute force, expected derived classes to implement a fast dedicated version
-	virtual	void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
+	virtual	void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
 
 	/** Re-calculate the local Aabb. Is called at the end of removeChildShapes. 
 	Use this yourself if you modify the children or their transforms. */
@@ -135,7 +128,7 @@ public:
 		return m_localScaling;
 	}
 
-	virtual void	calculateLocalInertia(btScalar mass, btVector3& inertia) const;
+	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
 
 	virtual void	setMargin(btScalar margin)
 	{
@@ -145,9 +138,9 @@ public:
 	{
 		return m_collisionMargin;
 	}
-	virtual const char*	getName() const
+	virtual const char*	getName()const
 	{
-		return "compound";
+		return "Compound";
 	}
 
 	const btDbvt*	getDynamicAabbTree() const

@@ -47,8 +47,6 @@ subject to the following restrictions:
 
 btConvex2dConvex2dAlgorithm::CreateFunc::CreateFunc(btSimplexSolverInterface*			simplexSolver, btConvexPenetrationDepthSolver* pdSolver)
 {
-	m_numPerturbationIterations = 0;
-	m_minimumPointsPerturbationThreshold = 3;
 	m_simplexSolver = simplexSolver;
 	m_pdSolver = pdSolver;
 }
@@ -57,15 +55,13 @@ btConvex2dConvex2dAlgorithm::CreateFunc::~CreateFunc()
 { 
 }
 
-btConvex2dConvex2dAlgorithm::btConvex2dConvex2dAlgorithm(btPersistentManifold* mf, const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, btSimplexSolverInterface* simplexSolver, btConvexPenetrationDepthSolver* pdSolver, int numPerturbationIterations, int minimumPointsPerturbationThreshold)
-: btActivatingCollisionAlgorithm(ci, body0Wrap, body1Wrap),
+btConvex2dConvex2dAlgorithm::btConvex2dConvex2dAlgorithm(btPersistentManifold* mf,const btCollisionAlgorithmConstructionInfo& ci,const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,btSimplexSolverInterface* simplexSolver, btConvexPenetrationDepthSolver* pdSolver,int /* numPerturbationIterations */, int /* minimumPointsPerturbationThreshold */)
+: btActivatingCollisionAlgorithm(ci,body0Wrap,body1Wrap),
 m_simplexSolver(simplexSolver),
 m_pdSolver(pdSolver),
 m_ownManifold (false),
 m_manifoldPtr(mf),
-m_lowLevelOfDetail(false),
- m_numPerturbationIterations(numPerturbationIterations),
-m_minimumPointsPerturbationThreshold(minimumPointsPerturbationThreshold)
+m_lowLevelOfDetail(false)
 {
 	(void)body0Wrap;
 	(void)body1Wrap;
@@ -96,13 +92,13 @@ extern btScalar gContactBreakingThreshold;
 //
 // Convex-Convex collision algorithm
 //
-void btConvex2dConvex2dAlgorithm ::processCollision (const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut)
+void btConvex2dConvex2dAlgorithm ::processCollision (const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut)
 {
 
 	if (!m_manifoldPtr)
 	{
 		//swapped?
-		m_manifoldPtr = m_dispatcher->getNewManifold(body0Wrap->getCollisionObject(), body1Wrap->getCollisionObject());
+		m_manifoldPtr = m_dispatcher->getNewManifold(body0Wrap->getCollisionObject(),body1Wrap->getCollisionObject());
 		m_ownManifold = true;
 	}
 	resultOut->setPersistentManifold(m_manifoldPtr);
@@ -122,7 +118,7 @@ void btConvex2dConvex2dAlgorithm ::processCollision (const btCollisionObjectWrap
 
 		btGjkPairDetector::ClosestPointInput input;
 
-		btGjkPairDetector	gjkPairDetector(min0, min1, m_simplexSolver, m_pdSolver);
+		btGjkPairDetector	gjkPairDetector(min0,min1,m_simplexSolver,m_pdSolver);
 		//TODO: if (dispatchInfo.m_useContinuous)
 		gjkPairDetector.setMinkowskiA(min0);
 		gjkPairDetector.setMinkowskiB(min1);
@@ -132,13 +128,12 @@ void btConvex2dConvex2dAlgorithm ::processCollision (const btCollisionObjectWrap
 			input.m_maximumDistanceSquared*= input.m_maximumDistanceSquared;
 		}
 
-		input.m_stackAlloc = dispatchInfo.m_stackAllocator;
 		input.m_transformA = body0Wrap->getWorldTransform();
 		input.m_transformB = body1Wrap->getWorldTransform();
 
-		gjkPairDetector.getClosestPoints(input,*resultOut, dispatchInfo.m_debugDraw);
+		gjkPairDetector.getClosestPoints(input,*resultOut,dispatchInfo.m_debugDraw);
 
-		btVector3 v0, v1;
+		btVector3 v0,v1;
 		btVector3 sepNormalWorldSpace;
 
 	}
@@ -153,7 +148,7 @@ void btConvex2dConvex2dAlgorithm ::processCollision (const btCollisionObjectWrap
 
 
 
-btScalar	btConvex2dConvex2dAlgorithm::calculateTimeOfImpact(btCollisionObject* col0, btCollisionObject* col1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut)
+btScalar	btConvex2dConvex2dAlgorithm::calculateTimeOfImpact(btCollisionObject* col0,btCollisionObject* col1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut)
 {
 	(void)resultOut;
 	(void)dispatchInfo;
@@ -186,12 +181,12 @@ btScalar	btConvex2dConvex2dAlgorithm::calculateTimeOfImpact(btCollisionObject* c
 		btSphereShape	sphere1(col1->getCcdSweptSphereRadius()); //todo: allow non-zero sphere sizes, for better approximation
 		btConvexCast::CastResult result;
 		btVoronoiSimplexSolver voronoiSimplex;
-		//SubsimplexConvexCast ccd0(&sphere, min0, &voronoiSimplex);
+		//SubsimplexConvexCast ccd0(&sphere,min0,&voronoiSimplex);
 		///Simplification, one object is simplified as a sphere
-		btGjkConvexCast ccd1( convex0, &sphere1, &voronoiSimplex);
-		//ContinuousConvexCollision ccd(min0, min1, &voronoiSimplex,0);
-		if (ccd1.calcTimeOfImpact(col0->getWorldTransform(), col0->getInterpolationWorldTransform(),
-			col1->getWorldTransform(), col1->getInterpolationWorldTransform(), result))
+		btGjkConvexCast ccd1( convex0 ,&sphere1,&voronoiSimplex);
+		//ContinuousConvexCollision ccd(min0,min1,&voronoiSimplex,0);
+		if (ccd1.calcTimeOfImpact(col0->getWorldTransform(),col0->getInterpolationWorldTransform(),
+			col1->getWorldTransform(),col1->getInterpolationWorldTransform(),result))
 		{
 
 			//store result.m_fraction in both bodies
@@ -219,12 +214,12 @@ btScalar	btConvex2dConvex2dAlgorithm::calculateTimeOfImpact(btCollisionObject* c
 		btSphereShape	sphere0(col0->getCcdSweptSphereRadius()); //todo: allow non-zero sphere sizes, for better approximation
 		btConvexCast::CastResult result;
 		btVoronoiSimplexSolver voronoiSimplex;
-		//SubsimplexConvexCast ccd0(&sphere, min0, &voronoiSimplex);
+		//SubsimplexConvexCast ccd0(&sphere,min0,&voronoiSimplex);
 		///Simplification, one object is simplified as a sphere
-		btGjkConvexCast ccd1(&sphere0, convex1, &voronoiSimplex);
-		//ContinuousConvexCollision ccd(min0, min1, &voronoiSimplex,0);
-		if (ccd1.calcTimeOfImpact(col0->getWorldTransform(), col0->getInterpolationWorldTransform(),
-			col1->getWorldTransform(), col1->getInterpolationWorldTransform(), result))
+		btGjkConvexCast ccd1(&sphere0,convex1,&voronoiSimplex);
+		//ContinuousConvexCollision ccd(min0,min1,&voronoiSimplex,0);
+		if (ccd1.calcTimeOfImpact(col0->getWorldTransform(),col0->getInterpolationWorldTransform(),
+			col1->getWorldTransform(),col1->getInterpolationWorldTransform(),result))
 		{
 
 			//store result.m_fraction in both bodies

@@ -25,6 +25,8 @@ TODO:
 #ifndef BT_SLIDER_CONSTRAINT_H
 #define BT_SLIDER_CONSTRAINT_H
 
+#include "LinearMath/btScalar.h"//for BT_USE_DOUBLE_PRECISION
+
 #ifdef BT_USE_DOUBLE_PRECISION
 #define btSliderConstraintData2		btSliderConstraintDoubleData
 #define btSliderConstraintDataName  "btSliderConstraintDoubleData"
@@ -73,7 +75,7 @@ protected:
 	bool		m_useSolveConstraintObsolete;
 	bool		m_useOffsetForConstraintFrame;
 	btTransform	m_frameInA;
-	btTransform	m_frameInB;
+    btTransform	m_frameInB;
 	// use frameA fo define limits, if true
 	bool m_useLinearReferenceFrameA;
 	// linear limits
@@ -127,11 +129,11 @@ protected:
 	btJacobianEntry	m_jacLin[3];
 	btScalar		m_jacLinDiagABInv[3];
 
-	btJacobianEntry	m_jacAng[3];
+    btJacobianEntry	m_jacAng[3];
 
 	btScalar m_timeStep;
-	btTransform m_calculatedTransformA;
-	btTransform m_calculatedTransformB;
+    btTransform m_calculatedTransformA;
+    btTransform m_calculatedTransformB;
 
 	btVector3 m_sliderAxis;
 	btVector3 m_realPivotAInW;
@@ -149,14 +151,14 @@ protected:
 	btScalar m_kAngle;
 
 	bool	 m_poweredLinMotor;
-	btScalar m_targetLinMotorVelocity;
-	btScalar m_maxLinMotorForce;
-	btScalar m_accumulatedLinMotorImpulse;
+    btScalar m_targetLinMotorVelocity;
+    btScalar m_maxLinMotorForce;
+    btScalar m_accumulatedLinMotorImpulse;
 	
 	bool	 m_poweredAngMotor;
-	btScalar m_targetAngMotorVelocity;
-	btScalar m_maxAngMotorForce;
-	btScalar m_accumulatedAngMotorImpulse;
+    btScalar m_targetAngMotorVelocity;
+    btScalar m_maxAngMotorForce;
+    btScalar m_accumulatedAngMotorImpulse;
 
 	//------------------------    
 	void initParams();
@@ -164,37 +166,37 @@ public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 	
 	// constructors
-	btSliderConstraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB, bool useLinearReferenceFrameA);
-	btSliderConstraint(btRigidBody& rbB, const btTransform& frameInB, bool useLinearReferenceFrameA);
+    btSliderConstraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB ,bool useLinearReferenceFrameA);
+    btSliderConstraint(btRigidBody& rbB, const btTransform& frameInB, bool useLinearReferenceFrameA);
 
 	// overrides
 
-	virtual void getInfo1 (btConstraintInfo1* info);
+    virtual void getInfo1 (btConstraintInfo1* info);
 
 	void getInfo1NonVirtual(btConstraintInfo1* info);
 	
 	virtual void getInfo2 (btConstraintInfo2* info);
 
-	void getInfo2NonVirtual(btConstraintInfo2* info, const btTransform& transA, const btTransform& transB, const btVector3& linVelA, const btVector3& linVelB, btScalar rbAinvMass, btScalar rbBinvMass);
+	void getInfo2NonVirtual(btConstraintInfo2* info, const btTransform& transA, const btTransform& transB,const btVector3& linVelA,const btVector3& linVelB, btScalar rbAinvMass,btScalar rbBinvMass);
 
 
 	// access
-	const btRigidBody& getRigidBodyA() const { return m_rbA; }
-	const btRigidBody& getRigidBodyB() const { return m_rbB; }
-	const btTransform & getCalculatedTransformA() const { return m_calculatedTransformA; }
-	const btTransform & getCalculatedTransformB() const { return m_calculatedTransformB; }
-	const btTransform & getFrameOffsetA() const { return m_frameInA; }
-	const btTransform & getFrameOffsetB() const { return m_frameInB; }
-	btTransform & getFrameOffsetA() { return m_frameInA; }
-	btTransform & getFrameOffsetB() { return m_frameInB; }
-	btScalar getLowerLinLimit() { return m_lowerLinLimit; }
-	void setLowerLinLimit(btScalar lowerLimit) { m_lowerLinLimit = lowerLimit; }
-	btScalar getUpperLinLimit() { return m_upperLinLimit; }
-	void setUpperLinLimit(btScalar upperLimit) { m_upperLinLimit = upperLimit; }
-	btScalar getLowerAngLimit() { return m_lowerAngLimit; }
-	void setLowerAngLimit(btScalar lowerLimit) { m_lowerAngLimit = btNormalizeAngle(lowerLimit); }
-	btScalar getUpperAngLimit() { return m_upperAngLimit; }
-	void setUpperAngLimit(btScalar upperLimit) { m_upperAngLimit = btNormalizeAngle(upperLimit); }
+    const btRigidBody& getRigidBodyA() const { return m_rbA; }
+    const btRigidBody& getRigidBodyB() const { return m_rbB; }
+    const btTransform & getCalculatedTransformA() const { return m_calculatedTransformA; }
+    const btTransform & getCalculatedTransformB() const { return m_calculatedTransformB; }
+    const btTransform & getFrameOffsetA() const { return m_frameInA; }
+    const btTransform & getFrameOffsetB() const { return m_frameInB; }
+    btTransform & getFrameOffsetA() { return m_frameInA; }
+    btTransform & getFrameOffsetB() { return m_frameInB; }
+    btScalar getLowerLinLimit() { return m_lowerLinLimit; }
+    void setLowerLinLimit(btScalar lowerLimit) { m_lowerLinLimit = lowerLimit; }
+    btScalar getUpperLinLimit() { return m_upperLinLimit; }
+    void setUpperLinLimit(btScalar upperLimit) { m_upperLinLimit = upperLimit; }
+    btScalar getLowerAngLimit() { return m_lowerAngLimit; }
+    void setLowerAngLimit(btScalar lowerLimit) { m_lowerAngLimit = btNormalizeAngle(lowerLimit); }
+    btScalar getUpperAngLimit() { return m_upperAngLimit; }
+    void setUpperAngLimit(btScalar upperLimit) { m_upperAngLimit = btNormalizeAngle(upperLimit); }
 	bool getUseLinearReferenceFrameA() { return m_useLinearReferenceFrameA; }
 	btScalar getSoftnessDirLin() { return m_softnessDirLin; }
 	btScalar getRestitutionDirLin() { return m_restitutionDirLin; }
@@ -256,7 +258,7 @@ public:
 	bool getSolveAngLimit() { return m_solveAngLim; }
 	btScalar getAngDepth() { return m_angDepth; }
 	// shared code used by ODE solver
-	void	calculateTransforms(const btTransform& transA, const btTransform& transB);
+	void	calculateTransforms(const btTransform& transA,const btTransform& transB);
 	void	testLinLimits();
 	void	testAngLimits();
 	// access for PE Solver
@@ -270,25 +272,34 @@ public:
 	{ 
 		m_frameInA=frameA; 
 		m_frameInB=frameB;
-		calculateTransforms(m_rbA.getCenterOfMassTransform(), m_rbB.getCenterOfMassTransform());
+		calculateTransforms(m_rbA.getCenterOfMassTransform(),m_rbB.getCenterOfMassTransform());
 		buildJacobian();
-	}
+	} 
 
-	void debugDraw(btIDebugDraw *pDebugDrawer);
 
 	///override the default global value of a parameter (such as ERP or CFM), optionally provide the axis (0..5). 
 	///If no axis is provided, it uses the default axis for this constraint.
 	virtual	void	setParam(int num, btScalar value, int axis = -1);
 	///return the local value of parameter
 	virtual	btScalar getParam(int num, int axis = -1) const;
+	
+	virtual	int getFlags() const
+    	{
+		return m_flags;
+	}
 
 	virtual	int	calculateSerializeBufferSize() const;
 
 	///fills the dataBuffer and returns the struct name (and 0 on failure)
 	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
+
+
 };
 
+
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
+
+
 struct btSliderConstraintData
 {
 	btTypedConstraintData	m_typeConstraintData;
@@ -334,7 +345,7 @@ SIMD_FORCE_INLINE	const char*	btSliderConstraint::serialize(void* dataBuffer, bt
 {
 
 	btSliderConstraintData2* sliderData = (btSliderConstraintData2*) dataBuffer;
-	btTypedConstraint::serialize(&sliderData->m_typeConstraintData, serializer);
+	btTypedConstraint::serialize(&sliderData->m_typeConstraintData,serializer);
 
 	m_frameInA.serialize(sliderData->m_rbAFrame);
 	m_frameInB.serialize(sliderData->m_rbBFrame);

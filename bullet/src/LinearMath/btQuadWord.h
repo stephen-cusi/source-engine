@@ -19,6 +19,10 @@ subject to the following restrictions:
 #include "btScalar.h"
 #include "btMinMax.h"
 
+
+
+
+
 #if defined (__CELLOS_LV2) && defined (__SPU__)
 #include <altivec.h>
 #endif
@@ -70,6 +74,7 @@ public:
 	public:
   
 #if (defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)) || defined(BT_USE_NEON)
+
 	// Set Vector 
 	SIMD_FORCE_INLINE btQuadWord(const btSimdFloat4 vec)
 	{
@@ -90,6 +95,7 @@ public:
 		
 		return *this;
 	}
+	
 #endif
 
   /**@brief Return the x value */
@@ -117,19 +123,19 @@ public:
 
 	//SIMD_FORCE_INLINE btScalar&       operator[](int i)       { return (&m_floats[0])[i];	}      
 	//SIMD_FORCE_INLINE const btScalar& operator[](int i) const { return (&m_floats[0])[i]; }
-	// operator btScalar*() replaces operator[], using implicit conversion. We added operator != and operator == to avoid pointer comparisons.
+	///operator btScalar*() replaces operator[], using implicit conversion. We added operator != and operator == to avoid pointer comparisons.
 	SIMD_FORCE_INLINE	operator       btScalar *()       { return &m_floats[0]; }
 	SIMD_FORCE_INLINE	operator const btScalar *() const { return &m_floats[0]; }
 
 	SIMD_FORCE_INLINE	bool	operator==(const btQuadWord& other) const
 	{
-#if defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)
-		return (0xf == _mm_movemask_ps((__m128)_mm_cmpeq_ps(mVec128, other.mVec128)));
+#ifdef BT_USE_SSE
+        return (0xf == _mm_movemask_ps((__m128)_mm_cmpeq_ps(mVec128, other.mVec128)));
 #else 
 		return ((m_floats[3]==other.m_floats[3]) && 
-				(m_floats[2]==other.m_floats[2]) && 
-				(m_floats[1]==other.m_floats[1]) && 
-				(m_floats[0]==other.m_floats[0]));
+                (m_floats[2]==other.m_floats[2]) && 
+                (m_floats[1]==other.m_floats[1]) && 
+                (m_floats[0]==other.m_floats[0]));
 #endif
 	}
 
@@ -138,7 +144,7 @@ public:
 		return !(*this == other);
 	}
 
-  /**@brief Set x, y,z and zero w 
+  /**@brief Set x,y,z and zero w 
    * @param x Value of x
    * @param y Value of y
    * @param z Value of z
@@ -164,7 +170,7 @@ public:
    * @param z Value of z
    * @param w Value of w
    */
-		SIMD_FORCE_INLINE void	setValue(const btScalar& _x, const btScalar& _y, const btScalar& _z, const btScalar& _w)
+		SIMD_FORCE_INLINE void	setValue(const btScalar& _x, const btScalar& _y, const btScalar& _z,const btScalar& _w)
 		{
 			m_floats[0]=_x;
 			m_floats[1]=_y;
@@ -173,7 +179,7 @@ public:
 		}
   /**@brief No initialization constructor */
 		SIMD_FORCE_INLINE btQuadWord()
-		//	:m_floats[0](btScalar(0.)), m_floats[1](btScalar(0.)), m_floats[2](btScalar(0.)), m_floats[3](btScalar(0.))
+		//	:m_floats[0](btScalar(0.)),m_floats[1](btScalar(0.)),m_floats[2](btScalar(0.)),m_floats[3](btScalar(0.))
 		{
 		}
  
@@ -193,7 +199,7 @@ public:
    * @param z Value of z
    * @param w Value of w
    */
-		SIMD_FORCE_INLINE btQuadWord(const btScalar& _x, const btScalar& _y, const btScalar& _z, const btScalar& _w) 
+		SIMD_FORCE_INLINE btQuadWord(const btScalar& _x, const btScalar& _y, const btScalar& _z,const btScalar& _w) 
 		{
 			m_floats[0] = _x, m_floats[1] = _y, m_floats[2] = _z, m_floats[3] = _w;
 		}
@@ -203,33 +209,33 @@ public:
    */
 		SIMD_FORCE_INLINE void	setMax(const btQuadWord& other)
 		{
-#if defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)
-			mVec128 = _mm_max_ps(mVec128, other.mVec128);
-#elif defined(BT_USE_NEON)
-			mVec128 = vmaxq_f32(mVec128, other.mVec128);
-#else
-			btSetMax(m_floats[0], other.m_floats[0]);
+        #ifdef BT_USE_SSE
+            mVec128 = _mm_max_ps(mVec128, other.mVec128);
+        #elif defined(BT_USE_NEON)
+            mVec128 = vmaxq_f32(mVec128, other.mVec128);
+        #else
+        	btSetMax(m_floats[0], other.m_floats[0]);
 			btSetMax(m_floats[1], other.m_floats[1]);
 			btSetMax(m_floats[2], other.m_floats[2]);
 			btSetMax(m_floats[3], other.m_floats[3]);
-#endif
-		}
+		#endif
+        }
   /**@brief Set each element to the min of the current values and the values of another btQuadWord
    * @param other The other btQuadWord to compare with 
    */
 		SIMD_FORCE_INLINE void	setMin(const btQuadWord& other)
 		{
-#if defined(BT_USE_SSE_IN_API) && defined(BT_USE_SSE)
-			mVec128 = _mm_min_ps(mVec128, other.mVec128);
-#elif defined(BT_USE_NEON)
-			mVec128 = vminq_f32(mVec128, other.mVec128);
-#else
-			btSetMin(m_floats[0], other.m_floats[0]);
+        #ifdef BT_USE_SSE
+            mVec128 = _mm_min_ps(mVec128, other.mVec128);
+        #elif defined(BT_USE_NEON)
+            mVec128 = vminq_f32(mVec128, other.mVec128);
+        #else
+        	btSetMin(m_floats[0], other.m_floats[0]);
 			btSetMin(m_floats[1], other.m_floats[1]);
 			btSetMin(m_floats[2], other.m_floats[2]);
 			btSetMin(m_floats[3], other.m_floats[3]);
-#endif
-		}
+		#endif
+        }
 
 
 

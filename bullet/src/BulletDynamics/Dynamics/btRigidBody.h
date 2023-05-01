@@ -41,12 +41,14 @@ extern bool gDisableDeactivation;
 enum	btRigidBodyFlags
 {
 	BT_DISABLE_WORLD_GRAVITY = 1,
-	///The BT_ENABLE_GYROPSCOPIC_FORCE can easily introduce instability
-	///So generally it is best to not enable it. 
-	///If really needed, run at a high frequency like 1000 Hertz:	///See Demos/GyroscopicDemo for an example use
-	BT_ENABLE_GYROPSCOPIC_FORCE = 2,
-
-	BT_DISABLE_MOTION = 4
+	///BT_ENABLE_GYROPSCOPIC_FORCE flags is enabled by default in Bullet 2.83 and onwards.
+	///and it BT_ENABLE_GYROPSCOPIC_FORCE becomes equivalent to BT_ENABLE_GYROSCOPIC_FORCE_IMPLICIT_BODY
+	///See Demos/GyroscopicDemo and computeGyroscopicImpulseImplicit
+	BT_ENABLE_GYROSCOPIC_FORCE_EXPLICIT = 2,
+	BT_ENABLE_GYROSCOPIC_FORCE_IMPLICIT_WORLD=4,
+	BT_ENABLE_GYROSCOPIC_FORCE_IMPLICIT_BODY=8,
+	BT_ENABLE_GYROPSCOPIC_FORCE = BT_ENABLE_GYROSCOPIC_FORCE_IMPLICIT_BODY,
+	BT_DISABLE_MOTION = 16
 };
 
 
@@ -60,12 +62,12 @@ enum	btRigidBodyFlags
 ///Deactivated (sleeping) rigid bodies don't take any processing time, except a minor broadphase collision detection impact (to allow active objects to activate/wake up sleeping objects)
 class btRigidBody  : public btCollisionObject
 {
-	btMatrix3x3		m_invInertiaTensorWorld;
+
+	btMatrix3x3	m_invInertiaTensorWorld;
 	btVector3		m_linearVelocity;
 	btVector3		m_angularVelocity;
 	btScalar		m_inverseMass;
 	btVector3		m_linearFactor;
-	btVector3		m_centerOfMassOffset;
 
 	btVector3		m_gravity;	
 	btVector3		m_gravity_acceleration;
@@ -89,7 +91,7 @@ class btRigidBody  : public btCollisionObject
 	//m_optionalMotionState allows to automatic synchronize the world transform for active objects
 	btMotionState*	m_optionalMotionState;
 
-	//keep track of typed constraints referencing this rigid body
+	//keep track of typed constraints referencing this rigid body, to disable collision between linked bodies
 	btAlignedObjectArray<btTypedConstraint*> m_constraintRefs;
 
 	int				m_rigidbodyFlags;
@@ -134,6 +136,8 @@ public:
 		///the m_rollingFriction prevents rounded shapes, such as spheres, cylinders and capsules from rolling forever.
 		///See Bullet/Demos/RollingFrictionDemo for usage
 		btScalar			m_rollingFriction;
+        btScalar			m_spinningFriction;//torsional friction around contact normal
+        
 		///best simulation results using zero restitution.
 		btScalar			m_restitution;
 
@@ -157,6 +161,7 @@ public:
 			m_angularDamping(btScalar(0.)),
 			m_friction(btScalar(0.5)),
 			m_rollingFriction(btScalar(0)),
+            m_spinningFriction(btScalar(0)),
 			m_restitution(btScalar(0.)),
 			m_linearSleepingThreshold(btScalar(0.8)),
 			m_angularSleepingThreshold(btScalar(1.f)),
@@ -179,11 +184,11 @@ public:
 
 
 	virtual ~btRigidBody()
-		{ 
-				//No constraints should point to this rigidbody
+        { 
+                //No constraints should point to this rigidbody
 		//Remove constraints from the dynamics world before you delete the related rigidbodies. 
-				btAssert(m_constraintRefs.size()==0); 
-		}
+                btAssert(m_constraintRefs.size()==0); 
+        }
 
 protected:
 
@@ -273,10 +278,7 @@ public:
 		
 	void			integrateVelocities(btScalar step);
 
-	void			setCenterOfMassOffset(const btVector3 &offset)
-	{
-		m_centerOfMassOffset = offset;
-	}
+	void			setCenterOfMassTransform(const btTransform& xform);
 
 	void			applyCentralForce(const btVector3& force)
 	{
@@ -292,7 +294,7 @@ public:
 	{
 		return m_totalTorque;
 	};
-	
+    
 	const btVector3& getInvInertiaDiagLocal() const
 	{
 		return m_invInertiaLocal;
@@ -303,7 +305,7 @@ public:
 		m_invInertiaLocal = diagInvInertia;
 	}
 
-	void	setSleepingThresholds(btScalar linear, btScalar angular)
+	void	setSleepingThresholds(btScalar linear,btScalar angular)
 	{
 		m_linearSleepingThreshold = linear;
 		m_angularSleepingThreshold = angular;
@@ -325,7 +327,7 @@ public:
 		m_linearVelocity += impulse *m_linearFactor * m_inverseMass;
 	}
 	
-	void applyTorqueImpulse(const btVector3& torque)
+  	void applyTorqueImpulse(const btVector3& torque)
 	{
 			m_angularVelocity += m_invInertiaTensorWorld * torque * m_angularFactor;
 	}
@@ -350,19 +352,17 @@ public:
 	
 	void updateInertiaTensor();    
 	
-	const btVector3     getCenterOfMassPosition() const { 
-		return (m_worldTransform * btTransform(btMatrix3x3::getIdentity(), m_centerOfMassOffset)).getOrigin();
+	const btVector3&     getCenterOfMassPosition() const { 
+		return m_worldTransform.getOrigin(); 
 	}
 	btQuaternion getOrientation() const;
 	
-	const btTransform  getCenterOfMassTransform() const { 
-		return m_worldTransform * btTransform(btMatrix3x3::getIdentity(), m_centerOfMassOffset); 
+	const btTransform&  getCenterOfMassTransform() const { 
+		return m_worldTransform; 
 	}
-
 	const btVector3&   getLinearVelocity() const { 
 		return m_linearVelocity; 
 	}
-
 	const btVector3&    getAngularVelocity() const { 
 		return m_angularVelocity; 
 	}
@@ -370,11 +370,13 @@ public:
 
 	inline void setLinearVelocity(const btVector3& lin_vel)
 	{ 
+		m_updateRevision++;
 		m_linearVelocity = lin_vel; 
 	}
 
 	inline void setAngularVelocity(const btVector3& ang_vel) 
 	{ 
+		m_updateRevision++;
 		m_angularVelocity = ang_vel; 
 	}
 
@@ -393,7 +395,7 @@ public:
 	}
 
 	
-	void	getAabb(btVector3& aabbMin, btVector3& aabbMax) const;
+	void	getAabb(btVector3& aabbMin,btVector3& aabbMax) const;
 
 
 
@@ -428,7 +430,7 @@ public:
 			m_deactivationTime += timeStep;
 		} else
 		{
-			m_deactivationTime = btScalar(0.);
+			m_deactivationTime=btScalar(0.);
 			setActivationState(0);
 		}
 
@@ -441,19 +443,16 @@ public:
 			return false;
 
 		//disable deactivation
-		/*
-		if (gDisableDeactivation)
+		if (gDisableDeactivation || (gDeactivationTime == btScalar(0.)))
 			return false;
-		*/
 
 		if ( (getActivationState() == ISLAND_SLEEPING) || (getActivationState() == WANTS_DEACTIVATION))
 			return true;
 
-		if (m_deactivationTime > gDeactivationTime)
+		if (m_deactivationTime> gDeactivationTime)
 		{
 			return true;
 		}
-
 		return false;
 	}
 
@@ -494,12 +493,14 @@ public:
 
 	void	setAngularFactor(const btVector3& angFac)
 	{
+		m_updateRevision++;
 		m_angularFactor = angFac;
 	}
 
 	void	setAngularFactor(btScalar angFac)
 	{
-		m_angularFactor.setValue(angFac, angFac, angFac);
+		m_updateRevision++;
+		m_angularFactor.setValue(angFac,angFac,angFac);
 	}
 	const btVector3&	getAngularFactor() const
 	{
@@ -516,8 +517,6 @@ public:
 	{
 		return !(getFlags() & BT_DISABLE_MOTION);
 	}
-
-	virtual bool checkCollideWithOverride(const  btCollisionObject* co) const;
 
 	void addConstraintRef(btTypedConstraint* c);
 	void removeConstraintRef(btTypedConstraint* c);
@@ -542,7 +541,18 @@ public:
 		return m_rigidbodyFlags;
 	}
 
-	btVector3 computeGyroscopicForce(btScalar maxGyroscopicForce) const;
+
+	
+
+	///perform implicit force computation in world space
+	btVector3 computeGyroscopicImpulseImplicit_World(btScalar dt) const;
+	
+	///perform implicit force computation in body space (inertial frame)
+	btVector3 computeGyroscopicImpulseImplicit_Body(btScalar step) const;
+
+	///explicit version is best avoided, it gains energy
+	btVector3 computeGyroscopicForceExplicit(btScalar maxGyroscopicForce) const;
+	btVector3 getLocalInertia() const;
 
 	///////////////////////////////////////////////
 
@@ -554,8 +564,6 @@ public:
 	virtual void serializeSingleObject(class btSerializer* serializer) const;
 
 };
-
-// TODO (DrChat): Need to update the dna str for center of mass offset
 
 //@todo add m_optionalMotionState and m_constraintRefs to btRigidBodyData
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64

@@ -21,7 +21,6 @@ subject to the following restrictions:
 
 ///EpaPenetrationDepthSolver uses the Expanding Polytope Algorithm to
 ///calculate the penetration depth between two convex shapes.
-// DrChat: CHANGE btConvexConvexAlgorithm.cpp:194 IF YOU ADD ANY CLASS MEMBERS
 class btGjkEpaPenetrationDepthSolver : public btConvexPenetrationDepthSolver
 {
 	public :
@@ -34,7 +33,7 @@ class btGjkEpaPenetrationDepthSolver : public btConvexPenetrationDepthSolver
 									  const btConvexShape* pConvexA, const btConvexShape* pConvexB,
 									  const btTransform& transformA, const btTransform& transformB,
 									  btVector3& v, btVector3& wWitnessOnA, btVector3& wWitnessOnB,
-									  class btIDebugDraw* debugDraw, btStackAlloc* stackAlloc );
+									  class btIDebugDraw* debugDraw);
 
 	private :
 

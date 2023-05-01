@@ -22,7 +22,7 @@ subject to the following restrictions:
 btHeightfieldTerrainShape::btHeightfieldTerrainShape
 (
 int heightStickWidth, int heightStickLength, const void* heightfieldData,
-btScalar heightScale, btScalar minHeight, btScalar maxHeight, int upAxis,
+btScalar heightScale, btScalar minHeight, btScalar maxHeight,int upAxis,
 PHY_ScalarType hdt, bool flipQuadEdges
 )
 {
@@ -33,7 +33,7 @@ PHY_ScalarType hdt, bool flipQuadEdges
 
 
 
-btHeightfieldTerrainShape::btHeightfieldTerrainShape(int heightStickWidth, int heightStickLength, const void* heightfieldData, btScalar maxHeight, int upAxis, bool useFloatData, bool flipQuadEdges)
+btHeightfieldTerrainShape::btHeightfieldTerrainShape(int heightStickWidth, int heightStickLength,const void* heightfieldData,btScalar maxHeight,int upAxis,bool useFloatData,bool flipQuadEdges)
 {
 	// legacy constructor: support only float or unsigned char,
 	// 	and min height is zero
@@ -59,15 +59,13 @@ PHY_ScalarType hdt, bool flipQuadEdges
 )
 {
 	// validation
-	btAssert(heightStickWidth > 1 && "bad width");
-	btAssert(heightStickLength > 1 && "bad length");
-	btAssert(heightfieldData && "null heightfield data");
+	btAssert(heightStickWidth > 1);// && "bad width");
+	btAssert(heightStickLength > 1);// && "bad length");
+	btAssert(heightfieldData);// && "null heightfield data");
 	// btAssert(heightScale) -- do we care?  Trust caller here
-	btAssert(minHeight <= maxHeight && "bad min/max height");
-	btAssert(upAxis >= 0 && upAxis < 3 &&
-	    "bad upAxis--should be in range [0,2]");
-	btAssert(hdt != PHY_UCHAR || hdt != PHY_FLOAT || hdt != PHY_SHORT &&
-	    "Bad height data type enum");
+	btAssert(minHeight <= maxHeight);// && "bad min/max height");
+	btAssert(upAxis >= 0 && upAxis < 3);// && "bad upAxis--should be in range [0,2]");
+	btAssert(hdt != PHY_UCHAR || hdt != PHY_FLOAT || hdt != PHY_SHORT);// && "Bad height data type enum");
 
 	// initialize member variables
 	m_shapeType = TERRAIN_SHAPE_PROXYTYPE;
@@ -110,7 +108,7 @@ PHY_ScalarType hdt, bool flipQuadEdges
 	default:
 		{
 			//need to get valid m_upAxis
-			btAssert(0 && "Bad m_upAxis");
+			btAssert(0);// && "Bad m_upAxis");
 		}
 	}
 
@@ -126,7 +124,7 @@ btHeightfieldTerrainShape::~btHeightfieldTerrainShape()
 
 
 
-void btHeightfieldTerrainShape::getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const
+void btHeightfieldTerrainShape::getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
 {
 	btVector3 halfExtents = (m_localAabbMax-m_localAabbMin)* m_localScaling * btScalar(0.5);
 
@@ -137,7 +135,7 @@ void btHeightfieldTerrainShape::getAabb(const btTransform& t, btVector3& aabbMin
 	btMatrix3x3 abs_b = t.getBasis().absolute();  
 	btVector3 center = t.getOrigin();
     btVector3 extent = halfExtents.dot3(abs_b[0], abs_b[1], abs_b[2]);
-	extent += btVector3(getMargin(), getMargin(), getMargin());
+	extent += btVector3(getMargin(),getMargin(),getMargin());
 
 	aabbMin = center - extent;
 	aabbMax = center + extent;
@@ -148,7 +146,7 @@ void btHeightfieldTerrainShape::getAabb(const btTransform& t, btVector3& aabbMin
 /// The actual height needs to be adjusted to be relative to the center
 ///   of the heightfield's AABB.
 btScalar
-btHeightfieldTerrainShape::getRawHeightFieldValue(int x, int y) const
+btHeightfieldTerrainShape::getRawHeightFieldValue(int x,int y) const
 {
 	btScalar val = 0.f;
 	switch (m_heightDataType)
@@ -186,14 +184,14 @@ btHeightfieldTerrainShape::getRawHeightFieldValue(int x, int y) const
 
 
 /// this returns the vertex in bullet-local coordinates
-void	btHeightfieldTerrainShape::getVertex(int x, int y, btVector3& vertex) const
+void	btHeightfieldTerrainShape::getVertex(int x,int y,btVector3& vertex) const
 {
 	btAssert(x>=0);
 	btAssert(y>=0);
 	btAssert(x<m_heightStickWidth);
 	btAssert(y<m_heightStickLength);
 
-	btScalar	height = getRawHeightFieldValue(x, y);
+	btScalar	height = getRawHeightFieldValue(x,y);
 
 	switch (m_upAxis)
 	{
@@ -259,7 +257,7 @@ btScalar x
   "with clamp" means that we restrict the point to be in the heightfield's
   axis-aligned bounding box.
  */
-void btHeightfieldTerrainShape::quantizeWithClamp(int* out, const btVector3& point, int /*isMax*/) const
+void btHeightfieldTerrainShape::quantizeWithClamp(int* out, const btVector3& point,int /*isMax*/) const
 {
 	btVector3 clampedPoint(point);
 	clampedPoint.setMax(m_localAabbMin);
@@ -280,7 +278,7 @@ void btHeightfieldTerrainShape::quantizeWithClamp(int* out, const btVector3& poi
     - convert input aabb to a range of heightfield grid points (quantize)
     - iterate over all triangles in that subset of the grid
  */
-void	btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback, const btVector3& aabbMin, const btVector3& aabbMax) const
+void	btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback,const btVector3& aabbMin,const btVector3& aabbMax) const
 {
 	// scale down the input aabb's so they are in local (non-scaled) coordinates
 	btVector3	localAabbMin = aabbMin*btVector3(1.f/m_localScaling[0],1.f/m_localScaling[1],1.f/m_localScaling[2]);
@@ -364,27 +362,28 @@ void	btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback
 			if (m_flipQuadEdges || (m_useDiamondSubdivision && !((j+x) & 1))|| (m_useZigzagSubdivision  && !(j & 1)))
 			{
         //first triangle
-        getVertex(x, j,vertices[0]);
-        getVertex(x+1, j,vertices[1]);
-        getVertex(x+1, j+1, vertices[2]);
-        callback->processTriangle(vertices, x,j);
+        getVertex(x,j,vertices[0]);
+		getVertex(x, j + 1, vertices[1]);
+		getVertex(x + 1, j + 1, vertices[2]);
+        callback->processTriangle(vertices,x,j);
         //second triangle
       //  getVertex(x,j,vertices[0]);//already got this vertex before, thanks to Danny Chapman
-        getVertex(x+1, j+1, vertices[1]);
-        getVertex(x, j+1, vertices[2]);
-        callback->processTriangle(vertices, x,j);				
+        getVertex(x+1,j+1,vertices[1]);
+		getVertex(x + 1, j, vertices[2]);
+		callback->processTriangle(vertices, x, j);
+
 			} else
 			{
         //first triangle
-        getVertex(x, j,vertices[0]);
-        getVertex(x, j+1, vertices[1]);
-        getVertex(x+1, j,vertices[2]);
-        callback->processTriangle(vertices, x,j);
+        getVertex(x,j,vertices[0]);
+        getVertex(x,j+1,vertices[1]);
+        getVertex(x+1,j,vertices[2]);
+        callback->processTriangle(vertices,x,j);
         //second triangle
-        getVertex(x+1, j,vertices[0]);
+        getVertex(x+1,j,vertices[0]);
         //getVertex(x,j+1,vertices[1]);
-        getVertex(x+1, j+1, vertices[2]);
-        callback->processTriangle(vertices, x,j);
+        getVertex(x+1,j+1,vertices[2]);
+        callback->processTriangle(vertices,x,j);
 			}
 		}
 	}
@@ -393,11 +392,11 @@ void	btHeightfieldTerrainShape::processAllTriangles(btTriangleCallback* callback
 
 }
 
-void	btHeightfieldTerrainShape::calculateLocalInertia(btScalar, btVector3& inertia) const
+void	btHeightfieldTerrainShape::calculateLocalInertia(btScalar ,btVector3& inertia) const
 {
 	//moving concave objects not supported
 	
-	inertia.setValue(btScalar(0.), btScalar(0.), btScalar(0.));
+	inertia.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
 }
 
 void	btHeightfieldTerrainShape::setLocalScaling(const btVector3& scaling)

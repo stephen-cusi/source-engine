@@ -31,10 +31,10 @@ public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
 	
-	///this constructor optionally takes in a pointer to points. Each point is assumed to be 3 consecutive btScalar (x, y,z), the striding defines the number of bytes between each point, in memory.
+	///this constructor optionally takes in a pointer to points. Each point is assumed to be 3 consecutive btScalar (x,y,z), the striding defines the number of bytes between each point, in memory.
 	///It is easier to not pass any points in the constructor, and just add one point at a time, using addPoint.
 	///btConvexHullShape make an internal copy of the points.
-	btConvexHullShape(const btScalar* points=0, int numPoints=0, int stride=sizeof(btVector3));
+	btConvexHullShape(const btScalar* points=0,int numPoints=0, int stride=sizeof(btVector3));
 
 	void addPoint(const btVector3& point, bool recalculateLocalAabb = true);
 
@@ -55,9 +55,8 @@ public:
 		return getUnscaledPoints();
 	}
 
-	
-
-
+    void optimizeConvexHull();
+    
 	SIMD_FORCE_INLINE	btVector3 getScaledPoint(int i) const
 	{
 		return m_unscaledPoints[i] * m_localScaling;
@@ -70,26 +69,23 @@ public:
 
 	virtual btVector3	localGetSupportingVertex(const btVector3& vec)const;
 	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const;
-	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const;
+	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
 	
 
-	virtual void project(const btTransform& trans, const btVector3& dir, btScalar& minProj, btScalar& maxProj, btVector3& witnesPtMin, btVector3& witnesPtMax) const;
+	virtual void project(const btTransform& trans, const btVector3& dir, btScalar& minProj, btScalar& maxProj, btVector3& witnesPtMin,btVector3& witnesPtMax) const;
 
 
 	//debugging
-	virtual const char*	getName() const
-	{
-		return "convex";
-	}
+	virtual const char*	getName()const {return "Convex";}
 
 	
 	virtual int	getNumVertices() const;
 	virtual int getNumEdges() const;
-	virtual void getEdge(int i, btVector3& pa, btVector3& pb) const;
-	virtual void getVertex(int i, btVector3& vtx) const;
+	virtual void getEdge(int i,btVector3& pa,btVector3& pb) const;
+	virtual void getVertex(int i,btVector3& vtx) const;
 	virtual int	getNumPlanes() const;
-	virtual void getPlane(btVector3& planeNormal, btVector3& planeSupport, int i ) const;
-	virtual	bool isInside(const btVector3& pt, btScalar tolerance) const;
+	virtual void getPlane(btVector3& planeNormal,btVector3& planeSupport,int i ) const;
+	virtual	bool isInside(const btVector3& pt,btScalar tolerance) const;
 
 	///in case we receive negative scaling
 	virtual void	setLocalScaling(const btVector3& scaling);
@@ -98,6 +94,7 @@ public:
 
 	///fills the dataBuffer and returns the struct name (and 0 on failure)
 	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
+
 };
 
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64

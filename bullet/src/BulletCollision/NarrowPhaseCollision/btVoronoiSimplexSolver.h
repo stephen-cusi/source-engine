@@ -26,8 +26,12 @@ subject to the following restrictions:
 
 ///disable next define, or use defaultCollisionConfiguration->getSimplexSolver()->setEqualVertexThreshold(0.f) to disable/configure
 #define BT_USE_EQUAL_VERTEX_THRESHOLD
-#define VORONOI_DEFAULT_EQUAL_VERTEX_THRESHOLD 0.0001f
 
+#ifdef BT_USE_DOUBLE_PRECISION
+#define VORONOI_DEFAULT_EQUAL_VERTEX_THRESHOLD 1e-12f
+#else
+#define VORONOI_DEFAULT_EQUAL_VERTEX_THRESHOLD 0.0001f
+#endif//BT_USE_DOUBLE_PRECISION
 
 struct btUsageBitfield{
 	btUsageBitfield()
@@ -79,7 +83,7 @@ struct	btSubSimplexClosestResult
 
 		return valid;
 	}
-	void	setBarycentricCoordinates(btScalar a=btScalar(0.), btScalar b=btScalar(0.), btScalar c=btScalar(0.), btScalar d=btScalar(0.))
+	void	setBarycentricCoordinates(btScalar a=btScalar(0.),btScalar b=btScalar(0.),btScalar c=btScalar(0.),btScalar d=btScalar(0.))
 	{
 		m_barycentricCoords[0] = a;
 		m_barycentricCoords[1] = b;
@@ -128,7 +132,7 @@ public:
 
 	bool	closestPtPointTetrahedron(const btVector3& p, const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& d, btSubSimplexClosestResult& finalResult);
 	int		pointOutsideOfPlane(const btVector3& p, const btVector3& a, const btVector3& b, const btVector3& c, const btVector3& d);
-	bool	closestPtPointTriangle(const btVector3& p, const btVector3& a, const btVector3& b, const btVector3& c, btSubSimplexClosestResult& result);
+	bool	closestPtPointTriangle(const btVector3& p, const btVector3& a, const btVector3& b, const btVector3& c,btSubSimplexClosestResult& result);
 
 public:
 

@@ -54,7 +54,7 @@ public:
 	
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 	
-    btGeneric6DofSpringConstraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB, bool useLinearReferenceFrameA);
+    btGeneric6DofSpringConstraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB ,bool useLinearReferenceFrameA);
     btGeneric6DofSpringConstraint(btRigidBody& rbB, const btTransform& frameInB, bool useLinearReferenceFrameB);
 	void enableSpring(int index, bool onOff);
 	void setStiffness(int index, btScalar stiffness);
@@ -62,6 +62,26 @@ public:
 	void setEquilibriumPoint(); // set the current constraint position/orientation as an equilibrium point for all DOF
 	void setEquilibriumPoint(int index);  // set the current constraint position/orientation as an equilibrium point for given DOF
 	void setEquilibriumPoint(int index, btScalar val);
+
+	bool isSpringEnabled(int index) const
+	{
+	    return m_springEnabled[index];
+	}
+
+	btScalar getStiffness(int index) const
+	{
+	    return m_springStiffness[index];
+	}
+
+	btScalar getDamping(int index) const
+	{
+	    return m_springDamping[index];
+	}
+
+	btScalar getEquilibriumPoint(int index) const
+	{
+	    return m_equilibriumPoint[index];
+	}
 
 	virtual void setAxis( const btVector3& axis1, const btVector3& axis2);
 
@@ -104,7 +124,7 @@ SIMD_FORCE_INLINE	int	btGeneric6DofSpringConstraint::calculateSerializeBufferSiz
 SIMD_FORCE_INLINE	const char*	btGeneric6DofSpringConstraint::serialize(void* dataBuffer, btSerializer* serializer) const
 {
 	btGeneric6DofSpringConstraintData2* dof = (btGeneric6DofSpringConstraintData2*)dataBuffer;
-	btGeneric6DofConstraint::serialize(&dof->m_6dofData, serializer);
+	btGeneric6DofConstraint::serialize(&dof->m_6dofData,serializer);
 
 	int i;
 	for (i=0;i<6;i++)

@@ -24,6 +24,7 @@ subject to the following restrictions:
 #include "btCollisionCreateFunc.h"
 #include "btCollisionDispatcher.h"
 #include "LinearMath/btTransformUtil.h" //for btConvexSeparatingDistanceUtil
+#include "BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.h"
 
 class btConvexPenetrationDepthSolver;
 
@@ -42,9 +43,10 @@ class btConvexConvexAlgorithm : public btActivatingCollisionAlgorithm
 #ifdef USE_SEPDISTANCE_UTIL2
 	btConvexSeparatingDistanceUtil	m_sepDistance;
 #endif
-	btSimplexSolverInterface		m_simplexSolver;
 	btConvexPenetrationDepthSolver* m_pdSolver;
 
+	btVertexArray worldVertsB1;
+	btVertexArray worldVertsB2;
 	
 	bool	m_ownManifold;
 	btPersistentManifold*	m_manifoldPtr;
@@ -59,13 +61,13 @@ class btConvexConvexAlgorithm : public btActivatingCollisionAlgorithm
 
 public:
 
-	btConvexConvexAlgorithm(btPersistentManifold* mf, const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, btConvexPenetrationDepthSolver* pdSolver, int numPerturbationIterations, int minimumPointsPerturbationThreshold);
+	btConvexConvexAlgorithm(btPersistentManifold* mf,const btCollisionAlgorithmConstructionInfo& ci,const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap, btConvexPenetrationDepthSolver* pdSolver, int numPerturbationIterations, int minimumPointsPerturbationThreshold);
 
 	virtual ~btConvexConvexAlgorithm();
 
-	virtual void processCollision (const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
+	virtual void processCollision (const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
 
-	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0, btCollisionObject* body1, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut);
+	virtual btScalar calculateTimeOfImpact(btCollisionObject* body0,btCollisionObject* body1,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut);
 
 	virtual	void	getAllContactManifolds(btManifoldArray&	manifoldArray)
 	{
@@ -90,22 +92,14 @@ public:
 		int m_numPerturbationIterations;
 		int m_minimumPointsPerturbationThreshold;
 
-		CreateFunc(btConvexPenetrationDepthSolver* pdSolver)
-		{
-			m_numPerturbationIterations = 0;
-			m_minimumPointsPerturbationThreshold = 3;
-			m_pdSolver = pdSolver;
-		}
+		CreateFunc(btConvexPenetrationDepthSolver* pdSolver);
 		
-		virtual ~CreateFunc()
-		{
+		virtual ~CreateFunc();
 
-		}
-
-		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap)
+		virtual	btCollisionAlgorithm* CreateCollisionAlgorithm(btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap)
 		{
 			void* mem = ci.m_dispatcher1->allocateCollisionAlgorithm(sizeof(btConvexConvexAlgorithm));
-			return new(mem) btConvexConvexAlgorithm(ci.m_manifold, ci, body0Wrap, body1Wrap, m_pdSolver, m_numPerturbationIterations, m_minimumPointsPerturbationThreshold);
+			return new(mem) btConvexConvexAlgorithm(ci.m_manifold,ci,body0Wrap,body1Wrap,m_pdSolver,m_numPerturbationIterations,m_minimumPointsPerturbationThreshold);
 		}
 	};
 

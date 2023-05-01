@@ -37,11 +37,11 @@ btSimulationIslandManager::~btSimulationIslandManager()
 
 void btSimulationIslandManager::initUnionFind(int n)
 {
-	m_unionFind.reset(n);
+		m_unionFind.reset(n);
 }
 		
 
-void btSimulationIslandManager::findUnions(btDispatcher* /* dispatcher */, btCollisionWorld* colWorld)
+void btSimulationIslandManager::findUnions(btDispatcher* /* dispatcher */,btCollisionWorld* colWorld)
 {
 	
 	{
@@ -70,7 +70,7 @@ void btSimulationIslandManager::findUnions(btDispatcher* /* dispatcher */, btCol
 }
 
 #ifdef STATIC_SIMULATION_ISLAND_OPTIMIZATION
-void   btSimulationIslandManager::updateActivationState(btCollisionWorld* colWorld, btDispatcher* dispatcher)
+void   btSimulationIslandManager::updateActivationState(btCollisionWorld* colWorld,btDispatcher* dispatcher)
 {
 
 	// put the index into m_controllers into m_tag   
@@ -94,7 +94,7 @@ void   btSimulationIslandManager::updateActivationState(btCollisionWorld* colWor
 
 	initUnionFind( index );
 
-	findUnions(dispatcher, colWorld);
+	findUnions(dispatcher,colWorld);
 }
 
 void   btSimulationIslandManager::storeIslandActivationState(btCollisionWorld* colWorld)
@@ -124,7 +124,7 @@ void   btSimulationIslandManager::storeIslandActivationState(btCollisionWorld* c
 
 
 #else //STATIC_SIMULATION_ISLAND_OPTIMIZATION
-void	btSimulationIslandManager::updateActivationState(btCollisionWorld* colWorld, btDispatcher* dispatcher)
+void	btSimulationIslandManager::updateActivationState(btCollisionWorld* colWorld,btDispatcher* dispatcher)
 {
 
 	initUnionFind( int (colWorld->getCollisionObjectArray().size()));
@@ -146,7 +146,7 @@ void	btSimulationIslandManager::updateActivationState(btCollisionWorld* colWorld
 	}
 	// do the union find
 
-	findUnions(dispatcher, colWorld);
+	findUnions(dispatcher,colWorld);
 }
 
 void	btSimulationIslandManager::storeIslandActivationState(btCollisionWorld* colWorld)
@@ -200,7 +200,7 @@ class btPersistentManifoldSortPredicate
 };
 
 
-void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher, btCollisionWorld* collisionWorld)
+void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher,btCollisionWorld* collisionWorld)
 {
 
 	BT_PROFILE("islandUnionFindAndQuickSort");
@@ -249,7 +249,7 @@ void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher, btCollisi
 				{
 					allSleeping = false;
 				}
-				else if (colObj0->getActivationState()== DISABLE_DEACTIVATION)
+				if (colObj0->getActivationState()== DISABLE_DEACTIVATION)
 				{
 					allSleeping = false;
 				}
@@ -341,7 +341,7 @@ void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher, btCollisi
 			if(m_splitIslands)
 			{ 
 				//filtering for response
-				if (dispatcher->needsResponse(colObj0, colObj1))
+				if (dispatcher->needsResponse(colObj0,colObj1))
 					m_islandmanifold.push_back(manifold);
 			}
 		}
@@ -351,11 +351,11 @@ void btSimulationIslandManager::buildIslands(btDispatcher* dispatcher, btCollisi
 
 
 ///@todo: this is random access, it can be walked 'cache friendly'!
-void btSimulationIslandManager::buildAndProcessIslands(btDispatcher* dispatcher, btCollisionWorld* collisionWorld, IslandCallback* callback)
+void btSimulationIslandManager::buildAndProcessIslands(btDispatcher* dispatcher,btCollisionWorld* collisionWorld, IslandCallback* callback)
 {
 	btCollisionObjectArray& collisionObjects = collisionWorld->getCollisionObjectArray();
 
-	buildIslands(dispatcher, collisionWorld);
+	buildIslands(dispatcher,collisionWorld);
 
 	int endIslandIndex=1;
 	int startIslandIndex;
@@ -367,7 +367,7 @@ void btSimulationIslandManager::buildAndProcessIslands(btDispatcher* dispatcher,
 	{
 		btPersistentManifold** manifold = dispatcher->getInternalManifoldPointer();
 		int maxNumManifolds = dispatcher->getNumManifolds();
-		callback->processIsland(&collisionObjects[0], collisionObjects.size(), manifold, maxNumManifolds, -1);
+		callback->processIsland(&collisionObjects[0],collisionObjects.size(),manifold,maxNumManifolds, -1);
 	}
 	else
 	{
@@ -394,19 +394,21 @@ void btSimulationIslandManager::buildAndProcessIslands(btDispatcher* dispatcher,
 	//	printf("Start Islands\n");
 
 		//traverse the simulation islands, and call the solver, unless all objects are sleeping/deactivated
-		for ( startIslandIndex = 0; startIslandIndex < numElem; startIslandIndex = endIslandIndex)
+		for ( startIslandIndex=0;startIslandIndex<numElem;startIslandIndex = endIslandIndex)
 		{
 			int islandId = getUnionFind().getElement(startIslandIndex).m_id;
 
-			bool islandSleeping = true;
-			for (endIslandIndex = startIslandIndex;(endIslandIndex<numElem) && (getUnionFind().getElement(endIslandIndex).m_id == islandId);endIslandIndex++)
-			{
-					int i = getUnionFind().getElement(endIslandIndex).m_sz;
-					btCollisionObject* colObj0 = collisionObjects[i];
-					m_islandBodies.push_back(colObj0);
-					if (colObj0->isActive())
-							islandSleeping = false;
-			}
+
+			   bool islandSleeping = true;
+	                
+					for (endIslandIndex = startIslandIndex;(endIslandIndex<numElem) && (getUnionFind().getElement(endIslandIndex).m_id == islandId);endIslandIndex++)
+					{
+							int i = getUnionFind().getElement(endIslandIndex).m_sz;
+							btCollisionObject* colObj0 = collisionObjects[i];
+							m_islandBodies.push_back(colObj0);
+							if (colObj0->isActive())
+									islandSleeping = false;
+					}
 	                
 
 			//find the accompanying contact manifold for this islandId
@@ -425,15 +427,15 @@ void btSimulationIslandManager::buildAndProcessIslands(btDispatcher* dispatcher,
 
 					}
 					/// Process the actual simulation, only if not sleeping/deactivated
-					numIslandManifolds = endManifoldIndex - startManifoldIndex;
+					numIslandManifolds = endManifoldIndex-startManifoldIndex;
 				}
 
 			}
 
 			if (!islandSleeping)
 			{
-				callback->processIsland(&m_islandBodies[0], m_islandBodies.size(), startManifold, numIslandManifolds, islandId);
-	//			printf("Island callback of size:%d bodies, %d manifolds\n", islandBodies.size(), numIslandManifolds);
+				callback->processIsland(&m_islandBodies[0],m_islandBodies.size(),startManifold,numIslandManifolds, islandId);
+	//			printf("Island callback of size:%d bodies, %d manifolds\n",islandBodies.size(),numIslandManifolds);
 			}
 			
 			if (numIslandManifolds)

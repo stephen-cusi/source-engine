@@ -24,7 +24,7 @@ subject to the following restrictions:
 /// btDispatcher uses these types
 /// IMPORTANT NOTE:The types are ordered polyhedral, implicit convex and concave
 /// to facilitate type checking
-/// CUSTOM_POLYHEDRAL_SHAPE_TYPE, CUSTOM_CONVEX_SHAPE_TYPE and CUSTOM_CONCAVE_SHAPE_TYPE can be used to extend Bullet without modifying source code
+/// CUSTOM_POLYHEDRAL_SHAPE_TYPE,CUSTOM_CONVEX_SHAPE_TYPE and CUSTOM_CONCAVE_SHAPE_TYPE can be used to extend Bullet without modifying source code
 enum BroadphaseNativeTypes
 {
 	// polyhedral convex shapes
@@ -61,7 +61,7 @@ CONCAVE_SHAPES_START_HERE,
 ///Used for GIMPACT Trimesh integration
 	GIMPACT_SHAPE_PROXYTYPE,
 ///Multimaterial mesh
-	MULTIMATERIAL_TRIANGLE_MESH_PROXYTYPE,
+    MULTIMATERIAL_TRIANGLE_MESH_PROXYTYPE,
 	
 	EMPTY_SHAPE_PROXYTYPE,
 	STATIC_PLANE_PROXYTYPE,
@@ -90,21 +90,21 @@ BT_DECLARE_ALIGNED_ALLOCATOR();
 	///optional filtering to cull potential collisions
 	enum CollisionFilterGroups
 	{
-			DefaultFilter = 1,
-			StaticFilter = 2,
-			KinematicFilter = 4,
-			DebrisFilter = 8,
+	        DefaultFilter = 1,
+	        StaticFilter = 2,
+	        KinematicFilter = 4,
+	        DebrisFilter = 8,
 			SensorTrigger = 16,
 			CharacterFilter = 32,
-			AllFilter = -1 //all bits sets: DefaultFilter | StaticFilter | KinematicFilter | DebrisFilter | SensorTrigger
+	        AllFilter = -1 //all bits sets: DefaultFilter | StaticFilter | KinematicFilter | DebrisFilter | SensorTrigger
 	};
 
 	//Usually the client btCollisionObject or Rigidbody class
 	void*	m_clientObject;
-	short int m_collisionFilterGroup;
-	short int m_collisionFilterMask;
-	void*	m_multiSapParentProxy;		
-	int			m_uniqueId;//m_uniqueId is introduced for paircache. could get rid of this, by calculating the address offset etc.
+	int		m_collisionFilterGroup;
+	int		m_collisionFilterMask;
+
+	int		m_uniqueId;//m_uniqueId is introduced for paircache. could get rid of this, by calculating the address offset etc.
 
 	btVector3	m_aabbMin;
 	btVector3	m_aabbMax;
@@ -115,18 +115,17 @@ BT_DECLARE_ALIGNED_ALLOCATOR();
 	}
 
 	//used for memory pools
-	btBroadphaseProxy() :m_clientObject(0), m_multiSapParentProxy(0)
+	btBroadphaseProxy() :m_clientObject(0)
 	{
 	}
 
-	btBroadphaseProxy(const btVector3& aabbMin, const btVector3& aabbMax, void* userPtr, short int collisionFilterGroup, short int collisionFilterMask, void* multiSapParentProxy=0)
+	btBroadphaseProxy(const btVector3& aabbMin,const btVector3& aabbMax,void* userPtr, int collisionFilterGroup,  int collisionFilterMask)
 		:m_clientObject(userPtr),
 		m_collisionFilterGroup(collisionFilterGroup),
 		m_collisionFilterMask(collisionFilterMask),
 		m_aabbMin(aabbMin),
 		m_aabbMax(aabbMax)
 	{
-		m_multiSapParentProxy = multiSapParentProxy;
 	}
 
 	
@@ -194,7 +193,7 @@ ATTRIBUTE_ALIGNED16(struct) btBroadphasePair
 	{
 	}
 
-	BT_DECLARE_ALIGNED_ALLOCATOR();
+BT_DECLARE_ALIGNED_ALLOCATOR();
 
 	btBroadphasePair(const btBroadphasePair& other)
 		:		m_pProxy0(other.m_pProxy0),
@@ -203,20 +202,20 @@ ATTRIBUTE_ALIGNED16(struct) btBroadphasePair
 				m_internalInfo1(other.m_internalInfo1)
 	{
 	}
-	btBroadphasePair(btBroadphaseProxy& proxy0, btBroadphaseProxy& proxy1)
+	btBroadphasePair(btBroadphaseProxy& proxy0,btBroadphaseProxy& proxy1)
 	{
 
 		//keep them sorted, so the std::set operations work
 		if (proxy0.m_uniqueId < proxy1.m_uniqueId)
-		{ 
-			m_pProxy0 = &proxy0; 
-			m_pProxy1 = &proxy1; 
-		}
-		else 
-		{ 
+        { 
+            m_pProxy0 = &proxy0; 
+            m_pProxy1 = &proxy1; 
+        }
+        else 
+        { 
 			m_pProxy0 = &proxy1; 
-			m_pProxy1 = &proxy0; 
-		}
+            m_pProxy1 = &proxy0; 
+        }
 
 		m_algorithm = 0;
 		m_internalInfo1 = 0;
@@ -235,8 +234,8 @@ ATTRIBUTE_ALIGNED16(struct) btBroadphasePair
 //comparison for set operation, see Solid DT_Encounter
 SIMD_FORCE_INLINE bool operator<(const btBroadphasePair& a, const btBroadphasePair& b) 
 { 
-	return a.m_pProxy0 < b.m_pProxy0 || 
-		(a.m_pProxy0 == b.m_pProxy0 && a.m_pProxy1 < b.m_pProxy1); 
+    return a.m_pProxy0 < b.m_pProxy0 || 
+        (a.m_pProxy0 == b.m_pProxy0 && a.m_pProxy1 < b.m_pProxy1); 
 }
 */
 

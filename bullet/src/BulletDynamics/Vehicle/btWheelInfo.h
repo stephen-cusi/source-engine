@@ -35,23 +35,10 @@ struct btWheelInfoConstructionInfo
 };
 
 /// btWheelInfo contains information per wheel about friction and suspension.
-ATTRIBUTE_ALIGNED16(struct) btWheelInfo
+struct btWheelInfo
 {
 	struct RaycastInfo
 	{
-		// Dr. Chat: Applied fix @ http://code.google.com/p/bullet/issues/detail?id=701
-		RaycastInfo() :
-			m_contactNormalWS(0.0f, 0.0f, 0.0f),
-			m_contactPointWS(0.0f, 0.0f, 0.0f),
-			m_hardPointWS(0.0f, 0.0f, 0.0f),
-			m_wheelDirectionWS(0.0f, 0.0f, 0.0f),
-			m_wheelAxleWS(0.0f, 0.0f, 0.0f),
-			m_suspensionLength(0.0f),
-			m_isInContact(false),
-			m_groundObject(NULL)
-		{
-		}
-
 		//set by raycaster
 		btVector3	m_contactNormalWS;//contactnormal
 		btVector3	m_contactPointWS;//raycast hitpoint
@@ -67,36 +54,35 @@ ATTRIBUTE_ALIGNED16(struct) btWheelInfo
 
 	btTransform	m_worldTransform;
 	
-	btVector3	m_chassisConnectionPointCS; // Connection point in chassis space - const
-	btVector3	m_wheelDirectionCS;// Direction in chassis space - const
-	btVector3	m_wheelAxleCS; // Axle in chassis space - const or modified by steering
-
-	btScalar	getSuspensionRestLength() const;
+	btVector3	m_chassisConnectionPointCS; //const
+	btVector3	m_wheelDirectionCS;//const
+	btVector3	m_wheelAxleCS; // const or modified by steering
 	btScalar	m_suspensionRestLength1;//const
 	btScalar	m_maxSuspensionTravelCm;
-	btScalar	m_suspensionStiffness;//const
-
+	btScalar getSuspensionRestLength() const;
 	btScalar	m_wheelsRadius;//const
+	btScalar	m_suspensionStiffness;//const
 	btScalar	m_wheelsDampingCompression;//const
 	btScalar	m_wheelsDampingRelaxation;//const
 	btScalar	m_frictionSlip;
 	btScalar	m_steering;
 	btScalar	m_rotation;
 	btScalar	m_deltaRotation;
-	btScalar	m_rotationDamping; // Damping when not in contact
-	btScalar	m_rollInfluence; // y-offset of wheel forces on the vehicle
+	btScalar	m_rollInfluence;
 	btScalar	m_maxSuspensionForce;
 
 	btScalar	m_engineForce;
 
 	btScalar	m_brake;
 	
-	bool		m_bIsFrontWheel;
+	bool m_bIsFrontWheel;
 	
 	void*		m_clientInfo;//can be used to store pointer to sync transforms...
 
 	btWheelInfo(btWheelInfoConstructionInfo& ci)
+
 	{
+
 		m_suspensionRestLength1 = ci.m_suspensionRestLength;
 		m_maxSuspensionTravelCm = ci.m_maxSuspensionTravelCm;
 
@@ -112,7 +98,6 @@ ATTRIBUTE_ALIGNED16(struct) btWheelInfo
 		m_engineForce = btScalar(0.);
 		m_rotation = btScalar(0.);
 		m_deltaRotation = btScalar(0.);
-		m_rotationDamping = btScalar(0.99);
 		m_brake = btScalar(0.);
 		m_rollInfluence = btScalar(0.1);
 		m_bIsFrontWheel = ci.m_bIsFrontWheel;
@@ -120,7 +105,7 @@ ATTRIBUTE_ALIGNED16(struct) btWheelInfo
 
 	}
 
-	void	updateWheel(const btRigidBody& chassis, RaycastInfo& raycastInfo);
+	void	updateWheel(const btRigidBody& chassis,RaycastInfo& raycastInfo);
 
 	btScalar	m_clippedInvContactDotSuspension;
 	btScalar	m_suspensionRelativeVelocity;
