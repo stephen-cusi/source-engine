@@ -1,279 +1,259 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//
-// Purpose: 
-//
-// $NoKeywords: $
-//=============================================================================//
-
 #ifndef CONVERT_H
 #define CONVERT_H
-#pragma once
 
-#include "mathlib/vector.h"
-#include "mathlib/mathlib.h"
-#include "ivp_physics.hxx"
-struct cplane_t;
-#include "vphysics_interface.h"
+#define HL2BULL_FACTOR METERS_PER_INCH
+#define HL2BULL_INSQR_PER_METERSQR (1.f / (HL2BULL_FACTOR*HL2BULL_FACTOR))
 
-// UNDONE: Remove all conversion/scaling
-// Convert our units (inches) to IVP units (meters)
-struct vphysics_units_t
-{
-	float		unitScaleMeters;			// factor that converts game units to meters
-	float		unitScaleMetersInv;			// factor that converts meters to game units
-	float		globalCollisionTolerance;	// global collision tolerance in game units
-	float		collisionSweepEpsilon;		// collision sweep tests clip at this, must be the same as engine's DIST_EPSILON
-	float		collisionSweepIncrementalEpsilon;	// near-zero test for incremental steps in collision sweep tests
-};
+#define BULL2HL(x) (float)((x) * (1.0f/HL2BULL_FACTOR))
+#define HL2BULL(x) (float)((x) * HL2BULL_FACTOR)
 
-extern vphysics_units_t g_PhysicsUnits;
+#ifdef _MSC_VER
+	// Conversion from x to x, possible loss of data
+	#pragma warning(disable: 4244)
+#endif
 
-#define HL2IVP_FACTOR	g_PhysicsUnits.unitScaleMeters
-#define IVP2HL(x)		(float)(x * (g_PhysicsUnits.unitScaleMetersInv))
-#define HL2IVP(x)		(double)(x * HL2IVP_FACTOR)
+// Declarations
+inline void ConvertIVPPosToBull(const float *pos, btVector3 &bull);
+inline void ConvertPosToBull(const Vector &pos, btVector3 &bull);
+inline void ConvertPosToHL(const btVector3 &pos, Vector &hl);
+inline void ConvertDirectionToBull(const Vector &dir, btVector3 &bull);
+inline void ConvertDirectionToHL(const btVector3 &dir, Vector &hl);
 
-// Convert HL engine units to IVP units
-inline void ConvertPositionToIVP( const Vector &in, IVP_U_Float_Point &out )
-{
-	float tmpZ;
+inline void ConvertAABBToBull(const Vector &hlMins, const Vector &hlMaxs, btVector3 &bullMins, btVector3 &bullMaxs);
+inline void ConvertAABBToHL(const btVector3 &bullMins, const btVector3 &bullMaxs, Vector &hlMins, Vector &hlMaxs);
 
-	tmpZ = in[1];
+inline void ConvertForceImpulseToBull(const Vector &pos, btVector3 &bull);
+inline void ConvertForceImpulseToHL(const btVector3 &pos, Vector &hl);
+inline btScalar ConvertForceImpulseToBull(float hl);
+inline float ConvertForceImpulseToHL(btScalar bull);
 
-	out.k[0] = HL2IVP(in[0]);
-	out.k[1] = -HL2IVP(in[2]);
-	out.k[2] = HL2IVP(tmpZ);
+inline btScalar ConvertAngleToBull(const float angle);
+inline float ConvertAngleToHL(const btScalar &angle);
+inline void ConvertRotationToBull(const QAngle &angles, btMatrix3x3 &bull);
+inline void ConvertRotationToBull(const QAngle &angles, btQuaternion &bull);
+inline void ConvertRotationToHL(const btMatrix3x3 &matrix, QAngle &hl);
+inline void ConvertRotationToHL(const btQuaternion &quat, QAngle &hl);
+inline void ConvertAngularImpulseToBull(const AngularImpulse &angularimp, btVector3 &bull);
+inline void ConvertAngularImpulseToHL(const btVector3 &angularimp, AngularImpulse &hl);
+inline void ConvertMatrixToHL(const btTransform &transform, matrix3x4_t &hl);
+inline void ConvertMatrixToBull(const matrix3x4_t &hl, btTransform &transform);
+
+inline float ConvertDistanceToBull(float distance);
+inline float ConvertDistanceToHL(float distance);
+inline float ConvertEnergyToHL(float energy);
+
+/************************************************
+* COORDINATE SYSTEMS:
+* Bullet vector: Forward, Up, Right
+*	+x: forward (east)
+*	+y: up
+*	+z: right (south)
+*
+*
+*
+* HL Vector: Forward, Left, Up
+*	+x: forward (east)
+*	+y: left (north)
+*	+z: up
+*
+*   (top down)
+*
+*   left (y)
+*    ^
+*    |
+*   (*)------> forward (x)
+*   up (z)
+*
+************************************************/
+
+// IVP: Forward down left
+// IVP Units in meters
+inline void ConvertIVPPosToBull(const float *pos, btVector3 &bull) {
+	if (!pos) return;
+
+	bull.setX(pos[0]);
+	bull.setY(-pos[1]);
+	bull.setZ(-pos[2]);
 }
 
-inline void ConvertPositionToIVP( const Vector &in, IVP_U_Point &out )
-{
-	float tmpZ;
-
-	tmpZ = in[1];
-
-	out.k[0] = HL2IVP(in[0]);
-	out.k[1] = -HL2IVP(in[2]);
-	out.k[2] = HL2IVP(tmpZ);
+inline void ConvertPosToBull(const Vector &pos, btVector3 &bull) {
+	bull.setX(HL2BULL(pos.x));
+	bull.setY(HL2BULL(pos.z));
+	bull.setZ(-HL2BULL(pos.y));
 }
 
-inline void ConvertPositionToIVP( const Vector &in, IVP_U_Float_Point3 &out )
-{
-	float tmpZ;
-
-	tmpZ = in[1];
-
-	out.k[0] = HL2IVP(in[0]);
-	out.k[1] = -HL2IVP(in[2]);
-	out.k[2] = HL2IVP(tmpZ);
+inline void ConvertPosToHL(const btVector3 &pos, Vector &hl) {
+	hl.x = BULL2HL(pos.x());
+	hl.y = -BULL2HL(pos.z());
+	hl.z = BULL2HL(pos.y());
 }
 
-inline void ConvertPositionToIVP( float &x, float &y, float &z )
-{
-	float tmpZ;
+inline void ConvertAABBToBull(const Vector &hlMins, const Vector &hlMaxs, btVector3 &bullMins, btVector3 &bullMaxs) {
+	Assert(hlMins.x <= hlMaxs.x);
+	Assert(hlMins.y <= hlMaxs.y);
+	Assert(hlMins.z <= hlMaxs.z);
 
-	tmpZ = y;
-	y = -HL2IVP(z);
-	z = HL2IVP(tmpZ);
-	x = HL2IVP(x);
+	Vector halfExtents = (hlMaxs - hlMins) / 2;
+	btVector3 bullHalfExtents;
+	ConvertPosToBull(halfExtents, bullHalfExtents);
+
+	Vector center = hlMins + halfExtents;
+	btVector3 bullCenter;
+	ConvertPosToBull(center, bullCenter);
+
+	// Half Life AABBs use different corners.
+	bullHalfExtents.setZ(-bullHalfExtents.z());
+
+	bullMins = bullCenter - bullHalfExtents;
+	bullMaxs = bullCenter + bullHalfExtents;
 }
 
-inline void ConvertDirectionToIVP( const Vector &in, IVP_U_Float_Point &out )
-{
-	float tmpZ;
+inline void ConvertAABBToHL(const btVector3 &bullMins, const btVector3 &bullMaxs, Vector &hlMins, Vector &hlMaxs) {
+	Assert(bullMins.x() <= bullMaxs.x());
+	Assert(bullMins.y() <= bullMaxs.y());
+	Assert(bullMins.z() <= bullMaxs.z());
 
-	tmpZ = in[1];
+	btVector3 halfExtents = (bullMaxs - bullMins) / 2;
+	Vector hlHalfExtents;
+	ConvertPosToHL(halfExtents, hlHalfExtents);
 
-	out.k[0] = in[0];
-	out.k[1] = -in[2];
-	out.k[2] = tmpZ;
+	btVector3 center = bullMins + halfExtents;
+	Vector hlCenter;
+	ConvertPosToHL(center, hlCenter);
+
+	// Half Life AABBs use different corners.
+	hlHalfExtents.y = -hlHalfExtents.y;
+
+	hlMins = hlCenter - hlHalfExtents;
+	hlMaxs = hlCenter + hlHalfExtents;
 }
 
-
-inline void ConvertDirectionToIVP( const Vector &in, IVP_U_Point &out )
-{
-	float tmpZ;
-
-	tmpZ = in[1];
-
-	out.k[0] = in[0];
-	out.k[1] = -in[2];
-	out.k[2] = tmpZ;
+inline void ConvertDirectionToBull(const Vector &dir, btVector3 &bull) {
+	bull.setX(dir.x);
+	bull.setY(dir.z);
+	bull.setZ(-dir.y);
 }
 
-
-// forces are handled the same as positions & velocities (scaled by distance conversion factor)
-#define ConvertForceImpulseToIVP ConvertPositionToIVP
-#define ConvertForceImpulseToHL ConvertPositionToHL
-
-inline float ConvertAngleToIVP( float angleIn )
-{
-	return DEG2RAD(angleIn);
+inline void ConvertDirectionToHL(const btVector3 &dir, Vector &hl) {
+	hl.x = dir.x();
+	hl.y = -dir.z();
+	hl.z = dir.y();
 }
 
-inline void ConvertAngularImpulseToIVP( const AngularImpulse &in, IVP_U_Float_Point &out )
-{
-	float tmpZ;
-
-	tmpZ = in[1];
-
-	out.k[0] = DEG2RAD(in[0]);
-	out.k[1] = -DEG2RAD(in[2]);
-	out.k[2] = DEG2RAD(tmpZ);
+inline void ConvertForceImpulseToBull(const Vector &hl, btVector3 &bull) {
+	return ConvertPosToBull(hl, bull);
 }
 
-
-inline float ConvertDistanceToIVP( float distance )
-{
-	return HL2IVP( distance );
+inline void ConvertForceImpulseToHL(const btVector3 &bull, Vector &hl) {
+	return ConvertPosToHL(bull, hl);
 }
 
-inline void ConvertPlaneToIVP( const Vector &pNormal, float dist, IVP_U_Hesse &plane )
-{
-	ConvertDirectionToIVP( pNormal, (IVP_U_Point &)plane );
-	// HL stores planes as Ax + By + Cz = D
-	// IVP stores them as  Ax + BY + Cz + D = 0
-	plane.hesse_val = -ConvertDistanceToIVP( dist );
+inline btScalar ConvertForceImpulseToBull(float hl) {
+	return HL2BULL(hl);
 }
 
-
-inline void ConvertPlaneToIVP( const Vector &pNormal, float dist, IVP_U_Float_Hesse &plane )
-{
-	ConvertDirectionToIVP( pNormal, (IVP_U_Float_Point &)plane );
-	// HL stores planes as Ax + By + Cz = D
-	// IVP stores them as  Ax + BY + Cz + D = 0
-	plane.hesse_val = -ConvertDistanceToIVP( dist );
+inline float ConvertForceImpulseToHL(btScalar bull) {
+	return BULL2HL(bull);
 }
 
-inline float ConvertDensityToIVP( float density )
-{
-	return density;
+inline btScalar ConvertAngleToBull(const float angle) {
+	return DEG2RAD(angle);
 }
 
-// in convert.cpp
-extern void ConvertMatrixToIVP( const matrix3x4_t& matrix, IVP_U_Matrix &out );
-extern void ConvertRotationToIVP( const QAngle &angles, IVP_U_Matrix3 &out );
-extern void ConvertRotationToIVP( const QAngle& angles, IVP_U_Quat &out );
-extern void ConvertBoxToIVP( const Vector &mins, const Vector &maxs, Vector &outmins, Vector &outmaxs );
-extern int ConvertCoordinateAxisToIVP( int axisIndex );
-extern int ConvertCoordinateAxisToHL( int axisIndex );
-
-// IVP to HL conversions
-inline void ConvertPositionToHL( const IVP_U_Point &point, Vector& out )
-{
-	float tmpY = IVP2HL(point.k[2]);
-	out[2] = -IVP2HL(point.k[1]);
-	out[1] = tmpY;
-	out[0] = IVP2HL(point.k[0]);
+inline float ConvertAngleToHL(const btScalar &angle) {
+	return RAD2DEG(angle);
 }
 
-inline void ConvertPositionToHL( const IVP_U_Float_Point &point, Vector& out )
-{
-	float tmpY = IVP2HL(point.k[2]);
-	out[2] = -IVP2HL(point.k[1]);
-	out[1] = tmpY;
-	out[0] = IVP2HL(point.k[0]);
+inline void ConvertRotationToBull(const QAngle &angles, btMatrix3x3 &bull) {
+	btQuaternion quat;
+	ConvertRotationToBull(angles, quat);
+	bull.setRotation(quat);
 }
 
-inline void ConvertPositionToHL( const IVP_U_Float_Point3 &point, Vector& out )
-{
-	float tmpY = IVP2HL(point.k[2]);
-	out[2] = -IVP2HL(point.k[1]);
-	out[1] = tmpY;
-	out[0] = IVP2HL(point.k[0]);
+inline void ConvertRotationToBull(const QAngle &angles, btQuaternion &bull) {
+	RadianEuler radian(angles);
+	Quaternion q(radian);
+	bull.setValue(q.x, q.z, -q.y, q.w);
 }
 
-inline void ConvertDirectionToHL( const IVP_U_Point &point, Vector& out )
-{
-	float tmpY = point.k[2];
-	out[2] = -point.k[1];
-	out[1] = tmpY;
-	out[0] = point.k[0];
+inline void ConvertRotationToHL(const btMatrix3x3 &matrix, QAngle &hl) {
+	btQuaternion quat;
+	matrix.getRotation(quat);
+	ConvertRotationToHL(quat, hl);
 }
 
-
-inline void ConvertDirectionToHL( const IVP_U_Float_Point &point, Vector& out )
-{
-	float tmpY = point.k[2];
-	out[2] = -point.k[1];
-	out[1] = tmpY;
-	out[0] = point.k[0];
+inline void ConvertRotationToHL(const btQuaternion &quat, QAngle &hl) {
+	Quaternion q(quat.getX(), -quat.getZ(), quat.getY(), quat.getW());
+	RadianEuler radian(q);
+	hl = radian.ToQAngle();
 }
 
-
-inline float ConvertAngleToHL( float angleIn )
-{
-	return RAD2DEG(angleIn);
+inline void ConvertAngularImpulseToBull(const AngularImpulse &angularimp, btVector3 &bull) {
+	bull.setX(DEG2RAD(angularimp.x));
+	bull.setY(DEG2RAD(angularimp.z));
+	bull.setZ(-DEG2RAD(angularimp.y));
 }
 
-inline void ConvertAngularImpulseToHL( const IVP_U_Float_Point &point, AngularImpulse &out )
-{
-	float tmpY = point.k[2];
-	out[2] = -RAD2DEG(point.k[1]);
-	out[1] = RAD2DEG(tmpY);
-	out[0] = RAD2DEG(point.k[0]);
+inline void ConvertAngularImpulseToHL(const btVector3 &angularimp, AngularImpulse &hl) {
+	hl.x = RAD2DEG(angularimp.x());
+	hl.y = -RAD2DEG(angularimp.z());
+	hl.z = RAD2DEG(angularimp.y());
 }
 
-inline float ConvertDistanceToHL( float distance )
-{
-	return IVP2HL( distance );
+inline void ConvertMatrixToHL(const btTransform &transform, matrix3x4_t &hl) {
+	Vector forward, left, up, pos;
+
+	ConvertDirectionToHL(transform.getBasis().getColumn(0), forward);
+	ConvertDirectionToHL(-transform.getBasis().getColumn(2), left);
+	ConvertDirectionToHL(transform.getBasis().getColumn(1), up);
+	ConvertPosToHL(transform.getOrigin(), pos);
+
+	hl.Init(forward, left, up, pos);
 }
 
+inline Vector HLGetMatrixColumn(const matrix3x4_t &hl, int col) {
+	Vector ret;
+	ret.x = hl[0][col];
+	ret.y = hl[1][col];
+	ret.z = hl[2][col];
 
-// NOTE: Converts in place
-inline void ConvertPlaneToHL( cplane_t &plane )
-{
-	IVP_U_Float_Hesse tmp(plane.normal.x, plane.normal.y, plane.normal.z, -plane.dist);
-	ConvertDirectionToHL( (IVP_U_Float_Point &)tmp, plane.normal );
-	// HL stores planes as Ax + By + Cz = D
-	// IVP stores them as  Ax + BY + Cz + D = 0
-	plane.dist = -ConvertDistanceToHL( tmp.hesse_val );
+	return ret;
 }
 
-inline void ConvertPlaneToHL( const IVP_U_Float_Hesse &plane, Vector *pNormalOut, float *pDistOut )
-{
-	if ( pNormalOut )
-	{
-		ConvertDirectionToHL( plane, *pNormalOut );
-	}
-	// HL stores planes as Ax + By + Cz = D
-	// IVP stores them as  Ax + BY + Cz + D = 0
-	if ( pDistOut )
-	{
-		*pDistOut = -ConvertDistanceToHL( plane.hesse_val );
-	}
+inline void ConvertMatrixToBull(const matrix3x4_t &hl, btTransform &transform) {
+	Vector forward, left, up, pos;
+
+	forward	= HLGetMatrixColumn(hl, 0);
+	left	= HLGetMatrixColumn(hl, 1);
+	up		= HLGetMatrixColumn(hl, 2);
+	pos		= HLGetMatrixColumn(hl, 3);
+
+	btVector3 bullForward, bullRight, bullUp, origin;
+	ConvertDirectionToBull(forward, bullForward);
+	ConvertDirectionToBull(-left, bullRight);
+	ConvertDirectionToBull(up, bullUp);
+	ConvertPosToBull(pos, origin);
+
+	transform.setBasis(btMatrix3x3(bullForward.x(), bullUp.x(), bullRight.x(),
+								   bullForward.y(), bullUp.y(), bullRight.y(),
+								   bullForward.z(), bullUp.z(), bullRight.z()));
+	transform.setOrigin(origin);
 }
 
-inline float ConvertVolumeToHL( float volume )
-{
-	float factor = IVP2HL(1.0);
-	factor = (factor * factor * factor);
-	return factor * volume;
+inline float ConvertDistanceToBull(float distance) {
+	return HL2BULL(distance);
 }
 
-#define INSQR_PER_METERSQR (1.f / (METERS_PER_INCH*METERS_PER_INCH))
-inline float ConvertEnergyToHL( float energy )
-{
-	return energy * INSQR_PER_METERSQR;
+inline float ConvertDistanceToHL(float distance) {
+	return BULL2HL(distance);
 }
 
-inline void IVP_Float_PointAbs( IVP_U_Float_Point &out, const IVP_U_Float_Point &in )
-{
-	out.k[0] = fabsf( in.k[0] );
-	out.k[1] = fabsf( in.k[1] );
-	out.k[2] = fabsf( in.k[2] );
+inline float ConvertEnergyToHL(float energy) {
+	return energy * HL2BULL_INSQR_PER_METERSQR;
 }
 
-// convert.cpp
-extern void ConvertRotationToHL( const IVP_U_Matrix3 &in, QAngle &angles );
-extern void ConvertMatrixToHL( const IVP_U_Matrix &in, matrix3x4_t& output );
-extern void ConvertRotationToHL( const IVP_U_Quat &in, QAngle& angles );
+#ifdef _MSC_VER
+	#pragma warning (default: 4244)
+#endif
 
-extern void TransformIVPToLocal( IVP_U_Point &pointInOut, IVP_Real_Object *pObject, bool translate );
-extern void TransformLocalToIVP( IVP_U_Point &pointInOut, IVP_Real_Object *pObject, bool translate );
-
-extern void TransformIVPToLocal( const IVP_U_Point &pointIn, IVP_U_Point &pointOut, IVP_Real_Object *pObject, bool translate );
-extern void TransformLocalToIVP( const IVP_U_Point &pointIn, IVP_U_Point &pointOut, IVP_Real_Object *pObject, bool translate );
-
-extern void TransformLocalToIVP( const IVP_U_Float_Point &pointIn, IVP_U_Point &pointOut, IVP_Real_Object *pObject, bool translate );
-extern void TransformLocalToIVP( const IVP_U_Float_Point &pointIn, IVP_U_Float_Point &pointOut, IVP_Real_Object *pObject, bool translate );
-
-#endif // CONVERT_H
+#endif
