@@ -234,7 +234,9 @@ inline int btGetVersion()
 			#else
 				// Linux
 				#define BT_USE_SIMD_VECTOR3
+				#if defined (__i386__) || defined (__x86_64__)
 				#define BT_USE_SSE
+				#endif
 				#define BT_HAS_ALIGNED_ALLOCATOR
 		
 				// Disabled because linux does not allocate memory on 16-byte boundaries by default.
