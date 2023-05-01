@@ -503,11 +503,11 @@ class CCollisionEventListener : public btSolveCallback {
 // Change the hardcoded min and max if you change the min and max here!
 #ifdef MULTITHREADED
 static void vphysics_numthreads_Change(IConVar *var, const char *pOldValue, float flOldValue);
-static ConVar vphysics_numthreads("vphysics_numthreads", "4", FCVAR_ARCHIVE, "Amount of threads to use in simulation (don't set this too high).", true, 1, true, 8, vphysics_numthreads_Change);
+static ConVar vphysics_numthreads("vphysics_numthreads", "8", FCVAR_ARCHIVE, "Amount of threads to use in simulation (don't set this too high).", true, 1, true, 8, vphysics_numthreads_Change);
 
 static void vphysics_numthreads_Change(IConVar *var, const char *pOldValue, float flOldValue) {
 	int newVal = vphysics_numthreads.GetInt();
-	if (newVal <= 0 || newVal > 8) return;
+	if (newVal < 1 || newVal > 8) return;
 
 	Msg("VPhysics: Resizing to %d threads\n", newVal);
 
