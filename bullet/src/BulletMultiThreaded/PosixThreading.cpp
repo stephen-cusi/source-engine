@@ -8,7 +8,9 @@
 
 #ifdef USE_PTHREADS
 #include <pthread.h>
-#include <sys/prctl.h>
+#ifndef OSX
+	#include <sys/prctl.h>
+#endif
 
 struct threadparams_t {
 	btThreadFunc pFn;
