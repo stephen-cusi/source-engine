@@ -145,7 +145,11 @@ public:
 	// Should this object receive shadows?
 	virtual bool			ShouldReceiveProjectedTextures( int flags )
 	{
+#ifndef NH2
 		return false;
+#else
+		return true;
+#endif
 	}
 
 	// Add entity to visible view models list?

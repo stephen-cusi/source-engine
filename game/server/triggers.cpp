@@ -984,6 +984,9 @@ void CTriggerOnce::Spawn( void )
 // ##################################################################################
 #define SF_TRIGGERLOOK_FIREONCE		128
 #define SF_TRIGGERLOOK_USEVELOCITY	256
+#ifdef NH2
+#define SF_TRIGGERLOOK_INVERT		512
+#endif
 
 class CTriggerLook : public CTriggerOnce
 {
@@ -1162,12 +1165,25 @@ void CTriggerLook::Touch(CBaseEntity *pOther)
 
 			if (m_flLookTimeTotal >= m_flLookTime)
 			{
+#ifdef NH2
+				if( !HasSpawnFlags(SF_TRIGGERLOOK_INVERT) )
+				{
+					Trigger(pOther,false);
+				}
+#else
 				Trigger(pOther, false);
+#endif
 			}
 		}
 		else
 		{
 			m_flLookTimeTotal	= -1;
+#ifdef NH2
+			if( HasSpawnFlags(SF_TRIGGERLOOK_INVERT) )
+			{
+				Trigger(pOther,false);
+			}
+#endif
 		}
 	}
 }
