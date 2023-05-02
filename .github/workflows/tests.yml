@@ -51,7 +51,7 @@ jobs:
 
         ./waf configure -T release -8 --togles --android=aarch64,host,21 --prefix=./andriod --disable-warns --build-game=nh
 
-        ./waf install -j4
+        ./waf install -j4 --target=server,client
 
         cat build/config.log > ./andriod/info.txt
 
@@ -100,7 +100,7 @@ jobs:
 
         ./waf configure -T release --togles --android=armeabi-v7a-hard,host,21 --prefix=./andriod --disable-warns --build-game=nh
 
-        ./waf install -j4
+        ./waf install -j4 --target=server,client
 
         cat build/config.log > ./andriod/info.txt
 
