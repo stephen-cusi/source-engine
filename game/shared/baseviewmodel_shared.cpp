@@ -13,6 +13,7 @@
 #include "prediction.h"
 #include "client_virtualreality.h"
 #include "sourcevr/isourcevirtualreality.h"
+#include "clientmode_shared.h"
 #else
 #include "vguiscreen.h"
 #endif
@@ -26,6 +27,10 @@
 extern ConVar in_forceuser;
 #include "iclientmode.h"
 #endif
+
+#include "hl2_player_shared.h"
+#include "mathlib/mathlib.h"
+#include "interpolatortypes.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -459,6 +464,92 @@ void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePos
 
 }
 
+void CBaseViewModel::CalcIronsights(Vector &pos, QAngle &ang)
+{
+	CBaseCombatWeapon *pWeapon = GetOwningWeapon();
+
+	if (!pWeapon)
+		return;
+
+	float expDesire = pWeapon->IsIronsighted() ? 1.0f : 0.0f;
+	m_flIronsightExpDiff = pWeapon->IsIronsighted() ? (expDesire - m_flIronsightExp) : (m_flIronsightExp - expDesire);
+	m_flIronsightExpDiff = clamp(m_flIronsightExpDiff, 0.1f, 1.0f);
+	if(m_flIronsightExp != expDesire)
+		m_flIronsightExp = Approach(expDesire, m_flIronsightExp, gpGlobals->frametime * 9 * m_flIronsightExpDiff);
+
+	Vector newPos = pos;
+	QAngle newAng = ang;
+
+	pWeapon->SetIronsightDelta(m_flIronsightExp);
+
+	Vector vForward, vRight, vUp, vOffset;
+	AngleVectors(newAng, &vForward, &vRight, &vUp);
+	vOffset = pWeapon->GetIronsightPositionOffset();
+
+	newPos += vForward * vOffset.x;
+	newPos += vRight * vOffset.y;
+	newPos += vUp * vOffset.z;
+	newAng += pWeapon->GetIronsightAngleOffset();
+	//fov is handled by CBaseCombatWeapon
+
+	//DevMsg("%f \n", m_flIronsightExp);
+
+	Vector vOut;
+	//m_flIronsightExp = sin(M_PI * m_flIronsightExp * 0.5f);
+	//DevMsg("%f \n", m_flIronsightExp);
+	if(pWeapon->IsIronsighted())
+		Interpolator_CurveInterpolate(INTERPOLATE_EASE_IN, vec3_origin, pos, newPos, vec3_origin, m_flIronsightExp, vOut);
+	else
+		Interpolator_CurveInterpolate(INTERPOLATE_EASE_OUT, vec3_origin, pos, newPos, vec3_origin, m_flIronsightExp, vOut);
+	//VectorLerp(pos, newPos, m_flIronsightExp, vOut);
+
+	pos = vOut;
+	ang += (newAng - ang) * m_flIronsightExp;
+}
+
+void CBaseViewModel::CalcLower(Vector &pos, QAngle &ang)
+{
+	CBaseCombatWeapon *pWeapon = GetOwningWeapon();
+
+	if (!pWeapon)
+		return;
+
+	float expDesire = pWeapon->IsLowered() ? 1.0f : 0.0f;
+	m_flLowerExpDiff = pWeapon->IsLowered() ? (expDesire - m_flLowerExp) : (m_flLowerExp - expDesire);
+	m_flLowerExpDiff = clamp(m_flLowerExpDiff, 0.1f, 1.0f);
+	if (m_flLowerExp != expDesire)
+		m_flLowerExp = Approach(expDesire, m_flLowerExp, gpGlobals->frametime * 5 * m_flLowerExpDiff);
+
+	Vector newPos = pos;
+	QAngle newAng = ang;
+
+	pWeapon->SetLowerDelta(m_flLowerExp);
+
+	Vector vForward, vRight, vUp, vOffset;
+	AngleVectors(newAng, &vForward, &vRight, &vUp);
+	vOffset = pWeapon->GetLowerPositionOffset();
+
+	newPos += vForward * vOffset.x;
+	newPos += vRight * vOffset.y;
+	newPos += vUp * vOffset.z;
+	newAng += pWeapon->GetLowerAngleOffset();
+	//fov is handled by CBaseCombatWeapon
+
+	//DevMsg("%f \n", m_flIronsightExp);
+
+	Vector vOut;
+	//m_flIronsightExp = sin(M_PI * m_flIronsightExp * 0.5f);
+	//DevMsg("%f \n", m_flIronsightExp);
+	if (pWeapon->IsLowered())
+		Interpolator_CurveInterpolate(INTERPOLATE_EASE_IN, vec3_origin, pos, newPos, vec3_origin, m_flLowerExp, vOut);
+	else
+		Interpolator_CurveInterpolate(INTERPOLATE_EASE_OUT, vec3_origin, pos, newPos, vec3_origin, m_flLowerExp, vOut);
+	//VectorLerp(pos, newPos, m_flIronsightExp, vOut);
+
+	pos = vOut;
+	ang += (newAng - ang) * m_flLowerExp;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
@@ -466,6 +557,10 @@ float g_fMaxViewModelLag = 1.5f;
 
 void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& original_angles )
 {
+	CBaseCombatWeapon *pWeapon = GetOwningWeapon();
+	if (!pWeapon)
+		return;
+
 	Vector vOriginalOrigin = origin;
 	QAngle vOriginalAngles = angles;
 
@@ -493,7 +588,7 @@ void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& o
 		VectorMA( m_vecLastFacing, flSpeed * gpGlobals->frametime, vDifference, m_vecLastFacing );
 		// Make sure it doesn't grow out of control!!!
 		VectorNormalize( m_vecLastFacing );
-		VectorMA( origin, 5.0f, vDifference * -1.0f, origin );
+		VectorMA( origin, 5.0f, vDifference * -1.0f * pWeapon->GetWpnData().m_flLagScale * (pWeapon->IsIronsighted() ? 0.1f : 1.0f), origin );
 
 		Assert( m_vecLastFacing.IsValid() );
 	}
@@ -513,10 +608,13 @@ void CBaseViewModel::CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& o
 		angles = vOriginalAngles;
 	}
 
-	//FIXME: These are the old settings that caused too many exposed polys on some models
-	VectorMA( origin, -pitch * 0.035f,	forward,	origin );
-	VectorMA( origin, -pitch * 0.03f,		right,	origin );
-	VectorMA( origin, -pitch * 0.02f,		up,		origin);
+	if (!pWeapon->IsIronsighted())
+	{
+		//FIXME: These are the old settings that caused too many exposed polys on some models
+		VectorMA(origin, -pitch * 0.035f, forward, origin);
+		VectorMA(origin, -pitch * 0.03f, right, origin);
+		VectorMA(origin, -pitch * 0.02f, up, origin);
+	}
 }
 
 //-----------------------------------------------------------------------------

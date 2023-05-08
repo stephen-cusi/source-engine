@@ -155,6 +155,11 @@ private:
 
 	void		ValidateUserCmd( CUserCmd *usercmd, int sequence_number );
 
+public:
+
+	float flMouseX;
+	float flMouseY;
+
 // Private Data
 private:
 	typedef struct

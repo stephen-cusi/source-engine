@@ -24,7 +24,10 @@
 #define STUN_TEXTURE "_rt_FullFrameFB2"
 #else
 #define STUN_TEXTURE "_rt_WaterRefraction"
+#define SMOD_STUN_TEXTURE "_rt_FullFrameFB"
 #endif
+
+ConVar cl_debug_screeneffect_amount("r_shock_effect_amount", "25", FCVAR_ARCHIVE);
 
 
 //-----------------------------------------------------------------------------
@@ -460,5 +463,221 @@ void CEP2StunEffect::Render( int x, int y, int w, int h )
 	pRenderContext->MatrixMode( MATERIAL_VIEW );
 	pRenderContext->PopMatrix();
 	pRenderContext->MatrixMode( MATERIAL_PROJECTION );
+	pRenderContext->PopMatrix();
+}
+
+// ================================================================================================================
+//
+//  SMOD-Styled stun blur
+//
+// ================================================================================================================
+
+//-----------------------------------------------------------------------------
+// Purpose:
+//-----------------------------------------------------------------------------
+void CSMODStunEffect::Init(void)
+{
+	m_flDuration = 0.0f;
+	m_flFinishTime = 0.0f;
+	m_bUpdateView = true;
+	m_bFadeOut = false;
+	m_bMainEffect = true;
+
+
+	KeyValues *pVMTKeyValues = new KeyValues("UnlitGeneric");
+	pVMTKeyValues->SetString("$basetexture", SMOD_STUN_TEXTURE);
+
+	KeyValues *pVMTKeyValues2 = new KeyValues("UnlitGeneric");
+	pVMTKeyValues2->SetString("$basetexture", SMOD_STUN_TEXTURE);
+
+	m_EffectMaterial.Init("__smodstuneffect", TEXTURE_GROUP_CLIENT_EFFECTS, pVMTKeyValues);
+
+	m_Effect2Material.Init("__smodstuneffect_longduration", TEXTURE_GROUP_CLIENT_EFFECTS, pVMTKeyValues2);
+
+	m_StunTexture.Init(SMOD_STUN_TEXTURE, TEXTURE_GROUP_CLIENT_EFFECTS);
+}
+
+void CSMODStunEffect::Shutdown(void)
+{
+	m_EffectMaterial.Shutdown();
+	m_Effect2Material.Shutdown();
+	m_StunTexture.Shutdown();
+}
+
+
+//------------------------------------------------------------------------------
+// Purpose: Pick up changes in our parameters
+//------------------------------------------------------------------------------
+void CSMODStunEffect::SetParameters(KeyValues *params)
+{
+	if (params->FindKey("duration"))
+	{
+		m_flDuration = params->GetFloat("duration");
+		m_flFinishTime = gpGlobals->curtime + m_flDuration;
+	}
+
+	if (params->FindKey("fadeout"))
+	{
+		m_bFadeOut = (params->GetInt("fadeout") == 1);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Get the alpha value depending on various factors and time
+//-----------------------------------------------------------------------------
+inline unsigned char CSMODStunEffect::GetFadeAlpha(void)
+{
+	// Find our percentage between fully "on" and "off" in the pulse range
+	float flEffectPerc = (m_flDuration == 0.0f) ? 0.0f : (m_flFinishTime - gpGlobals->curtime) / m_flDuration;
+	flEffectPerc = clamp(flEffectPerc, 0.0f, 1.0f);
+
+	if (m_bFadeOut)
+	{
+		// HDR requires us to be more subtle, or we get uber-brightening
+		if (g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE)
+			return (unsigned char)clamp(50.0f * flEffectPerc, 0.0f, 50.0f);
+
+		// Non-HDR
+		return (unsigned char)clamp(64.0f * flEffectPerc, 0.0f, 64.0f);
+	}
+	else
+	{
+		// HDR requires us to be more subtle, or we get uber-brightening
+		if (g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE)
+			return (unsigned char)clamp(164.0f * flEffectPerc, 128.0f, 164.0f);
+
+		// Non-HDR
+		return (unsigned char)clamp(164.0f * flEffectPerc, 128.0f, 164.0f);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Get the alpha value depending on various factors and time
+//-----------------------------------------------------------------------------
+inline unsigned char CSMODStunEffect::GetFadeAlpha2(void)
+{
+	// Find our percentage between fully "on" and "off" in the pulse range
+	float flEffectPerc = (m_flDuration == 0.0f) ? 0.0f : (m_flFinishTime - gpGlobals->curtime / 2) / m_flDuration;
+	flEffectPerc = clamp(flEffectPerc, 0.0f, 1.0f);
+
+	if (m_bFadeOut)
+	{
+		// HDR requires us to be more subtle, or we get uber-brightening
+		if (g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE)
+			return (unsigned char)clamp(50.0f * flEffectPerc, 0.0f, 50.0f);
+
+		// Non-HDR
+		return (unsigned char)clamp(64.0f * flEffectPerc, 0.0f, 64.0f);
+	}
+	else
+	{
+		// HDR requires us to be more subtle, or we get uber-brightening
+		if (g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE)
+			return (unsigned char)clamp(164.0f * flEffectPerc, 128.0f, 164.0f);
+
+		// Non-HDR
+		return (unsigned char)clamp(164.0f * flEffectPerc, 128.0f, 164.0f);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Render the effect
+//-----------------------------------------------------------------------------
+void CSMODStunEffect::Render(int x, int y, int w, int h)
+{
+	if ((m_flFinishTime == 0) || (IsEnabled() == false))
+		return;
+
+	CMatRenderContextPtr pRenderContext(materials);
+
+	// Set ourselves to the proper rendermode
+	pRenderContext->MatrixMode(MATERIAL_VIEW);
+	pRenderContext->PushMatrix();
+	pRenderContext->LoadIdentity();
+	pRenderContext->MatrixMode(MATERIAL_PROJECTION);
+	pRenderContext->PushMatrix();
+	pRenderContext->LoadIdentity();
+
+	if (m_bUpdateView)
+	{
+		// Save off this pass
+		Rect_t srcRect;
+		srcRect.x = x;
+		srcRect.y = y;
+		srcRect.width = w;
+		srcRect.height = h;
+		pRenderContext->CopyRenderTargetToTextureEx(m_StunTexture, 0, &srcRect, NULL);
+		m_bUpdateView = false;
+	}
+
+	byte overlaycolor[4] = { 255, 255, 255, 0 };
+	byte overlaycolor2[4] = { 255, 255, 255, 0 };
+
+	// Get our fade value depending on our fade duration
+	overlaycolor[3] = GetFadeAlpha();
+
+	// Get our fade value depending on our fade duration
+	overlaycolor2[3] = GetFadeAlpha2();
+
+	// Disable overself if we're done fading out
+	if (m_bFadeOut && overlaycolor[3] == 0)
+	{
+		// Takes effect next frame (we don't want to hose our matrix stacks here)
+		g_pScreenSpaceEffects->DisableScreenSpaceEffect("smod_blur");
+		m_bUpdateView = true;
+	}
+
+	// Calculate some wavey noise to jitter the view by
+	float vX = 0.0f;// *cosf(gpGlobals->curtime) * cosf(gpGlobals->curtime * 6.0);
+	float vY = 0.0f;// *cosf(gpGlobals->curtime) * cosf(gpGlobals->curtime * 5.0);
+
+	// Scaled offsets for the UVs (as texels)
+	float flUOffset = 0;
+	float flVOffset = 0;
+
+	// New UVs with scaling offsets
+	float flU1 = flUOffset;
+	float flU2 = (m_StunTexture->GetActualWidth() - 1) - flUOffset;
+	float flV1 = flVOffset;
+	float flV2 = (m_StunTexture->GetActualHeight() - 1) - flVOffset;
+
+	for (int i = 0; i < cl_debug_screeneffect_amount.GetInt(); i++)
+	{
+
+		// Draw the "zoomed" overlay
+		pRenderContext->DrawScreenSpaceRectangle(m_EffectMaterial, vX, vY, w, h,
+			flU1, flV1,
+			flU2, flV2,
+			m_StunTexture->GetActualWidth(), m_StunTexture->GetActualHeight());
+	}
+
+	if (m_bMainEffect)
+	{
+		for (int i = 0; i < cl_debug_screeneffect_amount.GetInt(); i++)
+		{
+			// Draw the "zoomed" overlay
+			pRenderContext->DrawScreenSpaceRectangle(m_Effect2Material, vX, vY, w, h,
+				flU1, flV1,
+				flU2, flV2,
+				m_StunTexture->GetActualWidth(), m_StunTexture->GetActualHeight());
+			m_bMainEffect = false;
+		}
+	}
+
+	render->ViewDrawFade(overlaycolor, m_EffectMaterial);
+	render->ViewDrawFade(overlaycolor2, m_Effect2Material);
+
+	// Save off this pass
+	Rect_t srcRect;
+	srcRect.x = x;
+	srcRect.y = y;
+	srcRect.width = w;
+	srcRect.height = h;
+	pRenderContext->CopyRenderTargetToTextureEx(m_StunTexture, 0, &srcRect, NULL);
+
+	// Restore our state
+	pRenderContext->MatrixMode(MATERIAL_VIEW);
+	pRenderContext->PopMatrix();
+	pRenderContext->MatrixMode(MATERIAL_PROJECTION);
 	pRenderContext->PopMatrix();
 }

@@ -98,11 +98,27 @@ void CHudSuitPower::OnThink( void )
 		// we've lost power
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("SuitAuxPowerNotMax");
 	}
+	else if (flCurrentPower < 50.0f && (m_flSuitPower >= 25.0f || m_flSuitPower == SUITPOWER_INIT))
+	{
+		// we've lost power
+		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("SuitAuxPowerBelow50");
+	}
+	else if (flCurrentPower > 50.0f && (m_flSuitPower >= 50.0f || m_flSuitPower == SUITPOWER_INIT))
+	{
+		// we've lost power
+		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("SuitAuxPowerAbove50");
+	}
+	else if (flCurrentPower < 25.0f && (m_flSuitPower <= 25.0f || m_flSuitPower == SUITPOWER_INIT))
+	{
+		// we've lost power
+		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("SuitAuxPowerBelow25");
+	}
 
 	bool flashlightActive = pPlayer->IsFlashlightActive();
 	bool sprintActive = pPlayer->IsSprinting();
 	bool breatherActive = pPlayer->IsBreatherActive();
-	int activeDevices = (int)flashlightActive + (int)sprintActive + (int)breatherActive;
+	// bool nightvisionActive = pPlayer->IsNightVisionActive();
+	int activeDevices = (int)flashlightActive + (int)sprintActive + (int)breatherActive /* + (int)nightvisionActive */;
 
 	if (activeDevices != m_iActiveSuitDevices)
 	{
@@ -185,7 +201,7 @@ void CHudSuitPower::Paint()
 	surface()->DrawSetTextColor(m_AuxPowerColor);
 	surface()->DrawSetTextPos(text_xpos, text_ypos);
 
-	wchar_t *tempString = g_pVGuiLocalize->Find("#Valve_Hud_AUX_POWER");
+	wchar_t *tempString = (L"~");
 
 	if (tempString)
 	{
@@ -251,6 +267,24 @@ void CHudSuitPower::Paint()
 			}
 			ypos += text2_gap;
 		}
+		/*
+		if (pPlayer->IsNightVisionActive())
+		{
+			tempString = g_pVGuiLocalize->Find("#Valve_Hud_NIGHTVISION");
+
+			surface()->DrawSetTextPos(text2_xpos, ypos);
+
+			if (tempString)
+			{
+				surface()->DrawPrintText(tempString, wcslen(tempString));
+			}
+			else
+			{
+				surface()->DrawPrintText(L"NIGHT VISION", wcslen(L"NIGHT VISION"));
+			}
+			ypos += text2_gap;
+		}
+		*/
 	}
 }
 

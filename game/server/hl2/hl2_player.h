@@ -15,6 +15,8 @@
 #include "simtimer.h"
 #include "soundenvelope.h"
 
+#include "coolmod/sp_animstate.h"
+
 class CAI_Squad;
 class CPropCombineBall;
 
@@ -232,6 +234,36 @@ public:
 	bool				IsIlluminatedByFlashlight( CBaseEntity *pEntity, float *flReturnDot );
 	void				SetFlashlightPowerDrainScale( float flScale ) { m_flFlashlightPowerDrainScale = flScale; }
 
+	//SMOD KICKING BITCH! >:3
+	void				KickAttack(void);
+	void				SetKickTime(void);
+	void				Hit(trace_t &traceHit, Activity nHitActivity, bool bIsSecondary = false);
+	CNetworkVar(float, m_flNextKickAttack);
+	CNetworkVar(float, KickTime);
+	CNetworkVar(bool, m_bIsKicking);
+
+	// CSSPORT
+	void KickBack(
+		float up_base,
+		float lateral_base,
+		float up_modifier,
+		float lateral_modifier,
+		float up_max,
+		float lateral_max,
+		int direction_change);
+	CNetworkVar(int, m_iDirection);	// The current lateral kicking direction; 1 = right,  0 = left
+	CNetworkVar(int, m_iShotsFired);	// number of shots fired recently
+	CNetworkVar(float, m_flNextShotsClear);
+
+	CNetworkVar(float, m_flBlastEffectTime);
+	void				SetBlastEffectTime(void);
+	CNetworkVar(float, m_flBlurTime);
+	void				SetBlurTime(void);
+	CNetworkVar(float, m_flIronsightBlurTime);
+	void				SetIronsightBlurTime(float amount);
+	CNetworkVar(float, m_flFPBlur);
+	void				SetFirstPersonBlurVar(float amount);
+
 	// Underwater breather device
 	virtual void		SetPlayerUnderwater( bool state );
 	virtual bool		CanBreatheUnderwater() const { return m_HL2Local.m_flSuitPower > 0.0f; }
@@ -259,6 +291,8 @@ public:
 	virtual void RemoveSuit( void );
 	void  HandleAdmireGlovesAnimation( void );
 	void  StartAdmireGlovesAnimation( void );
+
+	virtual void SetAnimation(PLAYER_ANIM playerAnim);
 	
 	void  HandleSpeedChanges( void );
 
@@ -294,6 +328,14 @@ protected:
 	virtual void		ItemPostFrame();
 	virtual void		PlayUseDenySound();
 
+	void				SwitchSlowMo();
+	bool				ShouldHealthRegen();
+
+public:
+	// This player's HL2 specific data that should only be replicated to 
+	//  the player and not to other players.
+	CNetworkVarEmbedded( CHL2PlayerLocalData, m_HL2Local );
+
 private:
 	bool				CommanderExecuteOne( CAI_BaseNPC *pNpc, const commandgoal_t &goal, CAI_BaseNPC **Allies, int numAllies );
 
@@ -302,7 +344,7 @@ private:
 	Class_T				m_nControlClass;			// Class when player is controlling another entity
 	// This player's HL2 specific data that should only be replicated to 
 	//  the player and not to other players.
-	CNetworkVarEmbedded( CHL2PlayerLocalData, m_HL2Local );
+	// CNetworkVarEmbedded( CHL2PlayerLocalData, m_HL2Local );
 
 	float				m_flTimeAllSuitDevicesOff;
 
@@ -360,8 +402,14 @@ private:
 	EHANDLE				m_hLocatorTargetEntity; // The entity that's being tracked by the suit locator.
 
 	float				m_flTimeNextLadderHint;	// Next time we're eligible to display a HUD hint about a ladder.
-	
+
+	float				m_flNextHealthRegen;
+	float				m_flNextGivenHealth;
+
 	friend class CHL2GameMovement;
+
+	CSinglePlayerAnimState *m_pPlayerAnimState;
+	QAngle m_angEyeAngles;
 };
 
 
@@ -378,6 +426,15 @@ void CHL2_Player::EnableCappedPhysicsDamage()
 void CHL2_Player::DisableCappedPhysicsDamage()
 {
 	m_bUseCappedPhysicsDamageTable = false;
+}
+
+//SMOD: We needed a pointer directly to HL2's player (like the hl2mp player and the base player have)
+inline CHL2_Player *ToHL2Player(CBaseEntity *pEntity)
+{
+	if (!pEntity || !pEntity->IsPlayer())
+		return NULL;
+
+	return dynamic_cast<CHL2_Player*>(pEntity);
 }
 
 

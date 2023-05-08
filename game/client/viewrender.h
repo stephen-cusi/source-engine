@@ -78,6 +78,9 @@ enum view_id_t
 	VIEW_INTRO_CAMERA = 6,
 	VIEW_SHADOW_DEPTH_TEXTURE = 7,
 	VIEW_SSAO = 8,
+
+	VIEW_SCOPE = 9,
+
 	VIEW_ID_COUNT
 };
 view_id_t CurrentViewID();
@@ -423,7 +426,10 @@ public:
 	{
 		m_UnderWaterOverlayMaterial.Init( pMaterial );
 	}
-private:
+
+	void			SetScopeVars(float flFOV, int iScale, IMaterial *pOverlay, IMaterial *pFilter1, IMaterial *pFilter2) { m_flscopeFOV = flFOV; m_iscopeSIZE = iScale;if(pOverlay) m_ScopeOverlay.Init(pOverlay); if (pFilter1) m_ScopeFilter1.Init(pFilter1); if (pFilter2) m_ScopeFilter2.Init(pFilter2); }
+
+protected:
 	int				m_BuildWorldListsNumber;
 
 
@@ -469,6 +475,13 @@ private:
 	// Sets up, cleans up the main 3D view
 	void			SetupMain3DView( const CViewSetup &view, int &nClearFlags );
 	void			CleanupMain3DView( const CViewSetup &view );
+
+	void			DrawScope(const CViewSetup &viewSet);
+	float			m_flscopeFOV;
+	int				m_iscopeSIZE;
+	CMaterialReference	m_ScopeOverlay;
+	CMaterialReference	m_ScopeFilter1;
+	CMaterialReference	m_ScopeFilter2;
 
 
 	// This stores the current view

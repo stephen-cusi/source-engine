@@ -20,6 +20,10 @@
 #endif
 // NVNT end extra includes
 
+#ifdef CLIENT_DLL  
+#include "c_baseplayer.h"
+#endif
+
 #if defined ( TF_DLL ) || defined ( TF_CLIENT_DLL )
 #include "tf_shareddefs.h"
 #endif
@@ -37,6 +41,12 @@
 #endif
 
 #endif
+
+#include "coolmod/smod_cvars.h"
+#include "hl2_player_shared.h"
+#ifndef CLIENT_DLL
+#include "class_override.h"
+#endif // CLIENT_DLL
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -59,6 +69,126 @@ ConVar tf_weapon_criticals_bucket_cap( "tf_weapon_criticals_bucket_cap", "1000.0
 ConVar tf_weapon_criticals_bucket_bottom( "tf_weapon_criticals_bucket_bottom", "-250.0", FCVAR_REPLICATED | FCVAR_CHEAT );
 ConVar tf_weapon_criticals_bucket_default( "tf_weapon_criticals_bucket_default", "300.0", FCVAR_REPLICATED | FCVAR_CHEAT );
 #endif // TF
+
+//forward declarations of callbacks used by viewmodel_adjust_enable and viewmodel_adjust_fov
+void vm_adjust_enable_callback(IConVar *pConVar, char const *pOldString, float flOldValue);
+void vm_adjust_fov_callback(IConVar *pConVar, const char *pOldString, float flOldValue);
+
+ConVar viewmodel_adjust_forward("viewmodel_adjust_forward", "0", FCVAR_REPLICATED);
+ConVar viewmodel_adjust_right("viewmodel_adjust_right", "0", FCVAR_REPLICATED);
+ConVar viewmodel_adjust_up("viewmodel_adjust_up", "0", FCVAR_REPLICATED);
+ConVar viewmodel_adjust_pitch("viewmodel_adjust_pitch", "0", FCVAR_REPLICATED);
+ConVar viewmodel_adjust_yaw("viewmodel_adjust_yaw", "0", FCVAR_REPLICATED);
+ConVar viewmodel_adjust_roll("viewmodel_adjust_roll", "0", FCVAR_REPLICATED);
+ConVar viewmodel_adjust_fov("viewmodel_adjust_fov", "0", FCVAR_REPLICATED, "Note: this feature is not available during any kind of zoom", vm_adjust_fov_callback);
+ConVar viewmodel_adjust_enabled("viewmodel_adjust_enabled", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "enabled viewmodel adjusting", vm_adjust_enable_callback);
+
+// Weapon Lower!!!
+// forward declarations of callbacks used by viewmodel_adjust_enable and viewmodel_adjust_fov
+void lower_vm_adjust_enable_callback(IConVar *pConVar, char const *pOldString, float flOldValue);
+void lower_vm_adjust_fov_callback(IConVar *pConVar, const char *pOldString, float flOldValue);
+
+ConVar lower_viewmodel_adjust_forward("lower_viewmodel_adjust_forward", "0", FCVAR_REPLICATED);
+ConVar lower_viewmodel_adjust_right("lower_viewmodel_adjust_right", "0", FCVAR_REPLICATED);
+ConVar lower_viewmodel_adjust_up("lower_viewmodel_adjust_up", "0", FCVAR_REPLICATED);
+ConVar lower_viewmodel_adjust_pitch("lower_viewmodel_adjust_pitch", "0", FCVAR_REPLICATED);
+ConVar lower_viewmodel_adjust_yaw("lower_viewmodel_adjust_yaw", "0", FCVAR_REPLICATED);
+ConVar lower_viewmodel_adjust_roll("lower_viewmodel_adjust_roll", "0", FCVAR_REPLICATED);
+ConVar lower_viewmodel_adjust_fov("lower_viewmodel_adjust_fov", "0", FCVAR_REPLICATED, "Note: this feature is not available during any kind of zoom", lower_vm_adjust_fov_callback);
+ConVar lower_viewmodel_adjust_enabled("lower_viewmodel_adjust_enabled", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "enabled viewmodel adjusting", lower_vm_adjust_enable_callback);
+
+#ifdef CLIENT_DLL
+void CC_ToggleIronSights(void)
+{
+	C_BaseHLPlayer *pPlayer = dynamic_cast<C_BaseHLPlayer *>(C_BasePlayer::GetLocalPlayer());
+	if (pPlayer == NULL)
+		return;
+
+	CBaseCombatWeapon *pWeapon = pPlayer->GetActiveWeapon();
+	if (pWeapon == NULL)
+		return;
+
+	if(!pWeapon->IsIronsighted())
+		if (pPlayer->IsSprinting())
+			return;
+
+	pWeapon->ToggleIronsights();
+
+	engine->ServerCmd("toggle_ironsight"); //forward to server
+}
+
+static ConCommand toggle_ironsight("toggle_ironsight", CC_ToggleIronSights);
+#endif
+
+void vm_adjust_enable_callback(IConVar *pConVar, char const *pOldString, float flOldValue)
+{
+	ConVarRef sv_cheats("sv_cheats");
+	if (!sv_cheats.IsValid() || sv_cheats.GetBool())
+		return;
+
+	ConVarRef var(pConVar);
+
+	if (var.GetBool())
+		var.SetValue("0");
+}
+
+void vm_adjust_fov_callback(IConVar *pConVar, char const *pOldString, float flOldValue)
+{
+	if (!viewmodel_adjust_enabled.GetBool())
+		return;
+
+	ConVarRef var(pConVar);
+
+	CBasePlayer *pPlayer =
+#ifdef GAME_DLL
+		UTIL_GetCommandClient();
+#else
+		C_BasePlayer::GetLocalPlayer();
+#endif
+	if (!pPlayer)
+		return;
+
+	if (!pPlayer->SetFOV(pPlayer, pPlayer->GetDefaultFOV() + var.GetFloat(), 0.1f))
+	{
+		Warning("Could not set FOV\n");
+		var.SetValue("0");
+	}
+}
+
+void lower_vm_adjust_enable_callback(IConVar *pConVar, char const *pOldString, float flOldValue)
+{
+	ConVarRef sv_cheats("sv_cheats");
+	if (!sv_cheats.IsValid() || sv_cheats.GetBool())
+		return;
+
+	ConVarRef var(pConVar);
+
+	if (var.GetBool())
+		var.SetValue("0");
+}
+
+void lower_vm_adjust_fov_callback(IConVar *pConVar, char const *pOldString, float flOldValue)
+{
+	if (!lower_viewmodel_adjust_enabled.GetBool())
+		return;
+
+	ConVarRef var(pConVar);
+
+	CBasePlayer *pPlayer =
+#ifdef GAME_DLL
+		UTIL_GetCommandClient();
+#else
+		C_BasePlayer::GetLocalPlayer();
+#endif
+	if (!pPlayer)
+		return;
+
+	if (!pPlayer->SetFOV(pPlayer, pPlayer->GetDefaultFOV() + var.GetFloat(), 0.1f))
+	{
+		Warning("Could not set FOV\n");
+		var.SetValue("0");
+	}
+}
 
 CBaseCombatWeapon::CBaseCombatWeapon() : BASECOMBATWEAPON_DERIVED_FROM()
 {
@@ -103,6 +233,12 @@ CBaseCombatWeapon::CBaseCombatWeapon() : BASECOMBATWEAPON_DERIVED_FROM()
 	m_nCritChecks = 1;
 	m_nCritSeedRequests = 0;
 #endif // TF
+
+	m_bIsIronsighted = false;
+	m_flIronsightedTime = 0.0f;
+
+	m_bIsLowered = false;
+	m_flLoweredTime = 0.0f;
 }
 
 //-----------------------------------------------------------------------------
@@ -843,6 +979,197 @@ void CBaseCombatWeapon::DefaultTouch( CBaseEntity *pOther )
 		OnPickedUp( pPlayer );
 	}
 #endif
+}
+
+Vector CBaseCombatWeapon::GetIronsightPositionOffset(void) const
+{
+	if (viewmodel_adjust_enabled.GetBool())
+		return Vector(viewmodel_adjust_forward.GetFloat(), viewmodel_adjust_right.GetFloat(), viewmodel_adjust_up.GetFloat());
+	return GetWpnData().vecIronsightPosOffset;
+}
+
+QAngle CBaseCombatWeapon::GetIronsightAngleOffset(void) const
+{
+	if (viewmodel_adjust_enabled.GetBool())
+		return QAngle(viewmodel_adjust_pitch.GetFloat(), viewmodel_adjust_yaw.GetFloat(), viewmodel_adjust_roll.GetFloat());
+	return GetWpnData().angIronsightAngOffset;
+}
+
+Vector CBaseCombatWeapon::GetAdjustPositionOffset(void) const
+{
+	if (viewmodel_adjust_enabled.GetBool())
+		return Vector(viewmodel_adjust_forward.GetFloat(), viewmodel_adjust_right.GetFloat(), viewmodel_adjust_up.GetFloat());
+	return GetWpnData().vecAdjustPosOffset;
+}
+
+QAngle CBaseCombatWeapon::GetAdjustAngleOffset(void) const
+{
+	if (viewmodel_adjust_enabled.GetBool())
+		return QAngle(viewmodel_adjust_pitch.GetFloat(), viewmodel_adjust_yaw.GetFloat(), viewmodel_adjust_roll.GetFloat());
+	return GetWpnData().angAdjustAngOffset;
+}
+
+float CBaseCombatWeapon::GetIronsightFOVOffset(void) const
+{
+	if (viewmodel_adjust_enabled.GetBool())
+		return viewmodel_adjust_fov.GetFloat();
+	return GetWpnData().flIronsightFOVOffset;
+}
+
+Vector CBaseCombatWeapon::GetLowerPositionOffset(void) const
+{
+	if (lower_viewmodel_adjust_enabled.GetBool())
+		return Vector(lower_viewmodel_adjust_forward.GetFloat(), lower_viewmodel_adjust_right.GetFloat(), lower_viewmodel_adjust_up.GetFloat());
+	return GetWpnData().vecLowerPosOffset;
+}
+
+QAngle CBaseCombatWeapon::GetLowerAngleOffset(void) const
+{
+	if (lower_viewmodel_adjust_enabled.GetBool())
+		return QAngle(lower_viewmodel_adjust_pitch.GetFloat(), lower_viewmodel_adjust_yaw.GetFloat(), lower_viewmodel_adjust_roll.GetFloat());
+	return GetWpnData().angLowerAngOffset;
+}
+
+bool CBaseCombatWeapon::IsIronsighted(void)
+{
+	return (m_bIsIronsighted || viewmodel_adjust_enabled.GetBool());
+}
+
+void CBaseCombatWeapon::ToggleIronsights(void)
+{
+	if (m_bIsIronsighted)
+	{
+		DisableIronsights();
+	}
+	else
+	{
+		EnableIronsights();
+	}
+}
+
+void CBaseCombatWeapon::EnableIronsights(void)
+{
+	/*
+	#ifdef CLIENT_DLL
+	if( !prediction->IsFirstTimePredicted() )
+	return;
+	#endif*/
+	if (!HasIronsights() || m_bIsIronsighted)
+		return;
+
+	EmitSound("HL2Player.Ironsighton");
+
+	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+
+	if (!pOwner)
+		return;
+
+	if (pOwner->SetFOV(this, pOwner->GetDefaultFOV() + GetIronsightFOVOffset(), 0.4f)) //modify the last value to adjust how fast the fov is applied
+	{
+		m_bIsIronsighted = true;
+		SetIronsightTime();
+	}
+
+	pOwner->SetMaxSpeed(pOwner->GetPlayerMaxSpeed() * weapon_ironsightwalkspeed.GetFloat());
+}
+
+void CBaseCombatWeapon::DisableIronsights(void)
+{
+	/*
+	#ifdef CLIENT_DLL
+	if( !prediction->IsFirstTimePredicted() )
+	return;
+	#endif*/
+
+	// We are not using prediction in singleplayer
+
+
+	if (!HasIronsights() || !m_bIsIronsighted)
+		return;
+
+	EmitSound("HL2Player.Ironsightoff");
+
+	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+
+	if (!pOwner)
+		return;
+
+	if (pOwner->SetFOV(this, 0, 0.2f)) //modify the last value to adjust how fast the fov is applied
+	{
+		m_bIsIronsighted = false;
+		SetIronsightTime();
+	}
+
+	pOwner->SetMaxSpeed(pOwner->GetPlayerMaxSpeed() * (1 / weapon_ironsightwalkspeed.GetFloat()));
+}
+
+void CBaseCombatWeapon::SetIronsightTime(void)
+{
+	m_flIronsightedTime = gpGlobals->curtime;
+}
+
+bool CBaseCombatWeapon::IsLowered(void)
+{
+	return (m_bIsLowered || lower_viewmodel_adjust_enabled.GetBool());
+}
+
+void CBaseCombatWeapon::ToggleLower(void)
+{
+	if (m_bIsLowered)
+		DisableLower();
+	else
+		EnableLower();
+}
+
+void CBaseCombatWeapon::EnableLower(void)
+{
+	/*
+	#ifdef CLIENT_DLL
+	if( !prediction->IsFirstTimePredicted() )
+	return;
+	#endif
+	*/
+	if (!HasLower() || m_bIsLowered)
+		return;
+
+	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+
+	if (!pOwner)
+		return;
+
+	//	if( pOwner->SetFOV( this, pOwner->GetDefaultFOV() + GetIronsightFOVOffset(), 1.0f ) ) //modify the last value to adjust how fast the fov is applied
+	//	{
+	m_bIsLowered = true;
+	SetLowerTime();
+	//	}
+}
+
+void CBaseCombatWeapon::DisableLower(void)
+{
+	/*
+	#ifdef CLIENT_DLL
+	if( !prediction->IsFirstTimePredicted() )
+	return;
+	#endif
+	*/
+	if (!HasLower() || !m_bIsLowered)
+		return;
+
+	CBasePlayer *pOwner = ToBasePlayer(GetOwner());
+
+	if (!pOwner)
+		return;
+
+	//	if( pOwner->SetFOV( this, 0, 0.4f ) ) //modify the last value to adjust how fast the fov is applied
+	//	{
+	m_bIsLowered = false;
+	SetLowerTime();
+	//	}
+}
+
+void CBaseCombatWeapon::SetLowerTime(void)
+{
+	m_flLoweredTime = gpGlobals->curtime;
 }
 
 //---------------------------------------------------------
@@ -2187,6 +2514,32 @@ void CBaseCombatWeapon::AbortReload( void )
 	m_bInReload = false;
 }
 
+void CBaseCombatWeapon::CalcRecoil(float Amplitude)
+{
+	// Only the player fires this way so we can cast
+	CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+
+	if (!pPlayer)
+	{
+		return;
+	}
+
+	//Disorient the player
+	QAngle angles = pPlayer->GetLocalAngles();
+
+	angles.x -= random->RandomFloat(1, 2) / 10 * Amplitude;
+	angles.y += random->RandomFloat(-1, 1) / 10 * Amplitude;
+	angles.z = 0;
+
+#ifndef CLIENT_DLL
+
+	pPlayer->SnapEyeAngles(angles);
+
+#endif // CLIENT_DLL
+
+}
+
+
 void CBaseCombatWeapon::UpdateAutoFire( void )
 {
 	if ( !AutoFiresFullClip() )
@@ -2530,6 +2883,12 @@ BEGIN_PREDICTION_DATA( CBaseCombatWeapon )
 	DEFINE_PRED_FIELD_TOL( m_flNextSecondaryAttack, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),
 	DEFINE_PRED_FIELD_TOL( m_flTimeWeaponIdle, FIELD_FLOAT, FTYPEDESC_INSENDTABLE, TD_MSECTOLERANCE ),
 
+	DEFINE_PRED_FIELD(m_bIsLowered, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_flLoweredTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
+
+	DEFINE_PRED_FIELD(m_bIsIronsighted, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE),
+	DEFINE_PRED_FIELD(m_flIronsightedTime, FIELD_FLOAT, FTYPEDESC_INSENDTABLE),
+
 	DEFINE_PRED_FIELD( m_iPrimaryAmmoType, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_iSecondaryAmmoType, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_iClip1, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),			
@@ -2586,6 +2945,9 @@ BEGIN_DATADESC( CBaseCombatWeapon )
 	DEFINE_FIELD( m_bInReload, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_bFireOnEmpty, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_hOwner, FIELD_EHANDLE ),
+
+	DEFINE_FIELD(m_bIsIronsighted, FIELD_BOOLEAN),
+	DEFINE_FIELD(m_flIronsightedTime, FIELD_FLOAT),
 
 	DEFINE_FIELD( m_iState, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iszName, FIELD_STRING ),
@@ -2734,6 +3096,28 @@ REGISTER_SEND_PROXY_NON_MODIFIED_POINTER( SendProxy_SendNonLocalWeaponDataTable 
 #define RecvPropTime RecvPropFloat
 #endif
 
+#ifdef CLIENT_DLL
+void RecvProxy_ToggleSights(const CRecvProxyData* pData, void* pStruct, void* pOut)
+{
+	CBaseCombatWeapon *pWeapon = (CBaseCombatWeapon*)pStruct;
+	if (pData->m_Value.m_Int)
+		pWeapon->EnableIronsights();
+	else
+		pWeapon->DisableIronsights();
+}
+#endif
+
+#ifdef CLIENT_DLL
+void RecvProxy_ToggleLower(const CRecvProxyData* pData, void* pStruct, void* pOut)
+{
+	CBaseCombatWeapon *pWeapon = (CBaseCombatWeapon*)pStruct;
+	if (pData->m_Value.m_Int)
+		pWeapon->EnableLower();
+	else
+		pWeapon->DisableLower();
+}
+#endif
+
 //-----------------------------------------------------------------------------
 // Purpose: Propagation data for weapons. Only sent when a player's holding it.
 //-----------------------------------------------------------------------------
@@ -2744,6 +3128,12 @@ BEGIN_NETWORK_TABLE_NOBASE( CBaseCombatWeapon, DT_LocalActiveWeaponData )
 	SendPropInt( SENDINFO( m_nNextThinkTick ) ),
 	SendPropTime( SENDINFO( m_flTimeWeaponIdle ) ),
 
+	SendPropBool(SENDINFO(m_bIsIronsighted)),
+	SendPropFloat(SENDINFO(m_flIronsightedTime)),
+
+	SendPropBool(SENDINFO(m_bIsLowered)),
+	SendPropFloat(SENDINFO(m_flLoweredTime)),
+
 #if defined( TF_DLL )
 	SendPropExclude( "DT_AnimTimeMustBeFirst" , "m_flAnimTime" ),
 #endif
@@ -2753,6 +3143,12 @@ BEGIN_NETWORK_TABLE_NOBASE( CBaseCombatWeapon, DT_LocalActiveWeaponData )
 	RecvPropTime( RECVINFO( m_flNextSecondaryAttack ) ),
 	RecvPropInt( RECVINFO( m_nNextThinkTick ) ),
 	RecvPropTime( RECVINFO( m_flTimeWeaponIdle ) ),
+
+	RecvPropInt(RECVINFO(m_bIsIronsighted), 0, RecvProxy_ToggleSights), //note: RecvPropBool is actually RecvPropInt (see its implementation), but we need a proxy
+	RecvPropFloat(RECVINFO(m_flIronsightedTime)),
+
+	RecvPropInt(RECVINFO(m_bIsLowered), 0, RecvProxy_ToggleLower), //note: RecvPropBool is actually RecvPropInt (see its implementation), but we need a proxy
+	RecvPropFloat(RECVINFO(m_flLoweredTime)),
 #endif
 END_NETWORK_TABLE()
 

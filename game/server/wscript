@@ -17,7 +17,7 @@ games = {
 	'hl1mp': ['server_base.vpc', 'server_hl1mp.vpc'],
 	'cstrike': ['server_base.vpc', 'server_cstrike.vpc', 'nav_mesh.vpc'],
 	'dod': ['server_base.vpc', 'server_dod.vpc'],
-	'smodredux': ['server_base.vpc', 'server_hl2.vpc', 'server_smod.vpc'],
+	'smodredux': ['server_base.vpc', 'server_episodic.vpc', 'server_smod.vpc'],
 	'tf': [
 		'server_base.vpc',
 		'server_econ_base.vpc',
@@ -56,7 +56,7 @@ def build(bld):
 
 	defines = []
 
-	libs = ['tier0','particles','dmxloader','tier1','tier2','tier3','mathlib','vstdlib','choreoobjects','steam_api']
+	libs = ['tier0','particles','dmxloader','tier1','tier2','tier3','mathlib','vstdlib','choreoobjects','steam_api','lua']
 	if bld.env.DEST_OS == 'win32':
 		libs += ['USER32']
 

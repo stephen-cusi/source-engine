@@ -20,7 +20,7 @@ games = {
 	'hl1mp': ['client_base.vpc', 'client_hl1mp.vpc'],
 	'cstrike': ['client_base.vpc', 'client_cstrike.vpc'],
 	'dod': ['client_base.vpc', 'client_dod.vpc'],
-	'smodredux': ['client_base.vpc', 'client_hl2.vpc', 'client_smod.vpc'],
+	'smodredux': ['client_base.vpc', 'client_episodic.vpc', 'client_smod.vpc'],
 }
 
 def configure(conf):
@@ -63,7 +63,8 @@ def build(bld):
 		'bitmap',
 		'vtf',
 		'RT',
-		'ZLIB'
+		'ZLIB',
+		'lua',
 	]
 
 	install_path = bld.env.PREFIX

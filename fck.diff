@@ -1,0 +1,223 @@
+80,83d79
+< #include "c_world.h"
+< 
+< #include "strtools.h"
+< 
+116c112
+<  ConVar r_skybox( "r_skybox","1", FCVAR_CHEAT, "Enable the rendering of sky boxes" );
+---
+> static ConVar r_skybox( "r_skybox","1", FCVAR_CHEAT, "Enable the rendering of sky boxes" );
+166,174c162,165
+< static ConVar r_screenfademinsize("r_screenfademinsize", "0");
+< static ConVar r_screenfademaxsize("r_screenfademaxsize", "0");
+< static ConVar cl_drawmonitors("cl_drawmonitors", "1");
+< static ConVar r_eyewaterepsilon("r_eyewaterepsilon", "10.0f", FCVAR_CHEAT);
+< 
+< static ConVar r_radialblur_samplecount("r_screenblur_samplecount", "1", FCVAR_ARCHIVE);
+< static ConVar r_ironsightblur_samplecount("r_ironsightblur_samplecount", "1", FCVAR_ARCHIVE);
+< static ConVar r_distanceblur_samplecount("r_distanceblur_samplecount", "1", FCVAR_ARCHIVE);
+< static ConVar r_subviewcam("r_subviewcam", "1");
+---
+> static ConVar r_screenfademinsize( "r_screenfademinsize", "0" );
+> static ConVar r_screenfademaxsize( "r_screenfademaxsize", "0" );
+> static ConVar cl_drawmonitors( "cl_drawmonitors", "1" );
+> static ConVar r_eyewaterepsilon( "r_eyewaterepsilon", "10.0f", FCVAR_CHEAT );
+271,272c262
+< 	CWorldListCache()
+< 	{
+---
+> 	CWorldListCache() = default;
+274d263
+< 	}
+759c748
+< void SetClearColorToFogColor()
+---
+> static void SetClearColorToFogColor()
+1447,1448c1436,1437
+< 		float flPrimaryColorLerp[3] = { pFogParams->colorPrimaryLerpTo.GetR(), pFogParams->colorPrimaryLerpTo.GetG(), pFogParams->colorPrimaryLerpTo.GetB() };
+< 		float flSecondaryColorLerp[3] = { pFogParams->colorSecondaryLerpTo.GetR(), pFogParams->colorSecondaryLerpTo.GetG(), pFogParams->colorSecondaryLerpTo.GetB() };
+---
+> 		float flPrimaryColorLerp[3] = { (float)pFogParams->colorPrimaryLerpTo.GetR(), (float)pFogParams->colorPrimaryLerpTo.GetG(), (float)pFogParams->colorPrimaryLerpTo.GetB() };
+> 		float flSecondaryColorLerp[3] = { (float)pFogParams->colorSecondaryLerpTo.GetR(), (float)pFogParams->colorSecondaryLerpTo.GetG(), (float)pFogParams->colorSecondaryLerpTo.GetB() };
+1471,1472c1460,1461
+< 		float flPrimaryColor[3] = { pFogParams->colorPrimary.GetR(), pFogParams->colorPrimary.GetG(), pFogParams->colorPrimary.GetB() };
+< 		float flSecondaryColor[3] = { pFogParams->colorSecondary.GetR(), pFogParams->colorSecondary.GetG(), pFogParams->colorSecondary.GetB() };
+---
+> 		float flPrimaryColor[3] = { (float)pFogParams->colorPrimary.GetR(), (float)pFogParams->colorPrimary.GetG(), (float)pFogParams->colorPrimary.GetB() };
+> 		float flSecondaryColor[3] = { (float)pFogParams->colorSecondary.GetR(), (float)pFogParams->colorSecondary.GetG(), (float)pFogParams->colorSecondary.GetB() };
+1867,1959d1855
+< void CViewRender::DrawScope(const CViewSetup &viewSet)
+< {
+< 	C_BasePlayer *localPlayer = C_BasePlayer::GetLocalPlayer();
+< 
+< 	if (!localPlayer)
+< 		return;
+< 
+< 	if (!localPlayer->GetActiveWeapon())
+< 		return;
+< 
+< 	if (!localPlayer->GetActiveWeapon()->GetViewModel())
+< 		return;
+< 
+< 	//Copy our current View.
+< 	CViewSetup scopeView = viewSet;
+< 
+< 	//Get our camera render target.
+< 	ITexture *pRenderTarget = GetScopeTexture();
+< 
+< 	if (pRenderTarget == NULL)
+< 		return;
+< 
+< 	CMatRenderContextPtr pRenderContext(materials);
+< 
+< 	if (!pRenderTarget->IsRenderTarget())
+< 		Msg(" not a render target");
+< 
+< 	//Our view information, Origin, View Direction, window size
+< 	//	location on material, and visual ratios.
+< 	scopeView.width = pRenderTarget->GetActualWidth();
+< 	scopeView.height = pRenderTarget->GetActualHeight();
+< 	scopeView.x = 0;
+< 	scopeView.y = 0;
+< 	scopeView.fov *= m_flscopeFOV;
+< 	scopeView.m_bOrtho = false;
+< 
+< 	float mouseX, mouseY;
+< 	ClientModeShared *mode = (ClientModeShared *)GetClientModeNormal();
+< 	mode->GetMouseXAndY(mouseX, mouseY);
+< 	scopeView.angles.x += mouseY;
+< 	scopeView.angles.y -= mouseX;
+< 
+< 	scopeView.m_flAspectRatio = 1.0f;
+< 
+< 
+< 	//Set the view up and output the scene to our RenderTarget (Scope Material).
+< 	render->Push3DView(scopeView, VIEW_CLEAR_DEPTH | VIEW_CLEAR_COLOR, pRenderTarget, GetFrustum());
+< 
+< 	if (r_subviewcam.GetBool())
+< 	{
+< 		SkyboxVisibility_t nSkyboxVisible = SKYBOX_NOT_VISIBLE;
+< 		int ClearFlags = 0;
+< 		CSkyboxView *pSkyView = new CSkyboxView(this);
+< 		if (pSkyView->Setup(scopeView, &ClearFlags, &nSkyboxVisible) != false)
+< 			AddViewToScene(pSkyView);
+< 		SafeRelease(pSkyView);
+< 
+< 		ViewDrawScene(false, SKYBOX_3DSKYBOX_VISIBLE, scopeView, VIEW_CLEAR_DEPTH, VIEW_MONITOR);
+< 	}
+< 
+< 	if (m_ScopeFilter1 && !FStrEq(m_ScopeFilter1->GetName(), "") && !FStrEq(m_ScopeFilter1->GetName(), "0") && !FStrEq(m_ScopeFilter1->GetName(), "___error"))
+< 	{
+< 		IMaterial *pOverlayMaterial = m_ScopeFilter1;
+< 		int sw = pRenderTarget->GetActualWidth();
+< 		int sh = pRenderTarget->GetActualHeight();
+< 		// Note - don't offset by x,y - already done by the viewport.
+< 		pRenderContext->DrawScreenSpaceRectangle(pOverlayMaterial, 0, 0, scopeView.width, scopeView.height,
+< 			0, 0, sw - 1, sh - 1, sw, sh);
+< 	}
+< 
+< 	if (m_ScopeFilter2 && !FStrEq(m_ScopeFilter2->GetName(), "") && !FStrEq(m_ScopeFilter2->GetName(), "0") && !FStrEq(m_ScopeFilter2->GetName(), "___error"))
+< 	{
+< 		IMaterial *pOverlayMaterial = m_ScopeFilter2;
+< 		int sw = pRenderTarget->GetActualWidth();
+< 		int sh = pRenderTarget->GetActualHeight();
+< 		// Note - don't offset by x,y - already done by the viewport.
+< 		pRenderContext->DrawScreenSpaceRectangle(pOverlayMaterial, 0, 0, scopeView.width, scopeView.height,
+< 			0, 0, sw - 1, sh - 1, sw, sh);
+< 	}
+< 
+< 	if (localPlayer->GetActiveWeapon()->GetIronsightDelta() != 1.0f && m_ScopeOverlay && !FStrEq(m_ScopeOverlay->GetName(),"") && !FStrEq(m_ScopeOverlay->GetName(), "___error"))
+< 	{
+< 		IMaterial *pOverlayMaterial = m_ScopeOverlay;
+< 		int sw = pRenderTarget->GetActualWidth();
+< 		int sh = pRenderTarget->GetActualHeight();
+< 		pOverlayMaterial->AlphaModulate(fabs(localPlayer->GetActiveWeapon()->GetIronsightDelta() - 1.0f));
+< 		// Note - don't offset by x,y - already done by the viewport.
+< 		pRenderContext->DrawScreenSpaceRectangle(pOverlayMaterial, 0, 0, scopeView.width, scopeView.height,
+< 			0, 0, sw - 1, sh - 1, sw, sh);
+< 	}
+< 
+< 	render->PopView(m_Frustum);
+< }
+2435,2439d2330
+< 	if (g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 70)
+< 	{
+< 		DrawScope(view);
+< 	}
+< 
+2455c2346
+< void CViewRender::Render2DEffectsPreHUD(const CViewSetup &view)
+---
+> void CViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
+2457,2475d2347
+< 	if (!building_cubemaps.GetBool()) // We probably should use a different view. variable here
+< 	{
+< 		for (int i = 0; i < r_radialblur_samplecount.GetInt(); i++)
+< 		{
+< 			RenderClassicBlur(view, view.x, view.y, view.width, view.height);
+< 		}
+< 		for (int i = 0; i < r_ironsightblur_samplecount.GetInt(); i++)
+< 		{
+< 			RenderRadialBlur(view, view.x, view.y, view.width, view.height);
+< 		}
+< 		for (int i = 0; i < r_distanceblur_samplecount.GetInt(); i++)
+< 		{
+< 			RenderDistanceBlur(view, view.x, view.y, view.width, view.height);
+< 		}
+< 
+< 		//RenderMotionBlur(view, view.x, view.y, view.width, view.height);
+< 
+< 		RenderClassicRadialBlur(view, view.x, view.y, view.width, view.height);
+< 	}
+2817a2690
+> 
+2829,2850d2701
+< 	int iRecursionLevel = g_pPortalRender->GetViewRecursionLevel();
+< 	Assert( iRecursionLevel > 0 );
+< 
+< 	//get references to reflection textures
+< 	CTextureReference pPrimaryWaterReflectionTexture;
+< 	pPrimaryWaterReflectionTexture.Init( GetWaterReflectionTexture() );
+< 	CTextureReference pReplacementWaterReflectionTexture;
+< 	pReplacementWaterReflectionTexture.Init( portalrendertargets->GetWaterReflectionTextureForStencilDepth( iRecursionLevel ) );
+< 
+< 	//get references to refraction textures
+< 	CTextureReference pPrimaryWaterRefractionTexture;
+< 	pPrimaryWaterRefractionTexture.Init( GetWaterRefractionTexture() );
+< 	CTextureReference pReplacementWaterRefractionTexture;
+< 	pReplacementWaterRefractionTexture.Init( portalrendertargets->GetWaterRefractionTextureForStencilDepth( iRecursionLevel ) );
+< 
+< 
+< 	//swap texture contents for the primary render targets with those we set aside for this recursion level
+< 	if( pReplacementWaterReflectionTexture != NULL )
+< 		pPrimaryWaterReflectionTexture->SwapContents( pReplacementWaterReflectionTexture );
+< 
+< 	if( pReplacementWaterRefractionTexture != NULL )
+< 		pPrimaryWaterRefractionTexture->SwapContents( pReplacementWaterRefractionTexture );
+2867c2718
+< 	
+---
+> 
+2886c2737
+< 	{		     
+---
+> 	{
+2889c2740
+< 		{								    
+---
+> 		{
+2942,2949d2792
+< 
+< 
+< 	//swap back the water render targets
+< 	if( pReplacementWaterReflectionTexture != NULL )
+< 		pPrimaryWaterReflectionTexture->SwapContents( pReplacementWaterReflectionTexture );
+< 
+< 	if( pReplacementWaterRefractionTexture != NULL )
+< 		pPrimaryWaterRefractionTexture->SwapContents( pReplacementWaterRefractionTexture );
+3303a3147
+> 
+4167c4011
+< 	if ( 0 && r_threaded_renderables.GetBool() )
+---
+> 	if ( r_threaded_renderables.GetBool() )

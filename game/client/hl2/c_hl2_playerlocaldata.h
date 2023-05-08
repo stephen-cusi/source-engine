@@ -31,6 +31,7 @@ public:
 
 	float	m_flSuitPower;
 	bool	m_bZooming;
+	bool	m_bInSlowMo;
 	int		m_bitsActiveDevices;
 	int		m_iSquadMemberCount;
 	int		m_iSquadMedicCount;

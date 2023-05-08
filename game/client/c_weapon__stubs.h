@@ -28,7 +28,7 @@
 	public:															\
 		DECLARE_PREDICTABLE();										\
 		DECLARE_CLIENTCLASS();										\
-		C_##className() = default;											\
+		C_##className() {};											\
 	private:														\
 		C_##className( const C_##className & );						\
 	};																\
@@ -36,4 +36,10 @@
 	IMPLEMENT_CLIENTCLASS_DT( C_##className, DT_##className, C##className )	\
 	END_RECV_TABLE()
 
+//I am cheap cheap. <_>
+#define CustomWeapon_IMPLEMENT( num )												\
+	STUB_WEAPON_CLASS( weapon_custom##num, WeaponCustom##num, C_WeaponCustom );
+
+#define CustomWeapon_IMPLEMENT_CustomName( customname )												\
+	STUB_WEAPON_CLASS( weapon_##customname, WeaponCustomNamed##customname, C_WeaponCustom );
 #endif // C_WEAPON__STUBS_H

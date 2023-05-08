@@ -455,6 +455,8 @@ public:
 	virtual void			SetAnimation( PLAYER_ANIM playerAnim );
 	void					SetWeaponAnimType( const char *szExtention );
 
+	float					freeaimX, freeaimY;
+
 	// custom player functions
 	virtual void			ImpulseCommands( void );
 	virtual void			CheatImpulseCommands( int iImpulse );

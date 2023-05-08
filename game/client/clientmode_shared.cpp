@@ -66,6 +66,8 @@ extern ConVar replay_rendersetting_renderglow;
 #include "econ_item_description.h"
 #endif
 
+#include "coolmod/smod_cvars.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -497,6 +499,50 @@ void ClientModeShared::OverrideMouseInput( float *x, float *y )
 	if ( pWeapon )
 	{
 		pWeapon->OverrideMouseInput( x, y );
+	}
+
+	if (cl_freeaim.GetInt())
+	{
+		if (::input->flMouseX > cl_freeaim_limit.GetFloat())
+			::input->flMouseX = cl_freeaim_limit.GetFloat();
+		if (::input->flMouseX < -cl_freeaim_limit.GetFloat())
+			::input->flMouseX = -cl_freeaim_limit.GetFloat();
+		if (::input->flMouseY > cl_freeaim_limit.GetFloat())
+			::input->flMouseY = cl_freeaim_limit.GetFloat();
+		if (::input->flMouseY < -cl_freeaim_limit.GetFloat())
+			::input->flMouseY = -cl_freeaim_limit.GetFloat();
+
+		::input->flMouseX += *x * cl_freeaim_mult.GetFloat();
+		::input->flMouseY += *y * cl_freeaim_mult.GetFloat();
+	}
+	else
+	{
+		::input->flMouseX = 0;
+		::input->flMouseY = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Get MouseX and MouseY (FREEAIM BITCH)
+//-----------------------------------------------------------------------------
+void ClientModeShared::GetMouseXAndY(float &x, float &y)
+{
+	CBasePlayer *pPlayer = CBasePlayer::GetLocalPlayer();
+	CBaseCombatWeapon *pWeapon;
+	x = ::input->flMouseX;
+	y = ::input->flMouseY;
+
+	if (pPlayer)
+	{
+		pWeapon = pPlayer->GetActiveWeapon();
+		if (pWeapon)
+		{
+			if (pWeapon->IsIronsighted() && !cl_freeaim_ironsight.GetBool())
+			{
+				x = 0;
+				y = 0;
+			}
+		}
 	}
 }
 

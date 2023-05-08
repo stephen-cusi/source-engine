@@ -194,6 +194,32 @@ public:
 	virtual void 			DefaultTouch( CBaseEntity *pOther );	// default weapon touch
 	virtual void			GiveTo( CBaseEntity *pOther );
 
+	Vector					GetAdjustPositionOffset(void) const;
+	QAngle					GetAdjustAngleOffset(void) const;
+
+	Vector					GetIronsightPositionOffset(void) const;
+	QAngle					GetIronsightAngleOffset(void) const;
+	float					GetIronsightFOVOffset(void) const;
+	virtual bool			HasIronsights(void) { return GetWpnData().bHasIronsight; } //default yes; override and return false for weapons with no ironsights (like weapon_crowbar)
+	bool					IsIronsighted(void);
+	void					ToggleIronsights(void);
+	void					EnableIronsights(void);
+	void					DisableIronsights(void);
+	void					SetIronsightTime(void);
+
+	Vector					GetLowerPositionOffset(void) const;
+	QAngle					GetLowerAngleOffset(void) const;
+
+	virtual bool			HasLower(void) { return true; }
+	bool					IsLowered(void);
+	void					ToggleLower(void);
+	void					EnableLower(void);
+	void					DisableLower(void);
+	void					SetLowerTime(void);
+
+	CNetworkVar(bool, m_bIsLowered);
+	CNetworkVar(float, m_flLoweredTime);
+
 	// HUD Hints
 	virtual bool			ShouldDisplayAltFireHUDHint();
 	virtual void			DisplayAltFireHudHint();	
@@ -265,6 +291,8 @@ public:
 	bool					DefaultReload( int iClipSize1, int iClipSize2, int iActivity );
 	bool					ReloadsSingly( void ) const;
 
+	virtual void			CalcRecoil(float Amplitude);
+
 	virtual bool			AutoFiresFullClip( void ) { return false; }
 	virtual bool			CanOverload( void ) { return false; }
 	virtual void			UpdateAutoFire( void );
@@ -333,6 +361,12 @@ public:
 	virtual bool			CanBePickedUpByNPCs( void ) { return true;	}
 
 	virtual int				GetSkinOverride() const { return -1; }
+
+	float					GetIronsightDelta() { return m_flIronsighteDelta; };
+	void					SetIronsightDelta(float delta) { m_flIronsighteDelta = delta; };
+
+	float					GetLowerDelta() { return m_flLowerDelta; };
+	void					SetLowerDelta(float delta) { m_flLowerDelta = delta; };
 
 public:
 
@@ -553,6 +587,11 @@ public:
 	// Weapon art
 	CNetworkVar( int, m_iViewModelIndex );
 	CNetworkVar( int, m_iWorldModelIndex );
+
+	// Ironsights
+	CNetworkVar(bool, m_bIsIronsighted);
+	CNetworkVar(float, m_flIronsightedTime);
+
 	// Sounds
 	float					m_flNextEmptySoundTime;				// delay on empty sound playing
 
@@ -571,6 +610,14 @@ private:
 
 	int						m_iPrimaryAmmoCount;
 	int						m_iSecondaryAmmoCount;
+
+	float					m_flCrosshairDistance;
+	int						m_iAmmoLastCheck;
+	int						m_iAlpha;
+	int						m_iCrosshairTextureID; // for white additive texture
+
+	float					m_flIronsighteDelta;
+	float					m_flLowerDelta;
 
 public:
 
@@ -602,8 +649,8 @@ public:
 
 	IPhysicsConstraint		*GetConstraint() { return m_pConstraint; }
 
-private:
 	WEAPON_FILE_INFO_HANDLE	m_hWeaponFileInfo;
+private:
 	IPhysicsConstraint		*m_pConstraint;
 
 	int						m_iAltFireHudHintCount;		// How many times has this weapon displayed its alt-fire HUD hint?

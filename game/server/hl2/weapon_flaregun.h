@@ -96,6 +96,7 @@ public:
 	DECLARE_CLASS( CFlaregun, CBaseHLCombatWeapon );
 
 	DECLARE_SERVERCLASS();
+	DECLARE_ACTTABLE();
 
 	void Precache( void );
 	void PrimaryAttack( void );

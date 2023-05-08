@@ -19,6 +19,9 @@
 #include "fx_line.h"
 #include "fx_water.h"
 
+#include "hl2_player_shared.h"
+#include "coolmod/smod_cvars.h"
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -182,6 +185,23 @@ void C_BaseExplosionEffect::Create( const Vector &position, float force, float s
 #endif
 
 	PlaySound();
+
+	C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+	if (pPlayer)
+	{
+		CHL2_Player *pHLPlayer = dynamic_cast<CHL2_Player*>(pPlayer);
+		if (pHLPlayer)
+		{
+			Vector vDiff;
+			VectorSubtract(position, pHLPlayer->GetAbsOrigin(), vDiff);
+			float flDiff = vDiff.Length();
+			if (flDiff <= 1000 && r_shockeffect.GetBool())
+			{
+				pHLPlayer->SetBlurTime();
+				pHLPlayer->SetBlastEffectTime();
+			}
+		}
+	}
 
 	if ( scale != 0 )
 	{
