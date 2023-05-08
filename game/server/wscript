@@ -9,7 +9,7 @@ top = '.'
 PROJECT_NAME = 'server'
 
 games = {
-	'smod': ['server_base.vpc', 'server_hl2.vpc'],
+	'hl2': ['server_base.vpc', 'server_hl2.vpc'],
 	'episodic':['server_base.vpc', 'server_episodic.vpc'],
 	'hl2mp': ['server_base.vpc', 'server_hl2mp.vpc'],
 	'portal': ['server_base.vpc', 'server_portal.vpc'],
@@ -17,6 +17,7 @@ games = {
 	'hl1mp': ['server_base.vpc', 'server_hl1mp.vpc'],
 	'cstrike': ['server_base.vpc', 'server_cstrike.vpc', 'nav_mesh.vpc'],
 	'dod': ['server_base.vpc', 'server_dod.vpc'],
+	'smodredux': ['server_base.vpc', 'server_hl2.vpc', 'server_smod.vpc'],
 	'tf': [
 		'server_base.vpc',
 		'server_econ_base.vpc',
