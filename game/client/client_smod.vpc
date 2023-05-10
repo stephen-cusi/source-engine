@@ -29,6 +29,7 @@ $Project "Client (HL2)"
 		$File "$SRCDIR/game/shared/coolmod/sp_animstate.cpp"
 		$File "$SRCDIR/game/shared/smmod/shared_convars.cpp"
 		$File "$SRCDIR/game/shared/smmod/shdef_customweapons.cpp"
+		$File "$SRCDIR\game\shared\smod\weapon_psp.cpp"
 
 		$File "SubViewCam_Proxy.cpp"
 		$File "tneRenderTargets.cpp"

@@ -17,9 +17,10 @@
 
 extern "C"
 {
-   #include "../public/lua/lua.h"
-   #include "../public/lua/lauxlib.h"
-   #include "../public/lua/lualib.h"
+	#define LUA_COMPAT_MODULE
+	#include "../../public/lua/lua.h"
+	#include "../../public/lua/lauxlib.h"
+	#include "../../public/lua/lualib.h"
 }
 
 #include <vector>
@@ -107,11 +108,11 @@ private:
 };
 
 
-class CGELUAManager
+class CLUAManager
 {
 public:
-	CGELUAManager();
-	~CGELUAManager();
+	CLUAManager();
+	~CLUAManager();
 
 	virtual void InitDll();
 	void InitHandles();
@@ -131,6 +132,6 @@ private:
 	bool m_bInit;
 };
 
-extern CGELUAManager* GELua();
+extern CLUAManager* GetLuaManager();
 
 #endif //MC_GE_LUAMANAGER_H

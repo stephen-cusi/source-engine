@@ -77,7 +77,7 @@ void CInstantTrig::Trigger()
 		}
 		labels = strtok(NULL, ":");
 	}
-	free(buffer);
+//	free(buffer);
 
 	if (!FStrEq(m_iszRandomSpawnLabel.ToCStr(), ""))
 	{
@@ -96,7 +96,7 @@ void CInstantTrig::Trigger()
 			labels = strtok(NULL, ":");
 		}
 	}
-	free(buffer);
+//	free(buffer);
 
 	CInstantTrig *pEntity = (CInstantTrig *)gEntList.FindEntityByClassname(NULL, "instant_trig");
 	if (pEntity && (pEntity->m_nGroup == m_nRemoveGroup))

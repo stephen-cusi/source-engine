@@ -59,11 +59,14 @@ $Project "Server (HL2)"
 		$File "smod\grenade_bugspawner.cpp"
 		$File "smod\weapon_anm14.cpp"
 		$File "smod\weapon_bugspawner.cpp"
+		$File "smod\weapon_physlauncher.cpp"
+		$File "smod\weapon_banana.cpp"
 
 		$File "$SRCDIR/game/shared/smmod/shdef_customweapons.cpp"
 		$File "$SRCDIR/game/shared/coolmod/smod_cvars.cpp"
 		$File "$SRCDIR\game\shared\coolmod\luamanager.cpp"
 		$File "$SRCDIR\game\shared\coolmod\sp_animstate.cpp"
 		$File "$SRCDIR\game\shared\coolmod\smod_addcontents.cpp"
+		$File "$SRCDIR\game\shared\smod\weapon_psp.cpp"
 	}
 }

@@ -16,26 +16,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+CLUAManager gLuaMng;
 
-void RegisterLUAFuncs(lua_State *L);
-void RegisterLUAGlobals(lua_State *L);
-
-CGELUAManager gLuaMng;
-CGELUAManager* GELua()
+CLUAManager* GetLuaManager()
 {
 	return &gLuaMng;
-}
-
-void RegPublicFunctions(lua_State *L)
-{
-	//add global lua functions here
-	//RegisterLUAFuncs(L);
-}
-
-void RegPublicGlobals(lua_State *L)
-{
-	//add global lua defines here
-	//RegisterLUAGlobals(L);
 }
 
 ////////////////////////////////////////////////////////////////
@@ -48,6 +33,7 @@ LuaHandle* GetNLuaHandle()
 {
 	return g_NLuaHandle;
 }
+
 LuaHandle::LuaHandle()
 {
 	pL = NULL;
@@ -55,7 +41,7 @@ LuaHandle::LuaHandle()
 
 LuaHandle::~LuaHandle()
 {
-	GELua()->DeRegisterLuaHandle(this);
+	GetLuaManager()->DeRegisterLuaHandle(this);
 }
 
 void LuaHandle::InitDll()
@@ -69,43 +55,35 @@ void LuaHandle::InitDll()
 #ifdef _DEBUG
 	luaopen_debug(pL);
 #endif
-
-	RegFunctions();
-	RegGlobals();
-
-	RegPublicFunctions(pL);
-	RegPublicGlobals(pL);
-
 	Init();
 }
 
 void LuaHandle::ShutdownDll()
 {
 	Shutdown();
-
 	lua_close(pL);
 }
 
 void LuaHandle::Register()
 {
-	GELua()->RegisterLuaHandle(this);
+	GetLuaManager()->RegisterLuaHandle(this);
 }
 
 ////////////////////////////////////////////////////////////////
-//
+// LuaManager
 ////////////////////////////////////////////////////////////////
 
-CGELUAManager::CGELUAManager()
+CLUAManager::CLUAManager()
 {
 	m_bInit = false;
 }
 
-CGELUAManager::~CGELUAManager()
+CLUAManager::~CLUAManager()
 {
 
 }
 
-void CGELUAManager::InitDll()
+void CLUAManager::InitDll()
 {
 	// Register our LUA Functions and Globals so we can call them
 	// from .lua scripts
@@ -120,11 +98,9 @@ void CGELUAManager::InitDll()
 	m_bInit = true;
 	//ZMSLuaGamePlay *p = GetGP();
 	//p->m_bLuaLoaded = true;
-
-
 }
 
-void CGELUAManager::ShutdownDll()
+void CLUAManager::ShutdownDll()
 {
 	for (size_t x = 0; x<m_vHandles.size(); x++)
 	{
@@ -138,7 +114,7 @@ void CGELUAManager::ShutdownDll()
 }
 
 
-void CGELUAManager::DeRegisterLuaHandle(LuaHandle* handle)
+void CLUAManager::DeRegisterLuaHandle(LuaHandle* handle)
 {
 	if (!handle)
 		return;
@@ -150,7 +126,7 @@ void CGELUAManager::DeRegisterLuaHandle(LuaHandle* handle)
 	}
 }
 
-void CGELUAManager::RegisterLuaHandle(LuaHandle* handle)
+void CLUAManager::RegisterLuaHandle(LuaHandle* handle)
 {
 	if (!handle)
 		return;
@@ -166,12 +142,4 @@ void CGELUAManager::RegisterLuaHandle(LuaHandle* handle)
 	//if we are late to the game
 	if (m_bInit)
 		handle->InitDll();
-}
-void RegisterLUAFuncs(lua_State *L)
-{
-
-}
-void RegisterLUAGlobals(lua_State *L)
-{
-
 }

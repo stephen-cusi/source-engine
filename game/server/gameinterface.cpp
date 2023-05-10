@@ -129,6 +129,9 @@ extern ConVar tf_mm_servermode;
 #include "replay/ireplaysystem.h"
 #endif
 
+#include "map_parser.h"
+#include "coolmod/luamanager.h"
+
 extern IToolFrameworkServer *g_pToolFrameworkServer;
 extern IParticleSystemQuery *g_pParticleSystemQuery;
 
@@ -742,6 +745,9 @@ bool CServerGameDLL::DLLInit( CreateInterfaceFn appSystemFactory,
 	gamestatsuploader->InitConnection();
 #endif
 
+	// Start LUA
+	GetLuaManager()->InitDll();
+
 	return true;
 }
 
@@ -802,6 +808,9 @@ void CServerGameDLL::DLLShutdown( void )
 	DisconnectTier2Libraries();
 	ConVar_Unregister();
 	DisconnectTier1Libraries();
+
+	// Shutdown LUA, close all open gameplays
+	GetLuaManager()->ShutdownDll();
 }
 
 bool CServerGameDLL::ReplayInit( CreateInterfaceFn fnReplayFactory )
@@ -975,6 +984,10 @@ bool CServerGameDLL::LevelInit( const char *pMapName, char const *pMapEntities, 
 		{
 			gpGlobals->eLoadType = MapLoad_LoadGame;
 		}
+
+#ifdef COOLMOD
+		GetMapScriptParser()->SetRestored(gpGlobals->eLoadType == MapLoad_LoadGame);
+#endif // COOLMOD
 
 		BeginRestoreEntities();
 		if ( !engine->LoadGameState( pMapName, 1 ) )
