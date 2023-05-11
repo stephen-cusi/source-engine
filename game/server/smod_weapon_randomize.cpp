@@ -32,7 +32,7 @@ const char *GiveRandomWeapon(CAI_BaseNPC *pNPC)
 		if (parser->m_pMapScript)
 		{
 			char *entityname = (char*)pNPC->GetClassname();
-			char *newWeapon = (char*)pNPC->GetActiveWeapon() ? pNPC->GetActiveWeapon()->GetClassname() : "0";
+			const char *newWeapon = (char*)pNPC->GetActiveWeapon() ? pNPC->GetActiveWeapon()->GetClassname() : "0";
 
 			KeyValues *pStandardMap = parser->m_pMapScript->FindKey("default_map");
 			if (pStandardMap)
