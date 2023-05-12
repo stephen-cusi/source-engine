@@ -164,6 +164,11 @@ static ConVar r_screenfademaxsize( "r_screenfademaxsize", "0" );
 static ConVar cl_drawmonitors( "cl_drawmonitors", "1" );
 static ConVar r_eyewaterepsilon( "r_eyewaterepsilon", "10.0f", FCVAR_CHEAT );
 
+static ConVar r_radialblur_samplecount("r_screenblur_samplecount", "1", FCVAR_ARCHIVE);
+static ConVar r_ironsightblur_samplecount("r_ironsightblur_samplecount", "1", FCVAR_ARCHIVE);
+static ConVar r_distanceblur_samplecount("r_distanceblur_samplecount", "1", FCVAR_ARCHIVE);
+static ConVar r_subviewcam("r_subviewcam", "1");
+
 #ifdef TF_CLIENT_DLL
 static ConVar pyro_dof( "pyro_dof", "1", FCVAR_ARCHIVE );
 #endif
@@ -1848,6 +1853,100 @@ void CViewRender::SetupMain3DView( const CViewSetup &view, int &nClearFlags )
 	}
 }
 
+void CViewRender::DrawScope(const CViewSetup &viewSet)
+{
+	C_BasePlayer *localPlayer = C_BasePlayer::GetLocalPlayer();
+
+	if (!localPlayer)
+		return;
+
+	if (!localPlayer->GetActiveWeapon())
+		return;
+
+	if (!localPlayer->GetActiveWeapon()->GetViewModel())
+		return;
+
+	//Copy our current View.
+	CViewSetup scopeView = viewSet;
+
+	//Get our camera render target.
+	ITexture *pRenderTarget = GetScopeTexture();
+
+	if (pRenderTarget == NULL)
+		return;
+
+	CMatRenderContextPtr pRenderContext(materials);
+
+	if (!pRenderTarget->IsRenderTarget())
+		Msg(" not a render target");
+
+	//Our view information, Origin, View Direction, window size
+	//	location on material, and visual ratios.
+	scopeView.width = pRenderTarget->GetActualWidth();
+	scopeView.height = pRenderTarget->GetActualHeight();
+	scopeView.x = 0;
+	scopeView.y = 0;
+	scopeView.fov *= m_flscopeFOV;
+	scopeView.m_bOrtho = false;
+
+	float mouseX, mouseY;
+	ClientModeShared *mode = (ClientModeShared *)GetClientModeNormal();
+	mode->GetMouseXAndY(mouseX, mouseY);
+	scopeView.angles.x += mouseY;
+	scopeView.angles.y -= mouseX;
+
+	scopeView.m_flAspectRatio = 1.0f;
+
+
+	//Set the view up and output the scene to our RenderTarget (Scope Material).
+	render->Push3DView(scopeView, VIEW_CLEAR_DEPTH | VIEW_CLEAR_COLOR, pRenderTarget, GetFrustum());
+
+	if (r_subviewcam.GetBool())
+	{
+		SkyboxVisibility_t nSkyboxVisible = SKYBOX_NOT_VISIBLE;
+		int ClearFlags = 0;
+		CSkyboxView *pSkyView = new CSkyboxView(this);
+		if (pSkyView->Setup(scopeView, &ClearFlags, &nSkyboxVisible) != false)
+			AddViewToScene(pSkyView);
+		SafeRelease(pSkyView);
+
+		ViewDrawScene(false, SKYBOX_3DSKYBOX_VISIBLE, scopeView, VIEW_CLEAR_DEPTH, VIEW_MONITOR);
+	}
+
+	if (m_ScopeFilter1 && !FStrEq(m_ScopeFilter1->GetName(), "") && !FStrEq(m_ScopeFilter1->GetName(), "0") && !FStrEq(m_ScopeFilter1->GetName(), "___error"))
+	{
+		IMaterial *pOverlayMaterial = m_ScopeFilter1;
+		int sw = pRenderTarget->GetActualWidth();
+		int sh = pRenderTarget->GetActualHeight();
+		// Note - don't offset by x,y - already done by the viewport.
+		pRenderContext->DrawScreenSpaceRectangle(pOverlayMaterial, 0, 0, scopeView.width, scopeView.height,
+			0, 0, sw - 1, sh - 1, sw, sh);
+	}
+
+	if (m_ScopeFilter2 && !FStrEq(m_ScopeFilter2->GetName(), "") && !FStrEq(m_ScopeFilter2->GetName(), "0") && !FStrEq(m_ScopeFilter2->GetName(), "___error"))
+	{
+		IMaterial *pOverlayMaterial = m_ScopeFilter2;
+		int sw = pRenderTarget->GetActualWidth();
+		int sh = pRenderTarget->GetActualHeight();
+		// Note - don't offset by x,y - already done by the viewport.
+		pRenderContext->DrawScreenSpaceRectangle(pOverlayMaterial, 0, 0, scopeView.width, scopeView.height,
+			0, 0, sw - 1, sh - 1, sw, sh);
+	}
+
+	if (localPlayer->GetActiveWeapon()->GetIronsightDelta() != 1.0f && m_ScopeOverlay && !FStrEq(m_ScopeOverlay->GetName(),"") && !FStrEq(m_ScopeOverlay->GetName(), "___error"))
+	{
+		IMaterial *pOverlayMaterial = m_ScopeOverlay;
+		int sw = pRenderTarget->GetActualWidth();
+		int sh = pRenderTarget->GetActualHeight();
+		pOverlayMaterial->AlphaModulate(fabs(localPlayer->GetActiveWeapon()->GetIronsightDelta() - 1.0f));
+		// Note - don't offset by x,y - already done by the viewport.
+		pRenderContext->DrawScreenSpaceRectangle(pOverlayMaterial, 0, 0, scopeView.width, scopeView.height,
+			0, 0, sw - 1, sh - 1, sw, sh);
+	}
+
+	render->PopView(m_Frustum);
+}
+
 void CViewRender::CleanupMain3DView( const CViewSetup &view )
 {
 	render->PopView( GetFrustum() );
@@ -2328,6 +2427,11 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 
 	g_bRenderingView = false;
 
+	if (g_pMaterialSystemHardwareConfig->GetDXSupportLevel() >= 70)
+	{
+		DrawScope(view);
+	}
+
 	// We can no longer use the 'current view' stuff set up in ViewDrawScene
 	s_bCanAccessCurrentView = false;
 
@@ -2345,6 +2449,25 @@ void CViewRender::RenderView( const CViewSetup &view, int nClearFlags, int whatT
 //-----------------------------------------------------------------------------
 void CViewRender::Render2DEffectsPreHUD( const CViewSetup &view )
 {
+	if (!building_cubemaps.GetBool()) // We probably should use a different view. variable here
+	{
+		for (int i = 0; i < r_radialblur_samplecount.GetInt(); i++)
+		{
+			RenderClassicBlur(view, view.x, view.y, view.width, view.height);
+		}
+		for (int i = 0; i < r_ironsightblur_samplecount.GetInt(); i++)
+		{
+			RenderRadialBlur(view, view.x, view.y, view.width, view.height);
+		}
+		for (int i = 0; i < r_distanceblur_samplecount.GetInt(); i++)
+		{
+			RenderDistanceBlur(view, view.x, view.y, view.width, view.height);
+		}
+
+		//RenderMotionBlur(view, view.x, view.y, view.width, view.height);
+
+		RenderClassicRadialBlur(view, view.x, view.y, view.width, view.height);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2699,6 +2822,28 @@ void CViewRender::ViewDrawScene_PortalStencil( const CViewSetup &viewIn, ViewCus
 	QAngle vecOldAngles = CurrentViewAngles();
 
 	int iCurrentViewID = g_CurrentViewID;
+	int iRecursionLevel = g_pPortalRender->GetViewRecursionLevel();
+	Assert( iRecursionLevel > 0 );
+
+	//get references to reflection textures
+	CTextureReference pPrimaryWaterReflectionTexture;
+	pPrimaryWaterReflectionTexture.Init( GetWaterReflectionTexture() );
+	CTextureReference pReplacementWaterReflectionTexture;
+	pReplacementWaterReflectionTexture.Init( portalrendertargets->GetWaterReflectionTextureForStencilDepth( iRecursionLevel ) );
+
+	//get references to refraction textures
+	CTextureReference pPrimaryWaterRefractionTexture;
+	pPrimaryWaterRefractionTexture.Init( GetWaterRefractionTexture() );
+	CTextureReference pReplacementWaterRefractionTexture;
+	pReplacementWaterRefractionTexture.Init( portalrendertargets->GetWaterRefractionTextureForStencilDepth( iRecursionLevel ) );
+
+
+	//swap texture contents for the primary render targets with those we set aside for this recursion level
+	if( pReplacementWaterReflectionTexture != NULL )
+		pPrimaryWaterReflectionTexture->SwapContents( pReplacementWaterReflectionTexture );
+
+	if( pReplacementWaterRefractionTexture != NULL )
+		pPrimaryWaterRefractionTexture->SwapContents( pReplacementWaterRefractionTexture );
 
 	bool bDrew3dSkybox = false;
 	SkyboxVisibility_t nSkyboxVisible = SKYBOX_NOT_VISIBLE;
@@ -2790,6 +2935,13 @@ void CViewRender::ViewDrawScene_PortalStencil( const CViewSetup &viewIn, ViewCus
 	// Return to the previous view
 	SetupCurrentView( vecOldOrigin, vecOldAngles, (view_id_t)iCurrentViewID );
 	g_CurrentViewID = iCurrentViewID; //just in case the cast to view_id_t screwed up the id #
+
+	//swap back the water render targets
+	if( pReplacementWaterReflectionTexture != NULL )
+		pPrimaryWaterReflectionTexture->SwapContents( pReplacementWaterReflectionTexture );
+
+	if( pReplacementWaterRefractionTexture != NULL )
+		pPrimaryWaterRefractionTexture->SwapContents( pReplacementWaterRefractionTexture );
 }
 
 void CViewRender::Draw3dSkyboxworld_Portal( const CViewSetup &view, int &nClearFlags, bool &bDrew3dSkybox, SkyboxVisibility_t &nSkyboxVisible, ITexture *pRenderTarget ) 

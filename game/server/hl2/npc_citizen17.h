@@ -307,7 +307,10 @@ private:
 	CSimpleSimTimer	m_AutoSummonTimer;
 	Vector			m_vAutoSummonAnchor;
 
+public:
 	CitizenType_t	m_Type;
+
+private:	
 	CitizenExpressionTypes_t	m_ExpressionType;
 
 	int				m_iHead;

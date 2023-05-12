@@ -1,0 +1,81 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'lua'
+
+def options(opt):
+	return
+
+def configure(conf):
+	if conf.env.DEST_OS in ["linux", "android", "freebsd", "osx"]:
+		conf.define( "LUA_USE_LINUX", 1 )
+	return
+
+def build(bld):
+	source = [
+		"llex.c",
+		"lparser.c",
+		"lcode.c",
+		"lapi.c",
+		"lauxlib.c",
+		"lbaselib.c",
+		"lcode.c",
+		"lcorolib.c",
+		"lctype.c",
+		"ldblib.c",
+		"ldebug.c",
+		"ldo.c",
+		"ldump.c",
+		"lfunc.c",
+		"lgc.c",
+		"linit.c",
+		"liolib.c",
+		"llex.c",
+		"lmathlib.c",
+		"lmem.c",
+		"loadlib.c",
+		"lobject.c",
+		"lopcodes.c",
+		"loslib.c",
+		"lparser.c",
+		"lstate.c",
+		"lstring.c",
+		"lstrlib.c",
+		"ltable.c",
+		"ltablib.c",
+		"ltm.c",
+		"lua.c",
+		"luac.c",
+		"lundump.c",
+		"lutf8lib.c",
+		"lvm.c",
+		"lzio.c",
+	]
+
+	includes = [
+		'.',
+		'./src',
+		'../public',
+		'../common'
+	]
+
+	defines = []
+
+	libs = []
+
+	bld.stlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+

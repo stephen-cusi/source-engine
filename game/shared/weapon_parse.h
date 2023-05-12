@@ -45,13 +45,15 @@ typedef enum {
 	NUM_SHOOT_SOUND_TYPES,
 } WeaponSound_t;
 
-int GetWeaponSoundFromString( const char *pszString );
+int GetWeaponSoundFromString(const char *pszString);
 
 #define MAX_SHOOT_SOUNDS	16			// Maximum number of shoot sounds per shoot type
 
 #define MAX_WEAPON_STRING	80
 #define MAX_WEAPON_PREFIX	16
 #define MAX_WEAPON_AMMO_NAME		32
+
+#define MAX_WEAPON_LASER_MATERIALS		30
 
 #define WEAPON_PRINTNAME_MISSING "!!! Missing printname on weapon"
 
@@ -69,16 +71,16 @@ class FileWeaponInfo_t
 public:
 
 	FileWeaponInfo_t();
-	
-	// Each game can override this to get whatever values it wants from the script.
-	virtual void Parse( KeyValues *pKeyValuesData, const char *szWeaponName );
 
-	
-public:	
+	// Each game can override this to get whatever values it wants from the script.
+	virtual void Parse(KeyValues *pKeyValuesData, const char *szWeaponName);
+
+
+public:
 	bool					bParsedScript;
 	bool					bLoadedHudElements;
 
-// SHARED
+	// SHARED
 	char					szClassName[MAX_WEAPON_STRING];
 	char					szPrintName[MAX_WEAPON_STRING];			// Name for showing in HUD, etc.
 
@@ -99,20 +101,109 @@ public:
 	char					szAmmo1[MAX_WEAPON_AMMO_NAME];			// "primary" ammo type
 	char					szAmmo2[MAX_WEAPON_AMMO_NAME];			// "secondary" ammo type
 
-	// Sound blocks
-	char					aShootSounds[NUM_SHOOT_SOUND_TYPES][MAX_WEAPON_STRING];	
+																	// Sound blocks
+	char					aShootSounds[NUM_SHOOT_SOUND_TYPES][MAX_WEAPON_STRING];
 
 	int						iAmmoType;
 	int						iAmmo2Type;
 	bool					m_bMeleeWeapon;		// Melee weapons can always "fire" regardless of ammo.
 
-	// This tells if the weapon was built right-handed (defaults to true).
-	// This helps cl_righthand make the decision about whether to flip the model or not.
+												// This tells if the weapon was built right-handed (defaults to true).
+												// This helps cl_righthand make the decision about whether to flip the model or not.
 	bool					m_bBuiltRightHanded;
 	bool					m_bAllowFlipping;	// False to disallow flipping the model, regardless of whether
 												// it is built left or right handed.
 
-// CLIENT DLL
+	Vector					vecLowerPosOffset;
+	QAngle					angLowerAngOffset;
+
+	//CoolMod Custom Weapons!
+	int		m_iCrosshairMinDistance;
+	int		m_iCrosshairDeltaDistance;
+	bool	bIsAkimbo;
+
+	bool	m_sPrimaryBulletEnabled;
+	bool	m_sPrimaryMissleEnabled;
+	char	m_sPrimaryAmmoType;
+	float	m_sPrimaryDamage;
+	int m_sPrimaryShotCount;
+	float m_sPrimaryFireRate;
+	Vector m_vPrimarySpread;
+	int m_iPrimaryPenetrateCount;
+	float m_flPrimaryPenetrateDepth;
+
+	bool	m_sPrimaryMeleeEnabled;
+	bool	m_sSecondaryMeleeEnabled;
+	char	*m_sPrimaryMeleeDamageType;
+	float	m_sPrimaryMeleeDamage;
+	float	m_sPrimaryMeleeRange;
+	float	m_sNextPrimaryMeleeAttack;
+	char	*m_sSecondaryMeleeDamageType;
+	float	m_sSecondaryMeleeDamage;
+	float	m_sSecondaryMeleeRange;
+	float	m_sNextSecondaryMeleeAttack;
+
+	Vector	m_vRecoilPunchPitch;
+	Vector	m_vRecoilPunchYaw;
+	bool	m_bEnableSnap;
+	float	m_flRecoilAmp;
+	float	m_flRecoilCrouch;
+	float	m_flPunchLimit;
+
+	float	m_flDefaultSpread;
+	float	m_flMaxSpread;
+	float	m_flRunSpread;
+	float	m_flRunSpeedSpread;
+	float	m_flCrouchSpread;
+	float	m_flFireSpread;
+
+	bool	bLaser;
+	bool	bLaserUseButton;
+	bool	bLaserUseIronsight;
+	bool	bLaserDeactivateinReload;
+	char	sLaserMaterial[MAX_WEAPON_LASER_MATERIALS];
+	float	flLaserDrawRange;
+	float	flLaserTraceLength;
+	bool	bLaserFixSize;
+	float	flLaserPointerSize;
+
+	char	sNpcAnimType[16];
+	float	flNpcFireRate;
+	int		iNpcBurstMax;
+	int		iNpcBurstMin;
+
+	int m_iWeaponType;
+
+	Activity m_actPrimary;
+	Activity m_actSecondary;
+	Activity m_actSpecial; // just to be sure
+
+	bool	m_sSecondaryBulletEnabled;
+	bool	m_sSecondaryMissleEnabled;
+	bool	 m_sUsePrimaryAmmo;
+	char	m_sSecondaryAmmoType;
+	float	m_sSecondaryDamage;
+	int m_sSecondaryShotCount;
+	float m_sSecondaryFireRate;
+	Vector m_vSecondarySpread;
+	int m_iSecondaryPenetrateCount;
+	float m_flSecondaryPenetrateDepth;
+
+	//Ironsight
+	bool					bCanADS;
+	Vector					vecIronsightPosOffset;
+	QAngle					angIronsightAngOffset;
+	float					flIronsightFOVOffset;
+	bool					bHasIronsight;
+
+	float					m_flAddFOV;
+	float					m_flLagScale;
+
+	//Adjust
+	Vector					vecAdjustPosOffset;
+	QAngle					angAdjustAngOffset;
+
+	// CLIENT DLL
 	// Sprite data, read from the data file
 	int						iSpriteCount;
 	CHudTexture						*iconActive;
@@ -125,23 +216,35 @@ public:
 	CHudTexture 					*iconZoomedAutoaim;
 	CHudTexture						*iconSmall;
 
-// TF2 specific
+	// TF2 specific
 	bool					bShowUsageHint;							// if true, then when you receive the weapon, show a hint about it
 
-// SERVER DLL
+																	// GSTRINGMIGRATION
+	char				szCameraAttachmentName[32];				// defaults to 'muzzle'
+	char				szCameraBoneName[32];					// not used by default, overwrites attachment
+
+	float				flCameraMovementScale;
+	float				flCameraMovementReferenceCycle;
+	QAngle				angCameraMovementOrientation;
+	QAngle				angCameraMovementOffset;
+
+	char				szFlashlightTexture[MAX_PATH];
+	// END GSTRINGMIGRATION
+
+	// SERVER DLL
 
 };
 
 // The weapon parse function
-bool ReadWeaponDataFromFileForSlot( IFileSystem* filesystem, const char *szWeaponName, 
-	WEAPON_FILE_INFO_HANDLE *phandle, const unsigned char *pICEKey = NULL );
+bool ReadWeaponDataFromFileForSlot(IFileSystem* filesystem, const char *szWeaponName,
+	WEAPON_FILE_INFO_HANDLE *phandle, const unsigned char *pICEKey = NULL);
 
 // If weapon info has been loaded for the specified class name, this returns it.
-WEAPON_FILE_INFO_HANDLE LookupWeaponInfoSlot( const char *name );
+WEAPON_FILE_INFO_HANDLE LookupWeaponInfoSlot(const char *name);
 
-FileWeaponInfo_t *GetFileWeaponInfoFromHandle( WEAPON_FILE_INFO_HANDLE handle );
-WEAPON_FILE_INFO_HANDLE GetInvalidWeaponInfoHandle( void );
-void PrecacheFileWeaponInfoDatabase( IFileSystem *filesystem, const unsigned char *pICEKey );
+FileWeaponInfo_t *GetFileWeaponInfoFromHandle(WEAPON_FILE_INFO_HANDLE handle);
+WEAPON_FILE_INFO_HANDLE GetInvalidWeaponInfoHandle(void);
+void PrecacheFileWeaponInfoDatabase(IFileSystem *filesystem, const unsigned char *pICEKey);
 
 
 // 
@@ -151,7 +254,7 @@ void PrecacheFileWeaponInfoDatabase( IFileSystem *filesystem, const unsigned cha
 //
 // (This should be moved into a more appropriate place).
 //
-KeyValues* ReadEncryptedKVFile( IFileSystem *filesystem, const char *szFilenameWithoutExtension, const unsigned char *pICEKey, bool bForceReadEncryptedFile = false );
+KeyValues* ReadEncryptedKVFile(IFileSystem *filesystem, const char *szFilenameWithoutExtension, const unsigned char *pICEKey, bool bForceReadEncryptedFile = false);
 
 
 // Each game implements this. It can return a derived class and override Parse() if it wants.

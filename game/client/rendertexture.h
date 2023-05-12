@@ -17,6 +17,8 @@ ITexture *GetFullscreenTexture( void );
 ITexture *GetCameraTexture( void );
 ITexture *GetFullFrameDepthTexture( void );
 
+ITexture *GetScopeTexture();
+
 // SmallBufferHDRx=r16g16b16a16 quarter-sized texture
 ITexture *GetSmallBufferHDR0( void );
 ITexture *GetSmallBufferHDR1( void );

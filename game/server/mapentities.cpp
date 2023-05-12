@@ -267,7 +267,7 @@ void SpawnAllEntities( int nEntities, HierarchicalSpawn_t *pSpawnList, bool bAct
 		}
 		if ( pEntity )
 		{
-			if (DispatchSpawn(pEntity) < 0)
+			if ( DispatchSpawn( pEntity ) < 0 )
 			{
 				for ( int i = nEntity+1; i < nEntities; i++ )
 				{

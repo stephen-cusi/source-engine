@@ -81,6 +81,21 @@ ITexture *GetCameraTexture( void )
 }
 
 //=============================================================================
+// Scope Texture
+//=============================================================================
+static CTextureReference s_pScopeTexture;
+ITexture *GetScopeTexture(void)
+{
+	if (!s_pScopeTexture)
+	{
+		s_pScopeTexture.Init(materials->FindTexture("_rt_Scope", TEXTURE_GROUP_RENDER_TARGET));
+		Assert(!IsErrorTexture(s_pScopeTexture));
+		AddReleaseFunc();
+	}
+	return s_pScopeTexture;
+}
+
+//=============================================================================
 // Full Frame Depth Texture
 //=============================================================================
 static CTextureReference s_pFullFrameDepthTexture;
@@ -252,6 +267,9 @@ void ReleaseRenderTargets( void )
 	s_pQuarterSizedFB0.Shutdown();
 	s_pQuarterSizedFB1.Shutdown();
 	s_pFullFrameDepthTexture.Shutdown();
+
+	//Release the scope render target too
+	s_pScopeTexture.Shutdown();
 
 	for (int i=0; i<MAX_FB_TEXTURES; ++i)
 		s_pFullFrameFrameBufferTexture[i].Shutdown();

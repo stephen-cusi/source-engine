@@ -29,8 +29,12 @@ public:
 	void	ItemPostFrame( void );
 	void	Precache( void );
 	
+	void    PrimaryAttack( void );
 	void	SecondaryAttack( void );
 	void	DelayedAttack( void );
+
+	void	Fire9MMBullet( void );
+	void    FireNPC9MMBullet( void );
 
 	const char *GetTracerType( void ) { return "AR2Tracer"; }
 

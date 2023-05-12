@@ -79,6 +79,7 @@ projects={
 		'utils/vtex',
 		'unicode',
 		'video',
+		'lua',
 	],
 	'tests': [
 		'appframework',

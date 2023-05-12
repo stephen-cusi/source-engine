@@ -209,8 +209,9 @@ enum CastVote
 #define bits_SUIT_DEVICE_SPRINT		0x00000001
 #define bits_SUIT_DEVICE_FLASHLIGHT	0x00000002
 #define bits_SUIT_DEVICE_BREATHER	0x00000004
+#define bits_SUIT_DEVICE_BULLETTIME	0x00000008
 
-#define MAX_SUIT_DEVICES			3
+#define MAX_SUIT_DEVICES			4
 
 
 //===================================================================================================================
@@ -688,9 +689,11 @@ struct FireBulletsInfo_t
 		m_vecDirShooting.Init( VEC_T_NAN, VEC_T_NAN, VEC_T_NAN );
 #endif
 		m_bPrimaryAttack = true;
+		m_iPenetrationCount = 1;
+		m_flPenetrationForce = 96.0f;
 	}
 
-	FireBulletsInfo_t( int nShots, const Vector &vecSrc, const Vector &vecDir, const Vector &vecSpread, float flDistance, int nAmmoType, bool bPrimaryAttack = true )
+	FireBulletsInfo_t( int nShots, const Vector &vecSrc, const Vector &vecDir, const Vector &vecSpread, float flDistance, int nAmmoType, bool bPrimaryAttack = true, int iPenetrationCount = 0, float flPenetrationDeph = 0.0f )
 	{
 		m_iShots = nShots;
 		m_vecSrc = vecSrc;
@@ -706,6 +709,8 @@ struct FireBulletsInfo_t
 		m_pAdditionalIgnoreEnt = NULL;
 		m_flDamageForceScale = 1.0f;
 		m_bPrimaryAttack = bPrimaryAttack;
+		m_iPenetrationCount = iPenetrationCount;
+		m_flPenetrationForce = flPenetrationDeph;
 	}
 
 	int m_iShots;
@@ -722,6 +727,8 @@ struct FireBulletsInfo_t
 	CBaseEntity *m_pAttacker;
 	CBaseEntity *m_pAdditionalIgnoreEnt;
 	bool m_bPrimaryAttack;
+	int m_iPenetrationCount;
+	float m_flPenetrationForce;
 };
 
 //-----------------------------------------------------------------------------
