@@ -50,6 +50,7 @@ jobs:
         mv android-ndk-r10e ndk/
         mkdir ./andriod
         export ANDROID_NDK_HOME=$(pwd)/ndk
+        git submodule init&&git submodule update
         ./waf configure -T debug --android=armeabi-v7a-hard,4.9,21  --prefix=./android/arm
         ./waf install -j8
     - name: build-release
