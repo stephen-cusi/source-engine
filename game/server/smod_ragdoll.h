@@ -13,7 +13,7 @@ public:
 	void Precache();
 	virtual void TraceAttack(const CTakeDamageInfo &info, const Vector &dir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 
-	void SetBloodColor( int color ) { m_bloodColor = color; }
+	void SetBloodColor(int color) { m_bloodColor = color; }
 
 
 private:

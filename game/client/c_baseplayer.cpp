@@ -122,8 +122,6 @@ ConVar demo_fov_override( "demo_fov_override", "0", FCVAR_CLIENTDLL | FCVAR_DONT
 ConVar cl_meathook_neck_pivot_ingame_up( "cl_meathook_neck_pivot_ingame_up", "7.0" );
 ConVar cl_meathook_neck_pivot_ingame_fwd( "cl_meathook_neck_pivot_ingame_fwd", "3.0" );
 
-ConVar	cl_viewbob_amount("cl_viewbob_amount", "0", 0, "Smooth view/eye origin after prediction errors");
-
 void RecvProxy_LocalVelocityX( const CRecvProxyData *pData, void *pStruct, void *pOut );
 void RecvProxy_LocalVelocityY( const CRecvProxyData *pData, void *pStruct, void *pOut );
 void RecvProxy_LocalVelocityZ( const CRecvProxyData *pData, void *pStruct, void *pOut );
@@ -1369,21 +1367,7 @@ void C_BasePlayer::CreateWaterEffects( void )
 //-----------------------------------------------------------------------------
 void C_BasePlayer::OverrideView( CViewSetup *pSetup )
 {
-	if (!this)
-		return;
-
-	float speed = GetLocalVelocity().Length2D();
-	speed = RemapValClamped(speed, 0.0f, 320.0f, 0.0f, 1.0f);
-
-	Vector attachmentOrigin;
-	QAngle vecAngle;
-	GetBonePosition(LookupBone("ValveBiped.Bip01_Head1"), attachmentOrigin, vecAngle);
-
-	Vector ViewOriginWithoutDucking = GetAbsOrigin() + VEC_VIEW_SCALED(this);
-
-	pSetup->origin += (attachmentOrigin - ViewOriginWithoutDucking) * speed * cl_viewbob_amount.GetFloat();
 }
-
 
 bool C_BasePlayer::ShouldInterpolate()
 {

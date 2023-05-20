@@ -362,15 +362,11 @@ public:
 
 	virtual int				GetSkinOverride() const { return -1; }
 
-//#ifdef CLIENT_DLL
-
 	float					GetIronsightDelta() { return m_flIronsighteDelta; };
 	void					SetIronsightDelta(float delta) { m_flIronsighteDelta = delta; };
 
 	float					GetLowerDelta() { return m_flLowerDelta; };
 	void					SetLowerDelta(float delta) { m_flLowerDelta = delta; };
-
-//#endif // CLIENT_DLL
 
 public:
 
@@ -654,7 +650,6 @@ public:
 	IPhysicsConstraint		*GetConstraint() { return m_pConstraint; }
 
 	WEAPON_FILE_INFO_HANDLE	m_hWeaponFileInfo;
-
 private:
 	IPhysicsConstraint		*m_pConstraint;
 

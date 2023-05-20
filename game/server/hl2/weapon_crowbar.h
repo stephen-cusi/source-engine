@@ -39,11 +39,9 @@ public:
 
 	void		AddViewKick( void );
 	float		GetDamageForActivity( Activity hitActivity );
-	void		SecondaryAttack( void );
 
-	virtual void Drop( CBaseCombatWeapon *pWeapon, const Vector *target, const Vector *velocity );
-	virtual void SetVelocity( const Vector &velocity, const AngularImpulse &angVelocity );
 	virtual int WeaponMeleeAttack1Condition( float flDot, float flDist );
+	void		SecondaryAttack( void )	{	return;	}
 
 	// Animation event
 	virtual void Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );

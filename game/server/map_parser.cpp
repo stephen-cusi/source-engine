@@ -45,7 +45,8 @@ public:
 	float m_flDelay;
 };
 
-LINK_ENTITY_TO_CLASS( event, CEvent )
+LINK_ENTITY_TO_CLASS(event, CEvent)
+
 
 CMapScriptParser::CMapScriptParser(char const *name) : CAutoGameSystem(name)
 {

@@ -145,7 +145,7 @@ void CWeaponPhysLauncher::PrimaryAttack()
 	pProp->SetOwnerEntity(this);
 
 	IPhysicsObject *pPhys = pProp ? pProp->VPhysicsGetObject() : NULL;
-	if( pPhys ) {
+	if(pPhys) {
 		physpropinfo info;
 		info.handle = pProp;
 		info.curtime = gpGlobals->curtime;

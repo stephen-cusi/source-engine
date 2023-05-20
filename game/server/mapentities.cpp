@@ -19,8 +19,6 @@
 #include "world.h"
 #include "toolframework/iserverenginetools.h"
 
-#include "class_override.h"
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -37,17 +35,14 @@ extern edict_t *g_pForceAttachEdict;
 // creates an entity by string name, but does not spawn it
 CBaseEntity *CreateEntityByName( const char *className, int iForceEdictIndex )
 {
-	char newClassName[256];
-	Q_strncpy( newClassName, ReplaceEntity( className ), sizeof( newClassName ) );
-
 	if ( iForceEdictIndex != -1 )
 	{
 		g_pForceAttachEdict = engine->CreateEdict( iForceEdictIndex );
 		if ( !g_pForceAttachEdict )
-			Error( "CreateEntityByName( %s, %d ) - CreateEdict failed.", newClassName, iForceEdictIndex );
+			Error( "CreateEntityByName( %s, %d ) - CreateEdict failed.", className, iForceEdictIndex );
 	}
 
-	IServerNetworkable *pNetwork = EntityFactoryDictionary()->Create( newClassName );
+	IServerNetworkable *pNetwork = EntityFactoryDictionary()->Create( className );
 	g_pForceAttachEdict = NULL;
 
 	if ( !pNetwork )
