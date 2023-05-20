@@ -375,7 +375,7 @@ void CBaseCombatWeapon::Precache( void )
 
 	// Add this weapon to the weapon registry, and get our index into it
 	// Get weapon data from script file
-	if ( ReadWeaponDataFromFileForSlot( filesystem, GetClassname(), &m_hWeaponFileInfo, GetEncryptionKey() ) )
+	if (ReadWeaponDataFromFileForSlot(filesystem, GetClassname(), &m_hWeaponFileInfo, GetEncryptionKey()))
 	{
 		// Get the ammo indexes for the ammo's specified in the data file
 		if ( GetWpnData().szAmmo1[0] )
@@ -435,6 +435,9 @@ void CBaseCombatWeapon::Precache( void )
 		Warning( "Error reading weapon data file for: %s\n", GetClassname() );
 	//	Remove( );	//don't remove, this gets released soon!
 	}
+
+	PrecacheScriptSound("HL2Player.Ironsighton");
+	PrecacheScriptSound("HL2Player.Ironsightoff");
 }
 
 //-----------------------------------------------------------------------------
@@ -794,6 +797,8 @@ float CBaseCombatWeapon::GetWeaponIdleTime( void )
 void CBaseCombatWeapon::Drop( const Vector &vecVelocity )
 {
 #if !defined( CLIENT_DLL )
+
+	DisableIronsights();
 
 	// Once somebody drops a gun, it's fair game for removal when/if
 	// a game_weapon_manager does a cleanup on surplus weapons in the
@@ -1781,6 +1786,8 @@ bool CBaseCombatWeapon::Holster( CBaseCombatWeapon *pSwitchingTo )
 { 
 	MDLCACHE_CRITICAL_SECTION();
 
+	DisableIronsights();
+
 	// cancel any reload in progress.
 	m_bInReload = false; 
 	m_bFiringWholeClip = false;
@@ -2290,6 +2297,8 @@ bool CBaseCombatWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActi
 	if (!pOwner)
 		return false;
 
+	DisableIronsights();
+
 	// If I don't have any spare ammo, I can't reload
 	if ( pOwner->GetAmmoCount(m_iPrimaryAmmoType) <= 0 )
 		return false;
@@ -2669,6 +2678,16 @@ void CBaseCombatWeapon::PrimaryAttack( void )
 
 	//Add our view kick in
 	AddViewKick();
+
+	// Only the player fires this way so we can cast
+	CHL2_Player *pHL2Player = (CHL2_Player *)ToBasePlayer(GetOwner());
+
+	if (!pHL2Player)
+	{
+		return;
+	}
+
+	pHL2Player->m_iShotsFired++;
 }
 
 //-----------------------------------------------------------------------------
@@ -2961,6 +2980,9 @@ BEGIN_DATADESC( CBaseCombatWeapon )
 	DEFINE_FIELD( m_fMinRange2, FIELD_FLOAT ),
 	DEFINE_FIELD( m_fMaxRange1, FIELD_FLOAT ),
 	DEFINE_FIELD( m_fMaxRange2, FIELD_FLOAT ),
+
+	DEFINE_FIELD(m_bIsLowered, FIELD_BOOLEAN),
+	DEFINE_FIELD(m_flLoweredTime, FIELD_FLOAT),
 
 	DEFINE_FIELD( m_iPrimaryAmmoCount, FIELD_INTEGER ),
 	DEFINE_FIELD( m_iSecondaryAmmoCount, FIELD_INTEGER ),

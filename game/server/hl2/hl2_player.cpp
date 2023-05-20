@@ -1119,6 +1119,9 @@ void CHL2_Player::KickAttack(void)
 	if (!pOwner)
 		return;
 
+	if( !IsSuitEquipped() )
+		return;
+
 	pOwner->RumbleEffect(RUMBLE_CROWBAR_SWING, 0, RUMBLE_FLAG_RESTART);
 
 	Vector swingStart = pOwner->Weapon_ShootPosition();
@@ -1211,10 +1214,19 @@ void CHL2_Player::KickAttack(void)
 
 void CHL2_Player::SwitchSlowMo(void)
 {
-	if (disable_bullettime.GetBool())
+	if ( disable_bullettime.GetBool() )
+		return;
+
+	if ( !IsSuitEquipped() )
 		return;
 
 	color32 lightWhite = { 255, 255, 255, 100 };
+
+	ConVar *pCheats = cvar->FindVar("sv_cheats");
+	if ( pCheats->GetInt() == 0 )
+	{
+		engine->ClientCommand( edict(), "sv_cheats 1");
+	}
 
 	pHostTimescale = cvar->FindVar("host_timescale");
 	pPhysTimescale = cvar->FindVar("phys_timescale");

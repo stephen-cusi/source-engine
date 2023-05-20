@@ -228,7 +228,6 @@ CEntityDissolve *CEntityDissolve::Create( CBaseEntity *pTarget, const char *pMat
 		{
 			CTakeDamageInfo info;
 			CSMODRagdoll *pRagdoll = (CSMODRagdoll *)( pTarget->MyNPCPointer(), 0, info, COLLISION_GROUP_DEBRIS, true );
-			pRagdoll->SetBloodColor(BLOOD_COLOR_RED);
 			pRagdoll->SetCollisionBounds( pTarget->CollisionProp()->OBBMins(), pTarget->CollisionProp()->OBBMaxs() );
 
 			// Necessary to cause it to do the appropriate death cleanup

@@ -364,7 +364,7 @@ void CWeaponPistol::PrimaryAttack( void )
 		}
 
 		// Only the player fires this way so we can cast
-		CBasePlayer *pPlayer = ToBasePlayer(GetOwner());
+		CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
 
 		if (!pPlayer)
 		{
