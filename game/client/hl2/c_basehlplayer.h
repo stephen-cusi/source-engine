@@ -16,6 +16,8 @@
 #include "c_baseplayer.h"
 #include "c_hl2_playerlocaldata.h"
 
+#include "coolmod/sp_animstate.h"
+
 class C_BaseHLPlayer : public C_BasePlayer
 {
 public:
@@ -26,6 +28,21 @@ public:
 						C_BaseHLPlayer();
 
 	virtual void		OnDataChanged( DataUpdateType_t updateType );
+	virtual void		ClientThink(void);
+
+	virtual void		AddEntity(void);
+
+	void				SetFirstPersonBlurVar(float amount);
+	void				SetIronsightBlurTime(float amount);
+	void				SetBlastEffectTime();
+	void				SetBlurTime();
+	float				m_flBlastEffectTime;
+	bool				m_bBlastEffectBlur;
+	float				m_flBlurTime;
+	float				m_flFPBlur;
+	float				m_flIronsightBlurTime;
+
+	int					m_iShotsFired;
 
 	void				Weapon_DropPrimary( void );
 		
@@ -73,9 +90,18 @@ private:
 	float				m_flSpeedMod;
 	float				m_flExitSpeedMod;
 
+	CSinglePlayerAnimState *m_pPlayerAnimState;
 
 friend class CHL2GameMovement;
 };
 
+//SMOD: We needed a pointer directly to HL2's player (like the hl2mp player and the base player have)
+inline C_BaseHLPlayer *ToHL2Player(CBaseEntity *pEntity)
+{
+	if (!pEntity || !pEntity->IsPlayer())
+		return NULL;
+
+	return dynamic_cast<C_BaseHLPlayer*>(pEntity);
+}
 
 #endif

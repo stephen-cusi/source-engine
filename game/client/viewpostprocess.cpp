@@ -21,6 +21,8 @@
 
 #include "proxyentity.h"
 
+#include "coolmod/smod_cvars.h"
+
 //-----------------------------------------------------------------------------
 // Globals
 //-----------------------------------------------------------------------------
@@ -84,6 +86,12 @@ ConVar mat_tonemap_percent_target( "mat_tonemap_percent_target", "60.0", FCVAR_C
 ConVar mat_tonemap_percent_bright_pixels( "mat_tonemap_percent_bright_pixels", "2.0", FCVAR_CHEAT );
 ConVar mat_tonemap_min_avglum( "mat_tonemap_min_avglum", "3.0", FCVAR_CHEAT );
 ConVar mat_fullbright( "mat_fullbright", "0", FCVAR_CHEAT );
+
+ConVar mat_blur_enabled("r_screenblur", "0", FCVAR_ARCHIVE);
+ConVar mat_ironsightblur_enabled("r_ironsightblur", "0", FCVAR_ARCHIVE);
+
+ConVar mat_distanceblur("r_distanceblur", "0", FCVAR_ARCHIVE);
+ConVar mat_distanceblur_scale("r_distanceblur_scale", "0.25", FCVAR_ARCHIVE);
 
 extern ConVar localplayer_visionflags;
 
@@ -2994,6 +3002,127 @@ void DoImageSpaceMotionBlur( const CViewSetup &view, int x, int y, int w, int h 
 			{
 				DumpTGAofRenderTarget( dest_width, dest_height, "MotionBlur" );
 			}
+		}
+	}
+}
+
+void RenderClassicRadialBlur(CViewSetup view, int x, int y, int width, int height)
+{
+	CMatRenderContextPtr pRenderContext(materials);
+	//pRenderContext->PushRenderTargetAndViewport();
+	ITexture *pSrc = materials->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
+	int nSrcWidth = pSrc->GetActualWidth();
+	int nSrcHeight = pSrc->GetActualHeight();
+	int dest_width, dest_height, nDummy;
+	pRenderContext->GetViewport(nDummy, nDummy, dest_width, dest_height);
+
+	UpdateScreenEffectTexture(0, x, y, width, height, true); // Do we need to check if we already did this?
+
+	IMaterial *radialblur_mat = materials->FindMaterial("shaders/radialblur", TEXTURE_GROUP_OTHER, true);
+	if (mat_blur_enabled.GetInt())
+	{
+		if (radialblur_mat != NULL)
+		{
+
+			radialblur_mat->IncrementReferenceCount();
+			pRenderContext->DrawScreenSpaceRectangle(
+				radialblur_mat,
+				0, 0, dest_width, dest_height,
+				0, 0, nSrcWidth - 1, nSrcHeight - 1,
+				nSrcWidth, nSrcHeight, GetClientWorldEntity()->GetClientRenderable());
+			radialblur_mat->DecrementReferenceCount();
+		}
+	}
+}
+
+void RenderClassicBlur(CViewSetup view, int x, int y, int width, int height)
+{
+	CMatRenderContextPtr pRenderContext(materials);
+	//pRenderContext->PushRenderTargetAndViewport();
+	ITexture *pSrc = materials->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
+	int nSrcWidth = pSrc->GetActualWidth();
+	int nSrcHeight = pSrc->GetActualHeight();
+	int dest_width, dest_height, nDummy;
+	pRenderContext->GetViewport(nDummy, nDummy, dest_width, dest_height);
+
+	UpdateScreenEffectTexture(0, x, y, width, height, true); // Do we need to check if we already did this?
+
+	IMaterial *blur_mat = materials->FindMaterial("shaders/blur", TEXTURE_GROUP_OTHER, true);
+	if (r_shockeffect.GetInt())
+	{
+		if (blur_mat != NULL)
+		{
+
+			blur_mat->IncrementReferenceCount();
+			pRenderContext->DrawScreenSpaceRectangle(
+				blur_mat,
+				0, 0, dest_width, dest_height,
+				0, 0, nSrcWidth - 1, nSrcHeight - 1,
+				nSrcWidth, nSrcHeight, GetClientWorldEntity()->GetClientRenderable());
+			blur_mat->DecrementReferenceCount();
+		}
+	}
+}
+
+void RenderRadialBlur(CViewSetup view, int x, int y, int width, int height)
+{
+	CMatRenderContextPtr pRenderContext(materials);
+	//pRenderContext->PushRenderTargetAndViewport();
+	ITexture *pSrc = materials->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
+	int nSrcWidth = pSrc->GetActualWidth();
+	int nSrcHeight = pSrc->GetActualHeight();
+	int dest_width, dest_height, nDummy;
+	pRenderContext->GetViewport(nDummy, nDummy, dest_width, dest_height);
+
+	UpdateScreenEffectTexture(0, x, y, width, height, true); // Do we need to check if we already did this?
+
+	IMaterial *blur_mat = materials->FindMaterial("shaders/ironsight_blur", TEXTURE_GROUP_OTHER, true);
+	if (mat_ironsightblur_enabled.GetInt())
+	{
+		if (blur_mat != NULL)
+		{
+
+			blur_mat->IncrementReferenceCount();
+			pRenderContext->DrawScreenSpaceRectangle(
+				blur_mat,
+				0, 0, dest_width, dest_height,
+				0, 0, nSrcWidth - 1, nSrcHeight - 1,
+				nSrcWidth, nSrcHeight, GetClientWorldEntity()->GetClientRenderable());
+			blur_mat->DecrementReferenceCount();
+		}
+	}
+}
+
+void RenderDistanceBlur(CViewSetup view, int x, int y, int width, int height)
+{
+	CMatRenderContextPtr pRenderContext(materials);
+	//pRenderContext->PushRenderTargetAndViewport();
+	ITexture *pSrc = materials->FindTexture("_rt_FullFrameFB", TEXTURE_GROUP_RENDER_TARGET);
+	int nSrcWidth = pSrc->GetActualWidth();
+	int nSrcHeight = pSrc->GetActualHeight();
+	int dest_width, dest_height, nDummy;
+	pRenderContext->GetViewport(nDummy, nDummy, dest_width, dest_height);
+
+	UpdateScreenEffectTexture(0, x, y, width, height, true); // Do we need to check if we already did this?
+
+	bool foundVar;
+	IMaterial *blur_mat = materials->FindMaterial("shaders/firstpersonblur", TEXTURE_GROUP_OTHER, true);
+	//IMaterialVar *blurScale = blur_mat->FindVar("$blurscale", &foundVar);
+	IMaterialVar *amount = blur_mat->FindVar("$viewamount", &foundVar);
+	//blurScale->SetFloatValue(mat_distanceblur_scale.GetFloat());
+	amount->SetFloatValue(0.125f);
+	if (mat_distanceblur.GetInt())
+	{
+		if (blur_mat != NULL)
+		{
+
+			blur_mat->IncrementReferenceCount();
+			pRenderContext->DrawScreenSpaceRectangle(
+				blur_mat,
+				0, 0, dest_width, dest_height,
+				0, 0, nSrcWidth - 1, nSrcHeight - 1,
+				nSrcWidth, nSrcHeight, GetClientWorldEntity()->GetClientRenderable());
+			blur_mat->DecrementReferenceCount();
 		}
 	}
 }

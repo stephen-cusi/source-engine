@@ -39,6 +39,8 @@
 #include "saverestoretypes.h"
 #include "nav_mesh.h"
 
+#include "smod_ragdoll.h"
+
 #ifdef NEXT_BOT
 #include "NextBot/NextBotManager.h"
 #endif
@@ -1474,7 +1476,9 @@ bool CBaseCombatCharacter::BecomeRagdollBoogie( CBaseEntity *pKiller, const Vect
 
 	info.SetDamageForce( forceVector );
 
-	CBaseEntity *pRagdoll = CreateServerRagdoll( this, 0, info, COLLISION_GROUP_INTERACTIVE_DEBRIS, true );
+	CSMODRagdoll *pRagdoll = (CSMODRagdoll *)CreateSMODServerRagdoll( this, 0, info, COLLISION_GROUP_INTERACTIVE_DEBRIS, true );
+	pRagdoll->SetBloodColor(BloodColor());
+	pRagdoll->SetCollisionBounds( CollisionProp()->OBBMins(), CollisionProp()->OBBMaxs() );
 
 	pRagdoll->SetCollisionBounds( CollisionProp()->OBBMins(), CollisionProp()->OBBMaxs() );
 
@@ -1522,8 +1526,9 @@ bool CBaseCombatCharacter::BecomeRagdoll( const CTakeDamageInfo &info, const Vec
 #endif
 		// in single player create ragdolls on the server when the player hits someone
 		// with their vehicle - for more dramatic death/collisions
-		CBaseEntity *pRagdoll = CreateServerRagdoll( this, m_nForceBone, info2, COLLISION_GROUP_INTERACTIVE_DEBRIS, true );
-		FixupBurningServerRagdoll( pRagdoll );
+		CSMODRagdoll *pRagdoll = (CSMODRagdoll *)CreateSMODServerRagdoll(this, m_nForceBone, info2, COLLISION_GROUP_PLAYER, true);
+		pRagdoll->SetBloodColor(BloodColor());
+		FixupBurningServerRagdoll(pRagdoll);
 		RemoveDeferred();
 		return true;
 	}
@@ -1557,9 +1562,10 @@ bool CBaseCombatCharacter::BecomeRagdoll( const CTakeDamageInfo &info, const Vec
 			return false;
 
 		//FIXME: This is fairly leafy to be here, but time is short!
-		CBaseEntity *pRagdoll = CreateServerRagdoll( this, m_nForceBone, newinfo, COLLISION_GROUP_INTERACTIVE_DEBRIS, true );
-		FixupBurningServerRagdoll( pRagdoll );
-		PhysSetEntityGameFlags( pRagdoll, FVPHYSICS_NO_SELF_COLLISIONS );
+		CSMODRagdoll *pRagdoll = (CSMODRagdoll *)CreateSMODServerRagdoll(this, m_nForceBone, newinfo, COLLISION_GROUP_PLAYER, true);
+		pRagdoll->SetBloodColor(BloodColor());
+		FixupBurningServerRagdoll(pRagdoll);
+		PhysSetEntityGameFlags(pRagdoll, FVPHYSICS_NO_SELF_COLLISIONS);
 		RemoveDeferred();
 
 		return true;
@@ -1567,7 +1573,7 @@ bool CBaseCombatCharacter::BecomeRagdoll( const CTakeDamageInfo &info, const Vec
 
 	if( hl2_episodic.GetBool() && Classify() == CLASS_PLAYER_ALLY_VITAL )
 	{
-		CreateServerRagdoll( this, m_nForceBone, newinfo, COLLISION_GROUP_INTERACTIVE_DEBRIS, true );
+		CreateSMODServerRagdoll(this, m_nForceBone, newinfo, COLLISION_GROUP_PLAYER, true);
 		RemoveDeferred();
 		return true;
 	}

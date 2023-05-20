@@ -347,7 +347,7 @@ void CBaseHLCombatWeapon::AddViewmodelBob( CBaseViewModel *viewmodel, Vector &or
 
 	angles[ YAW ]	-= g_lateralBob  * 0.3f;
 
-	VectorMA( origin, g_lateralBob * 0.8f, right, origin );
+	VectorMA( origin, g_lateralBob * 0.8f  * (this->IsIronsighted() ? 0.1f : 1.0f), right, origin );
 }
 
 //-----------------------------------------------------------------------------

@@ -28,6 +28,11 @@ class CVGuiScreen;
 
 #define VIEWMODEL_INDEX_BITS 1
 
+//For viewmodels, better than remembering the numbers and then messing up afterwards!
+#define VM_LEGS 1
+#define VM_ARMS 2
+#define VM_CAM 3
+
 class CBaseViewModel : public CBaseAnimating, public IHasOwner
 {
 	DECLARE_CLASS( CBaseViewModel, CBaseAnimating );
@@ -53,9 +58,18 @@ public:
 	virtual void			SetWeaponModel( const char *pszModelname, CBaseCombatWeapon *weapon );
 
 	virtual void			CalcViewModelLag( Vector& origin, QAngle& angles, QAngle& original_angles );
+	virtual void			CalcAdjust(Vector& pos, QAngle& ang);
 	virtual void			CalcViewModelView( CBasePlayer *owner, const Vector& eyePosition, 
 								const QAngle& eyeAngles );
 	virtual void			AddViewModelBob( CBasePlayer *owner, Vector& eyePosition, QAngle& eyeAngles ) {};
+
+	float					m_flIronsightExp;
+	float					m_flIronsightExpDiff;
+	void					CalcIronsights(Vector &pos, QAngle &ang);
+
+	float					m_flLowerExp;
+	float					m_flLowerExpDiff;
+	void					CalcLower(Vector &pos, QAngle &ang);
 
 	// Initializes the viewmodel for use							
 	void					SetOwner( CBaseEntity *pEntity );

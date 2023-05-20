@@ -1,0 +1,73 @@
+//-----------------------------------------------------------------------------
+//	SERVER_HL2.VPC
+//
+//	Project Script
+//-----------------------------------------------------------------------------
+
+$Macro SRCDIR		"..\.."
+$Macro GAMENAME 	"hl2" [!$SOURCESDK]
+$Macro GAMENAME 	"mod_hl2" [$SOURCESDK]
+
+$Include "$SRCDIR\game\server\server_base.vpc"
+
+$Configuration
+{
+	$Compiler
+	{
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;.\hl2;$SRCDIR\game\shared\coolmod;$SRCDIR/game/shared/lua;$SRCDIR/game/shared/smod;$SRCDIR\game\shared\smmod;.\smmod;.\smod"
+		$PreprocessorDefinitions		"$BASE;HL2_DLL;USES_SAVERESTORE"
+	}
+}
+
+$Project "Server (HL2)"
+{
+	$Folder	"Source Files"
+	{
+		$File "smmod/weapon_custom.cpp"
+		$File "class_override.cpp"
+		$File "map_parser.cpp"
+		$File "npc_replace_model.cpp"
+		$File "instant_trigger.cpp"
+		$File "detail_entities.cpp"
+		$File "smod\weapon_mp5.cpp"
+		$File "smod\weapon_kar98.cpp"
+		$File "smod\weapon_grease.cpp"
+		$File "smod\weapon_ak47.cpp"
+		$File "npc_combat.cpp"
+		$File "smod_ragdoll.cpp"
+		$File "lua_mapadd.cpp"
+		$File "smod_nodelistparser.cpp"
+		$File "smod_weapon_randomize.cpp"
+		$File "hl1\hl1_monster.cpp"
+		$File "hl1\hl1_monster_bullsquid.cpp"
+		$File "hl1\hl1_monster_houndeye.cpp"
+		$File "physgun.cpp"
+		$File "hl1\hl1_monster_squad.cpp"
+		$File "smod\bullet_9mm.cpp"
+		$File "smod\bullet_357mm.cpp"
+		$File "smod\bullet_762mm.cpp"
+		$File "smod\bullet_ar2.cpp"
+		$File "smod\weapon_gauss.cpp"
+		$File "smod\weapon_stickylauncher.cpp"
+		$File "smod\bullet_heli.cpp"
+		$File "smod\bullet_strider.cpp"
+		$File "episodic\weapon_hopwire.cpp"
+		$File "episodic\grenade_hopwire.cpp"
+		$File "smod\grenade_hopwire_old.cpp"
+		$File "smod\weapon_hopwire_old.cpp"
+		$File "smod\grenade_anm14.cpp"
+		$File "smod\grenade_bugspawner.cpp"
+		$File "smod\weapon_anm14.cpp"
+		$File "smod\weapon_bugspawner.cpp"
+		$File "smod\weapon_physlauncher.cpp"
+		$File "smod\weapon_banana.cpp"
+		$File "smod\weapon_flamethrower.cpp"
+
+		$File "$SRCDIR/game/shared/smmod/shdef_customweapons.cpp"
+		$File "$SRCDIR/game/shared/coolmod/smod_cvars.cpp"
+		$File "$SRCDIR\game\shared\coolmod\luamanager.cpp"
+		$File "$SRCDIR\game\shared\coolmod\sp_animstate.cpp"
+		$File "$SRCDIR\game\shared\coolmod\smod_addcontents.cpp"
+		$File "$SRCDIR\game\shared\smod\weapon_psp.cpp"
+	}
+}

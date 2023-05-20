@@ -26,6 +26,11 @@ public:
 	
 	void	Precache( void );
 
+//	void	PrimaryAttack( void );
+
+	void	Fire9MMBullet( void );
+	void    FireNPC9MMBullet( void );
+
 	virtual int		GetMinBurst( void ) { return 4; }
 	virtual int		GetMaxBurst( void ) { return 7; }
 	virtual float	GetMinRestTime( void );
@@ -45,11 +50,13 @@ public:
 	void Operator_ForceNPCFire( CBaseCombatCharacter  *pOperator, bool bSecondary );
 	void Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 
+	/*
 	virtual void SetPickupTouch( void )
 	{
 		// Alyx gun cannot be picked up
 		SetTouch(NULL);
 	}
+	*/
 
 	float m_flTooCloseTimer;
 

@@ -14,6 +14,7 @@
 #include "baseanimating.h"
 #include "physics_prop_ragdoll.h"
 #include "ai_basenpc.h"
+#include "smod_ragdoll.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -120,7 +121,7 @@ void CEntityDissolve::Spawn()
 
 	if ( (m_nDissolveType == ENTITY_DISSOLVE_ELECTRICAL) || (m_nDissolveType == ENTITY_DISSOLVE_ELECTRICAL_LIGHT) )
 	{
-		if ( dynamic_cast< CRagdollProp* >( GetMoveParent() ) )
+		if ( dynamic_cast< CSMODRagdoll* >( GetMoveParent() ) )
 		{
 			SetContextThink( &CEntityDissolve::ElectrocuteThink, gpGlobals->curtime + 0.01f, s_pElectroThinkContext );
 		}
@@ -226,7 +227,7 @@ CEntityDissolve *CEntityDissolve::Create( CBaseEntity *pTarget, const char *pMat
 		if ( pTarget->IsNPC() && pTarget->MyNPCPointer()->CanBecomeRagdoll() )
 		{
 			CTakeDamageInfo info;
-			CBaseEntity *pRagdoll = CreateServerRagdoll( pTarget->MyNPCPointer(), 0, info, COLLISION_GROUP_DEBRIS, true );
+			CSMODRagdoll *pRagdoll = (CSMODRagdoll *)( pTarget->MyNPCPointer(), 0, info, COLLISION_GROUP_DEBRIS, true );
 			pRagdoll->SetCollisionBounds( pTarget->CollisionProp()->OBBMins(), pTarget->CollisionProp()->OBBMaxs() );
 
 			// Necessary to cause it to do the appropriate death cleanup
@@ -371,7 +372,7 @@ void CEntityDissolve::DissolveThink( void )
 //-----------------------------------------------------------------------------
 void CEntityDissolve::ElectrocuteThink( void )
 {
-	CRagdollProp *pRagdoll = dynamic_cast< CRagdollProp* >( GetMoveParent() );
+	CSMODRagdoll *pRagdoll = dynamic_cast< CSMODRagdoll* >( GetMoveParent() );
 	if ( !pRagdoll )
 		return;
 

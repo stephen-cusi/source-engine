@@ -19,6 +19,8 @@ STUB_WEAPON_CLASS( weapon_bugbait, WeaponBugBait, C_BaseHLCombatWeapon );
 STUB_WEAPON_CLASS( weapon_flaregun, Flaregun, C_BaseHLCombatWeapon );
 STUB_WEAPON_CLASS( weapon_annabelle, WeaponAnnabelle, C_BaseHLCombatWeapon );
 STUB_WEAPON_CLASS( weapon_gauss, WeaponGaussGun, C_BaseHLCombatWeapon );
+STUB_WEAPON_CLASS( weapon_bugspawner, WeaponBugSpawner, C_BaseHLCombatWeapon );
+STUB_WEAPON_CLASS( weapon_anm14, WeaponANM14, C_BaseHLCombatWeapon );
 STUB_WEAPON_CLASS( weapon_cubemap, WeaponCubemap, C_BaseCombatWeapon );
 STUB_WEAPON_CLASS( weapon_alyxgun, WeaponAlyxGun, C_HLSelectFireMachineGun );
 STUB_WEAPON_CLASS( weapon_citizenpackage, WeaponCitizenPackage, C_BaseHLCombatWeapon );
@@ -37,11 +39,18 @@ STUB_WEAPON_CLASS( weapon_slam, Weapon_SLAM, C_BaseHLCombatWeapon );
 STUB_WEAPON_CLASS( weapon_crowbar, WeaponCrowbar, C_BaseHLBludgeonWeapon );
 #ifdef HL2_EPISODIC
 STUB_WEAPON_CLASS( weapon_hopwire, WeaponHopwire, C_BaseHLCombatWeapon );
-//STUB_WEAPON_CLASS( weapon_proto1, WeaponProto1, C_BaseHLCombatWeapon );
+STUB_WEAPON_CLASS( weapon_hopwire_old, WeaponHopwireOld, C_BaseHLCombatWeapon );
 #endif
 #ifdef HL2_LOSTCOAST
 STUB_WEAPON_CLASS( weapon_oldmanharpoon, WeaponOldManHarpoon, C_WeaponCitizenPackage );
 #endif
 #endif
+
+STUB_WEAPON_CLASS( weapon_grease, WeaponGrease, C_HLSelectFireMachineGun );
+STUB_WEAPON_CLASS( weapon_ak47, Weaponak47, C_HLSelectFireMachineGun );
+STUB_WEAPON_CLASS( weapon_kar98, Weaponkar98, C_HLSelectFireMachineGun );
+STUB_WEAPON_CLASS( weapon_mp5, Weaponmp5, C_HLSelectFireMachineGun );
+STUB_WEAPON_CLASS( weapon_physlauncher, WeaponPhysLauncher, C_BaseHLCombatWeapon );
+STUB_WEAPON_CLASS( weapon_flamethrower, WeaponFlame, C_BaseHLCombatWeapon );
 
 
