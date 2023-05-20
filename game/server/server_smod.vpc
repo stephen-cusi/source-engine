@@ -14,7 +14,7 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;.\hl2;$SRCDIR\game\shared\coolmod;$SRCDIR/game/shared/lua;$SRCDIR\game\shared\smmod;.\smmod;.\smod"
+		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\game\shared\hl2;.\hl2;$SRCDIR\game\shared\coolmod;$SRCDIR/game/shared/lua;$SRCDIR/game/shared/smod;$SRCDIR\game\shared\smmod;.\smmod;.\smod"
 		$PreprocessorDefinitions		"$BASE;HL2_DLL;USES_SAVERESTORE"
 	}
 }
@@ -61,6 +61,7 @@ $Project "Server (HL2)"
 		$File "smod\weapon_bugspawner.cpp"
 		$File "smod\weapon_physlauncher.cpp"
 		$File "smod\weapon_banana.cpp"
+		$File "smod\weapon_flamethrower.cpp"
 
 		$File "$SRCDIR/game/shared/smmod/shdef_customweapons.cpp"
 		$File "$SRCDIR/game/shared/coolmod/smod_cvars.cpp"

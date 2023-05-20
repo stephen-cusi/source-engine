@@ -2024,7 +2024,7 @@ void CWeaponCustom::CreateLaserPointer(void)
 	Msg("Created Laser Pointer\n");
 
 	m_hLaserSight = CLaserSight::Create(GetAbsOrigin(), GetOwnerEntity(), true);
-	m_hLaserSight->TurnOn();
+	m_hLaserSight->TurnOff();
 
 	UpdateLaserPosition();
 }

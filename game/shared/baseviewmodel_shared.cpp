@@ -35,6 +35,10 @@ extern ConVar in_forceuser;
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+ConVar viewmodel_nolag("viewmodel_nolag", "0", FCVAR_ARCHIVE | FCVAR_REPLICATED);
+ConVar viewmodel_ironsight_lerpspeed("viewmodel_ironsight_lerpspeed", "1", FCVAR_ARCHIVE | FCVAR_REPLICATED);
+extern ConVar cl_viewbob_amount;
+
 #define VIEWMODEL_ANIMATION_PARITY_BITS 3
 #define SCREEN_OVERLAY_MATERIAL "vgui/screens/vgui_overlay"
 
@@ -58,6 +62,8 @@ CBaseViewModel::CBaseViewModel()
 	m_nViewModelIndex	= 0;
 
 	m_nAnimationParity	= 0;
+
+	m_flIronsightExp = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -387,81 +393,111 @@ void CBaseViewModel::SendViewModelMatchingSequence( int sequence )
 #include "ivieweffects.h"
 #endif
 
-void CBaseViewModel::CalcViewModelView( CBasePlayer *owner, const Vector& eyePosition, const QAngle& eyeAngles )
+void CBaseViewModel::CalcAdjust(Vector &pos, QAngle &ang)
+{
+	CBaseCombatWeapon *pWeapon = GetOwningWeapon();
+	if (!pWeapon)
+		return;
+	CHL2_Player *pPlayer = (CHL2_Player *)(pWeapon->GetOwner());
+	if (!pPlayer)
+		return;
+
+	Vector newPos = pos;
+	QAngle newAng = ang;
+
+	Vector vForward, vRight, vUp, vOffset;
+	AngleVectors(newAng, &vForward, &vRight, &vUp);
+	vOffset = pWeapon->GetAdjustPositionOffset();
+
+	newPos -= vForward * vOffset.x;
+	newPos -= vRight * vOffset.y;
+	newPos -= vUp * vOffset.z;
+	newAng += pWeapon->GetAdjustAngleOffset();
+	//fov is handled by CBaseCombatWeapon
+
+	pos += (newPos - pos);
+	ang += (newAng - ang);
+}
+
+void CBaseViewModel::CalcViewModelView(CBasePlayer *owner, const Vector& eyePosition, const QAngle& eyeAngles)
 {
 	// UNDONE: Calc this on the server?  Disabled for now as it seems unnecessary to have this info on the server
 #if defined( CLIENT_DLL )
+	float mousex, mousey;
+	CBaseCombatWeapon *pWeapon = m_hWeapon.Get();
+
 	QAngle vmangoriginal = eyeAngles;
 	QAngle vmangles = eyeAngles;
 	Vector vmorigin = eyePosition;
 
-	CBaseCombatWeapon *pWeapon = m_hWeapon.Get();
+	if (pWeapon)
+	{
+		ClientModeShared *mode = (ClientModeShared *)GetClientModeNormal();
+		mode->GetMouseXAndY(mousex, mousey);
+
+		vmangles.x += mousey / 1.55f;
+		vmangles.y -= ((!pWeapon->GetWpnData().m_bBuiltRightHanded && pWeapon->GetWpnData().m_bAllowFlipping) ? -mousex : mousex) / 1.55f;
+	}
 	//Allow weapon lagging
-	if ( pWeapon != NULL )
+	//only if not in ironsight-mode
+//	if (pWeapon == NULL || !pWeapon->IsIronsighted())
 	{
-#if defined( CLIENT_DLL )
-		if ( !prediction->InPrediction() )
-#endif
+		if (pWeapon != NULL)
 		{
-			// add weapon-specific bob 
-			pWeapon->AddViewmodelBob( this, vmorigin, vmangles );
-#if defined ( CSTRIKE_DLL )
-			CalcViewModelLag( vmorigin, vmangles, vmangoriginal );
+#if defined( CLIENT_DLL )
+			if (!prediction->InPrediction())
 #endif
+			{
+				// add weapon-specific bob 
+				pWeapon->AddViewmodelBob(this, vmorigin, vmangles);
+			}
 		}
-	}
-	// Add model-specific bob even if no weapon associated (for head bob for off hand models)
-	AddViewModelBob( owner, vmorigin, vmangles );
-#if !defined ( CSTRIKE_DLL )
-	// This was causing weapon jitter when rotating in updated CS:S; original Source had this in above InPrediction block  07/14/10
-	// Add lag
-	CalcViewModelLag( vmorigin, vmangles, vmangoriginal );
-#endif
+
+		// Add model-specific bob even if no weapon associated (for head bob for off hand models)
+		AddViewModelBob(owner, vmorigin, vmangles);
+
+		// Add lag
+		if (!viewmodel_nolag.GetBool())
+		{
+			CalcViewModelLag(vmorigin, vmangles, vmangoriginal);
+		}
 
 #if defined( CLIENT_DLL )
-	if ( !prediction->InPrediction() )
-	{
-		// Let the viewmodel shake at about 10% of the amplitude of the player's view
-		vieweffects->ApplyShake( vmorigin, vmangles, 0.1 );	
-	}
-#endif
-
-	if( UseVR() )
-	{
-		g_ClientVirtualReality.OverrideViewModelTransform( vmorigin, vmangles, pWeapon && pWeapon->ShouldUseLargeViewModelVROverride() );
-	}
-
-	SetLocalOrigin( vmorigin );
-	SetLocalAngles( vmangles );
-
-#ifdef SIXENSE
-	if( g_pSixenseInput->IsEnabled() && (owner->GetObserverMode()==OBS_MODE_NONE) && !UseVR() )
-	{
-		const float max_gun_pitch = 20.0f;
-
-		float viewmodel_fov_ratio = g_pClientMode->GetViewModelFOV()/owner->GetFOV();
-		QAngle gun_angles = g_pSixenseInput->GetViewAngleOffset() * -viewmodel_fov_ratio;
-
-		// Clamp pitch a bit to minimize seeing back of viewmodel
-		if( gun_angles[PITCH] < -max_gun_pitch )
-		{ 
-			gun_angles[PITCH] = -max_gun_pitch; 
-		}
-
-#ifdef WIN32 // ShouldFlipViewModel comes up unresolved on osx? Mabye because it's defined inline? fixme
-		if( ShouldFlipViewModel() ) 
+		if (!prediction->InPrediction())
 		{
-			gun_angles[YAW] *= -1.0f;
+			// Let the viewmodel shake at about 10% of the amplitude of the player's view
+			vieweffects->ApplyShake(vmorigin, vmangles, 0.1);
 		}
 #endif
-
-		vmangles = EyeAngles() +  gun_angles;
-
-		SetLocalAngles( vmangles );
 	}
-#endif
-#endif
 
+	if (cl_viewbob_amount.GetFloat() != 0.0f)
+	{
+		C_BasePlayer *pPlayer = C_BasePlayer::GetLocalPlayer();
+
+		//Find the speed of the player
+		float speed = pPlayer->GetLocalVelocity().Length2D();
+		speed = RemapValClamped(speed, 0.0f, 320.0f, 0.0f, 1.0f);
+
+		Vector attachmentOrigin;
+		QAngle vecAngle;
+		pPlayer->GetBonePosition(pPlayer->LookupBone("ValveBiped.Bip01_Head1"), attachmentOrigin, vecAngle);
+		Vector ViewOriginWithoutDucking = pPlayer->GetAbsOrigin() + VEC_VIEW_SCALED(this);
+
+
+		vmorigin += (attachmentOrigin - ViewOriginWithoutDucking) * speed * cl_viewbob_amount.GetFloat() * 1.5f;
+}
+
+	CalcAdjust(vmorigin, vmangles);
+
+	CalcIronsights(vmorigin, vmangles);
+
+	CalcLower(vmorigin, vmangles);
+
+	SetLocalOrigin(vmorigin);
+	SetLocalAngles(vmangles);
+
+#endif
 }
 
 void CBaseViewModel::CalcIronsights(Vector &pos, QAngle &ang)

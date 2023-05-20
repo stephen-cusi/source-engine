@@ -7,6 +7,7 @@
 
 #include "cbase.h"
 #include "basehlcombatweapon.h"
+#include "basecombatcharacter.h"
 #include "player.h"
 #include "gamerules.h"
 #include "ammodef.h"
@@ -207,5 +208,90 @@ void CWeaponCrowbar::Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatC
 	default:
 		BaseClass::Operator_HandleAnimEvent( pEvent, pOperator );
 		break;
+	}
+}
+
+void CWeaponCrowbar::SecondaryAttack()
+{
+	CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
+	Vector eyepos, qqwee, right, forward, impulse, cthrow;
+	eyepos = pPlayer->EyePosition();
+	pPlayer->EyeVectors( &forward, &right, NULL );
+	
+	trace_t tr;
+	UTIL_TraceLine(qqwee, qqwee + forward * MAX_TRACE_LENGTH, MASK_SHOT, this, COLLISION_GROUP_NONE, &tr);
+
+
+	qqwee = eyepos + forward * 20.0f + right * 10.0f;
+	pPlayer->GetVelocity( &cthrow, NULL );
+	cthrow += forward * 1984 + Vector( 0, 0, 50 );
+	AngularImpulse velocity = AngularImpulse( 600, 1200, 0 );
+	Drop( pPlayer->GetActiveWeapon(), &tr.endpos, &velocity );	
+	SetVelocity( cthrow, velocity );
+}
+
+void CWeaponCrowbar::Drop( CBaseCombatWeapon *pWeapon, const Vector *target, const Vector *velocity )
+{
+	CBasePlayer *pPlayer = ToBasePlayer( GetOwner( ) );
+
+	if ( !pWeapon )
+		return;
+
+	if ( IsPlayer() )
+	{
+		Vector forward, right;
+		pPlayer->EyeVectors( &forward, &right, NULL );
+		Vector vThrowPos = forward + right - Vector( 0, 0, 12 );
+
+		if( UTIL_PointContents(vThrowPos) & CONTENTS_SOLID )
+		{
+			Msg("Weapon spawning in solid!\n");
+		}
+
+		pWeapon->SetAbsOrigin( vThrowPos );
+
+		QAngle gunAngles;
+		VectorAngles( pPlayer->BodyDirection2D(), gunAngles );
+		pWeapon->SetAbsAngles( gunAngles );
+	}
+
+	Vector vecThrow;
+	if ( target )
+	{
+		// I've been told to throw it somewhere specific.
+		vecThrow = VecCheckToss( this, pWeapon->GetAbsOrigin(), *target, 0.2, 1.0, false );
+	}
+	else
+	{
+		if ( velocity )
+		{
+			vecThrow = *velocity;
+			float flLen = vecThrow.Length();
+			if (flLen > 400)
+			{
+				VectorNormalize(vecThrow);
+				//vecThrow *= 1984;
+				vecThrow = pPlayer->BodyDirection3D() * 1984;
+			}
+		}
+	}
+
+	pWeapon->Drop( vecThrow );
+	pPlayer->Weapon_Detach( pWeapon );
+
+	CBaseViewModel *vm = pPlayer->GetViewModel();
+	if ( vm )
+	{
+		vm->AddEffects( EF_NODRAW );
+	}
+}
+
+void CWeaponCrowbar::SetVelocity( const Vector &velocity, const AngularImpulse &angVelocity )
+{
+	IPhysicsObject *pPhysicsObject = VPhysicsGetObject();
+
+	if ( pPhysicsObject != NULL )
+	{
+		pPhysicsObject->AddVelocity( &velocity, &angVelocity );
 	}
 }

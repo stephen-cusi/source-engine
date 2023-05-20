@@ -46,10 +46,11 @@ STUB_WEAPON_CLASS( weapon_oldmanharpoon, WeaponOldManHarpoon, C_WeaponCitizenPac
 #endif
 #endif
 
-STUB_WEAPON_CLASS(weapon_grease, WeaponGrease, C_HLSelectFireMachineGun);
-STUB_WEAPON_CLASS(weapon_ak47, Weaponak47, C_HLSelectFireMachineGun);
-STUB_WEAPON_CLASS(weapon_kar98, Weaponkar98, C_HLSelectFireMachineGun);
-STUB_WEAPON_CLASS(weapon_mp5, Weaponmp5, C_HLSelectFireMachineGun);
+STUB_WEAPON_CLASS( weapon_grease, WeaponGrease, C_HLSelectFireMachineGun );
+STUB_WEAPON_CLASS( weapon_ak47, Weaponak47, C_HLSelectFireMachineGun );
+STUB_WEAPON_CLASS( weapon_kar98, Weaponkar98, C_HLSelectFireMachineGun );
+STUB_WEAPON_CLASS( weapon_mp5, Weaponmp5, C_HLSelectFireMachineGun );
 STUB_WEAPON_CLASS( weapon_physlauncher, WeaponPhysLauncher, C_BaseHLCombatWeapon );
+STUB_WEAPON_CLASS( weapon_flamethrower, WeaponFlame, C_BaseHLCombatWeapon );
 
 
