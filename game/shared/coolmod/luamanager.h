@@ -15,6 +15,12 @@
 #pragma once
 #endif
 
+#ifdef _WIN32
+	#define LUA_COMPAT_MODULE
+	#include "../../public/lua/lua.h"
+	#include "../../public/lua/lauxlib.h"
+	#include "../../public/lua/lualib.h"
+#else
 extern "C"
 {
 	#define LUA_COMPAT_MODULE
@@ -22,6 +28,7 @@ extern "C"
 	#include "../../public/lua/lauxlib.h"
 	#include "../../public/lua/lualib.h"
 }
+#endif
 
 #include <vector>
 
