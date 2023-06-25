@@ -244,8 +244,8 @@ void CHL2MP_Player::PickDefaultSpawnTeam( void )
 				if ( ValidatePlayerModel( szModelName ) == false )
 				{
 					char szReturnString[512];
-					Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel models/player/combine_soldier.mdl\n" );
-					engine->ClientCommand ( edict(), szReturnString );
+					//Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel models/player/combine_soldier.mdl\n" );
+					//engine->ClientCommand ( edict(), szReturnString );
 				}
 
 				ChangeTeam( TEAM_UNASSIGNED );
@@ -390,6 +390,7 @@ bool CHL2MP_Player::ValidatePlayerModel( const char *pModel )
 
 void CHL2MP_Player::SetPlayerTeamModel( void )
 {
+	/*
 	const char *szModelName = NULL;
 	szModelName = engine->GetClientConVarValue( engine->IndexOfEdict( edict() ), "cl_playermodel" );
 
@@ -397,13 +398,13 @@ void CHL2MP_Player::SetPlayerTeamModel( void )
 
 	if ( modelIndex == -1 || ValidatePlayerModel( szModelName ) == false )
 	{
-		szModelName = "models/player/combine_soldier.mdl";
-		m_iModelType = TEAM_COMBINE;
+		//szModelName = "models/player/combine_soldier.mdl";
+		//m_iModelType = TEAM_COMBINE;
 
 		char szReturnString[512];
 
-		Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", szModelName );
-		engine->ClientCommand ( edict(), szReturnString );
+		//Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", szModelName );
+		//engine->ClientCommand ( edict(), szReturnString );
 	}
 
 	if ( GetTeamNumber() == TEAM_COMBINE )
@@ -435,6 +436,7 @@ void CHL2MP_Player::SetPlayerTeamModel( void )
 	SetupPlayerSoundsByModel( szModelName );
 
 	m_flNextModelChangeTime = gpGlobals->curtime + MODEL_CHANGE_INTERVAL;
+	*/
 }
 
 void CHL2MP_Player::SetPlayerModel( void )
@@ -473,12 +475,12 @@ void CHL2MP_Player::SetPlayerModel( void )
 			pszCurrentModelName = "models/player/combine_soldier.mdl";
 		}
 
-		Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", pszCurrentModelName );
-		engine->ClientCommand ( edict(), szReturnString );
+		//Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", pszCurrentModelName );
+		//engine->ClientCommand ( edict(), szReturnString );
 
 		szModelName = pszCurrentModelName;
 	}
-
+/*
 	if ( GetTeamNumber() == TEAM_COMBINE )
 	{
 		int nHeads = ARRAYSIZE( g_ppszRandomCombineModels );
@@ -522,14 +524,15 @@ void CHL2MP_Player::SetPlayerModel( void )
 
 		char szReturnString[512];
 
-		Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", szModelName );
-		engine->ClientCommand ( edict(), szReturnString );
+		//Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", szModelName );
+		//engine->ClientCommand ( edict(), szReturnString );
 	}
-
+*/
 	SetModel( szModelName );
 	SetupPlayerSoundsByModel( szModelName );
 
 	m_flNextModelChangeTime = gpGlobals->curtime + MODEL_CHANGE_INTERVAL;
+	
 }
 
 void CHL2MP_Player::SetupPlayerSoundsByModel( const char *pModelName )

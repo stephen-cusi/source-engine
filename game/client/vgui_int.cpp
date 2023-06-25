@@ -31,6 +31,7 @@
 
 #ifdef HL2SB
 #include "menu/sm_menu.h"
+#include "menu/playermodel_menu.h"
 #endif
 
 #if defined( TF_CLIENT_DLL )
@@ -219,6 +220,7 @@ void VGui_CreateGlobalPanels( void )
 
 #ifdef HL2SB
 	smenu->Create(gameParent);
+	smpenu->Create(gameParent);
 #endif
 
 #if defined( TRACK_BLOCKING_IO )
@@ -254,6 +256,7 @@ void VGui_Shutdown()
 
 #ifdef HL2SB
 	smenu->Destroy();
+	smpenu->Destroy();
 #endif
 
 	messagechars->Destroy();

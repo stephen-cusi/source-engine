@@ -190,7 +190,7 @@ void CWeaponToolGun::PrimaryAttack()
 				{
 					if (tr.m_pEnt->IsPlayer())
 					{
-						DevMsg("Someone tried to remove player!\n");
+						ClientPrint( pOwner, HUD_PRINTCONSOLE, "Remoing players is bad, don't do it\n");
 						break;
 					}
 					UTIL_Remove( tr.m_pEnt );
