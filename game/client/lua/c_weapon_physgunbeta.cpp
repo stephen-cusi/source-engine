@@ -10,7 +10,7 @@
 #include "in_buttons.h"
 #include "beamdraw.h"
 #include "c_weapon__stubs.h"
-#include <$SRCDIR/game/client/ClientEffectPrecacheSystem.h>
+#include <ClientEffectPrecacheSystem.h>
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
