@@ -95,17 +95,4 @@ jobs:
         path: ./win
         if-no-files-found: error
 
-  build-macos-amd64:
-    runs-on: macos-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build MacOS (64 bit)
-      run: |
-        scripts/build-macos-amd64.sh
-    - uses: actions/upload-artifact@v3
-      with:
-        name: hl2bsb-macos-amd64
-        path: ./to-upload
-        if-no-files-found: error
 
