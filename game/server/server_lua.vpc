@@ -79,7 +79,7 @@ $Project "Server (HL2MP)"
 	$Folder "Half-Life 2 Sanbox"
 	{
 		$File "$SRCDIR/game/shared/hl2sb/weapon_toolgun.cpp"
-		$File "$SRCDIR/game/shared/hl2sb/weapon_physgun.cpp"
+		$File "$SRCDIR/game/server/physgunbeta.cpp"
 	}
 
 	$Folder "Gunmod"
