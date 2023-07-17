@@ -207,7 +207,7 @@ void CHL2MP_Player::GiveAllItems( void )
 	GiveNamedItem( "weapon_rpg" );
 	GiveNamedItem( "weapon_slam" );
 	GiveNamedItem( "weapon_physcannon" );
-	GiveNamedItem( "weapon_physgun");
+	GiveNamedItem( "weapon_physgunbeta");
 	GiveNamedItem( "weapon_toolgun");
 }
 
