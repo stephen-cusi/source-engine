@@ -41,7 +41,7 @@ void CC_MessageBoxWarn()
 {
 	if ( smwarning.GetInt() == 1 )
 	{
-		vgui::MessageBox *pMessageBox = new vgui::MessageBox( "Welcome to Half-Life 2 Sandbox!", "Hi, are you currently playing Half-Life 2: Sandbox or an build/modpack based on this modification.\nRemember that this modification is not Garry's Mod, and on youtube only clickbait. Thank you for your understanding.\nJoin our server for support and updates! Server: https://discord.gg/Eyvzb4Ux5g" );
+		vgui::MessageBox *pMessageBox = new vgui::MessageBox( "Welcome to Half-Life 2 Beta Sandbox!", "Hi, are you currently playing Half-Life 2: Beta Sandbox.\nThis modification is based on Half-Life 2 Sandbox. Thank you for your understanding." );
 		pMessageBox->DoModal();
 		pMessageBox->SetScheme(vgui::scheme()->LoadSchemeFromFile("resource/sch.res", "SourceScheme"));
 	}
