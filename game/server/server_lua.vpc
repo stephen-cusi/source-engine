@@ -76,10 +76,11 @@ $Project "Server (HL2MP)"
 		$File "$SRCDIR/public/lua/lColor.cpp"
 	}
 
-	$Folder "Half-Life 2 Sanbox"
+	$Folder "Half-Life 2 Beta Sandbox"
 	{
 		$File "$SRCDIR/game/shared/hl2sb/weapon_toolgun.cpp"
 		$File "$SRCDIR/game/server/physgunbeta.cpp"
+		$File "$SRCDIR/game/server/weapon_custom_flaregun.cpp"
 	}
 
 	$Folder "Gunmod"
