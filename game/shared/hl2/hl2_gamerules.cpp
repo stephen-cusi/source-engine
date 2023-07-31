@@ -219,6 +219,9 @@ ConVar sk_max_snark					( "sk_max_snark",				"0", FCVAR_REPLICATED );
 ConVar sk_npc_dmg_12mm_bullet		( "sk_npc_dmg_12mm_bullet",		"0", FCVAR_REPLICATED );
 
 ConVar sk_mp_dmg_multiplier ( "sk_mp_dmg_multiplier", "2.0" );
+ConVar    sk_plr_dmg_flare_round    ( "sk_plr_dmg_flare_round","0", FCVAR_REPLICATED);
+ConVar    sk_npc_dmg_flare_round    ( "sk_npc_dmg_flare_round","0", FCVAR_REPLICATED);
+ConVar    sk_max_flare_round        ( "sk_max_flare_round","15", FCVAR_REPLICATED);
 
 //-----------------------------------------------------------------------------
 // Purpose: 
