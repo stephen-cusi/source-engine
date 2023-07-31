@@ -33,8 +33,9 @@ ConVar	flaregun_stop_velocity("sv_flaregun_stop_velocity", "128");
 ConVar	flaregun_projectile_sticky("sv_flaregun_projectile_sticky", "0");
 ConVar	flaregun_dynamic_lights("sv_flaregun_dynamic_lights", "1");
 
-extern ConVar    sk_plr_dmg_flare_round;
-extern ConVar    sk_npc_dmg_flare_round;
+ConVar    sk_plr_dmg_flare_round    ( "sk_plr_dmg_flare_round","0", FCVAR_REPLICATED);
+ConVar    sk_npc_dmg_flare_round    ( "sk_npc_dmg_flare_round","0", FCVAR_REPLICATED);
+ConVar    sk_max_flare_round        ( "sk_max_flare_round","15", FCVAR_REPLICATED);
 
 // Custom derived class for flare gun projectiles
 class CFlareGunProjectile : public CFlare
