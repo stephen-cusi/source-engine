@@ -50,12 +50,12 @@ extern engineparms_t host_parms;
 //-----------------------------------------------------------------------------
 inline const char *GetCurrentMod()
 {
-	return host_parms.mod;
+	return "sourcebox";
 }
 
 inline const char *GetCurrentGame()
 {
-	return host_parms.game;
+	return "sourcebox";
 }
 
 inline const char *GetBaseDirectory()

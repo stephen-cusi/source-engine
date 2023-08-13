@@ -39,6 +39,12 @@ typedef int (*LauncherMain_t)( int argc, char **argv );
 #error
 #endif
 
+#ifdef _WIN64
+#define WIN_ARCH "win64"
+#else
+#define WIN_ARCH "win32"
+#endif
+
 #ifdef WIN32
 // hinting the nvidia driver to use the dedicated graphics card in an optimus configuration
 // for more info, see: http://developer.download.nvidia.com/devzone/devcenter/gamegraphics/files/OptimusRenderingPolicies.pdf
@@ -108,13 +114,13 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 #ifdef _DEBUG
 	int len = 
 #endif
-	_snprintf( szBuffer, sizeof( szBuffer ), "PATH=%s\\bin_win32\\;%s", pRootDir, pPath );
+	_snprintf( szBuffer, sizeof( szBuffer ), "PATH=%s\\bin_" WIN_ARCH "\\;%s", pRootDir, pPath );
 	szBuffer[sizeof( szBuffer ) - 1] = '\0';
 	assert( len < sizeof( szBuffer ) );
 	_putenv( szBuffer );
 
 	// Assemble the full path to our "launcher.dll"
-	_snprintf( szBuffer, sizeof( szBuffer ), "%s\\bin_win32\\launcher.dll", pRootDir );
+	_snprintf( szBuffer, sizeof( szBuffer ), "%s\\bin_" WIN_ARCH "\\launcher.dll", pRootDir );
 	szBuffer[sizeof( szBuffer ) - 1] = '\0';
 
 	// STEAM OK ... filesystem not mounted yet

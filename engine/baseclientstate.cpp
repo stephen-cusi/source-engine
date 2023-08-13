@@ -1205,10 +1205,10 @@ bool CBaseClientState::ProcessServerInfo( SVC_ServerInfo *msg )
 		return false;
 	}
 	
-	if ( !COM_CheckGameDirectory( msg->m_szGameDir ) )
-	{
-		return false;
-	}
+	//if ( !COM_CheckGameDirectory( msg->m_szGameDir ) )
+	//{
+	//	return false;
+	//}
 
 	Q_strncpy( m_szLevelBaseName, msg->m_szMapName, sizeof( m_szLevelBaseName ) );
 

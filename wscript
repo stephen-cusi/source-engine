@@ -578,11 +578,12 @@ def configure(conf):
 	# indicate if we are packaging for Linux/BSD
 	if conf.env.DEST_OS != 'android':
 		if conf.options.DEDICATED:
-			conf.env.LIBDIR = conf.env.PREFIX+'/bin'+'_'+conf.env.DEST_OS+'_srcds/'
+			conf.env.LIBDIR = conf.env.PREFIX+'/bin'+'_'+conf.env.DEST_OS.replace("32","64" if conf.options.ALLOW64 else "32")+'_srcds/'
 		else:
-			conf.env.LIBDIR = conf.env.PREFIX+'/bin'+'_'+conf.env.DEST_OS+'/'
+			conf.env.LIBDIR = conf.env.PREFIX+'/bin'+'_'+conf.env.DEST_OS.replace("32","64" if conf.options.ALLOW64 else "32")+'/'
 		conf.env.TESTDIR = conf.env.PREFIX+'/tests/'
 		conf.env.BINDIR = conf.env.PREFIX
+
 		
 	else:
 		conf.env.LIBDIR = conf.env.BINDIR = conf.env.PREFIX

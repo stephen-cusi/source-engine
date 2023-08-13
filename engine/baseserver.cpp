@@ -937,8 +937,6 @@ void CBaseServer::UserInfoChanged( int nClientIndex )
 
 void CBaseServer::FillServerInfo(SVC_ServerInfo &serverinfo)
 {
-	static char gamedir[MAX_OSPATH];
-	Q_FileBase( com_gamedir, gamedir, sizeof( gamedir ) );
 
 	serverinfo.m_nProtocol		= PROTOCOL_VERSION;
 	serverinfo.m_nServerCount	= GetSpawnCount();
@@ -956,7 +954,7 @@ void CBaseServer::FillServerInfo(SVC_ServerInfo &serverinfo)
 	serverinfo.m_cOS = tolower( serverinfo.m_cOS );
 
 	serverinfo.m_fTickInterval	= GetTickInterval();
-	serverinfo.m_szGameDir		= gamedir;
+	serverinfo.m_szGameDir		= GetCurrentMod();
 	serverinfo.m_szMapName		= GetMapName();
 	serverinfo.m_szSkyName		= m_szSkyname;
 	serverinfo.m_szHostName		= GetName();

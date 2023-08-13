@@ -32,8 +32,8 @@ def build(bld):
 	install_path = bld.env.BINDIR
 	bld(
 		source   = source,
-		target   = PROJECT_NAME+'_'+bld.env.DEST_OS+("_srcds" if bld.env.DEDICATED else "_launcher"),
-		name     = PROJECT_NAME+'_'+bld.env.DEST_OS+("_srcds" if bld.env.DEDICATED else "_launcher"),
+		target   = PROJECT_NAME+'_'+bld.env.DEST_OS.replace("32","64" if bld.env.DEST_CPU in ['x86_64', 'amd64'] else "32")+("_srcds" if bld.env.DEDICATED else "_launcher"),
+		name     = PROJECT_NAME+'_'+bld.env.DEST_OS.replace("32","64" if bld.env.DEST_CPU in ['x86_64', 'amd64'] else "32")+("_srcds" if bld.env.DEDICATED else "_launcher"),
 		features = 'c cxx cxxprogram',
 		includes = includes,
 		defines  = defines,
