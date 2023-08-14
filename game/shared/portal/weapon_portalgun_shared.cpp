@@ -31,7 +31,6 @@ acttable_t	CWeaponPortalgun::m_acttable[] =
 
 IMPLEMENT_ACTTABLE(CWeaponPortalgun);
 
-
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
 //-----------------------------------------------------------------------------

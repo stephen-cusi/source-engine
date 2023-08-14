@@ -68,6 +68,8 @@ ConVar ai_force_serverside_ragdoll( "ai_force_serverside_ragdoll", "0" );
 
 ConVar nb_last_area_update_tolerance( "nb_last_area_update_tolerance", "4.0", FCVAR_CHEAT, "Distance a character needs to travel in order to invalidate cached area" ); // 4.0 tested as sweet spot (for wanderers, at least). More resulted in little benefit, less quickly diminished benefit [7/31/2008 tom]
 
+ConVar sv_keep_weapons_after_death("sv_keep_weapons_after_death", "0");
+
 #ifndef _RETAIL
 ConVar ai_use_visibility_cache( "ai_use_visibility_cache", "1" );
 #define ShouldUseVisibilityCache() ai_use_visibility_cache.GetBool()
@@ -1601,15 +1603,18 @@ void CBaseCombatCharacter::Event_Killed( const CTakeDamageInfo &info )
 
 	CBaseCombatWeapon *pDroppedWeapon = m_hActiveWeapon.Get();
 
-	// Drop any weapon that I own
-	if ( VPhysicsGetObject() )
+	if (!(dynamic_cast<CBasePlayer*>(this) && sv_keep_weapons_after_death.GetBool()))
 	{
-		Vector weaponForce = forceVector * VPhysicsGetObject()->GetInvMass();
-		Weapon_Drop( m_hActiveWeapon, NULL, &weaponForce );
-	}
-	else
-	{
-		Weapon_Drop( m_hActiveWeapon );
+		// Drop any weapon that I own
+		if (VPhysicsGetObject())
+		{
+			Vector weaponForce = forceVector * VPhysicsGetObject()->GetInvMass();
+			Weapon_Drop(m_hActiveWeapon, NULL, &weaponForce);
+		}
+		else
+		{
+			Weapon_Drop(m_hActiveWeapon);
+		}
 	}
 	
 	// if flagged to drop a health kit
@@ -1643,13 +1648,13 @@ void CBaseCombatCharacter::Event_Killed( const CTakeDamageInfo &info )
 			bRagdollCreated = Dissolve( NULL, gpGlobals->curtime, false, nDissolveType );
 
 			// Also dissolve any weapons we dropped
-			if ( pDroppedWeapon )
+			if ( pDroppedWeapon && !(dynamic_cast<CBasePlayer*>(this) && sv_keep_weapons_after_death.GetBool()))
 			{
 				pDroppedWeapon->Dissolve( NULL, gpGlobals->curtime, false, nDissolveType );
 			}
 		}
 #ifdef HL2_DLL
-		else if ( PlayerHasMegaPhysCannon() )
+		else if ( PlayerHasMegaPhysCannon() && !(dynamic_cast<CBasePlayer*>(this) && sv_keep_weapons_after_death.GetBool()))
 		{
 			if ( pDroppedWeapon )
 			{

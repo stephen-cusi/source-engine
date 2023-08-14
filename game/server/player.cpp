@@ -116,6 +116,8 @@ ConVar cl_backspeed( "cl_backspeed", "450", FCVAR_REPLICATED | FCVAR_CHEAT );
 // This is declared in the engine, too
 ConVar	sv_noclipduringpause( "sv_noclipduringpause", "0", FCVAR_REPLICATED | FCVAR_CHEAT, "If cheats are enabled, then you can noclip with the game paused (for doing screenshots, etc.)." );
 
+ConVar  sv_revive_after_death("sv_revive_after_death", "0");
+
 extern ConVar sv_maxunlag;
 extern ConVar sv_turbophysics;
 extern ConVar *sv_maxreplay;
@@ -191,6 +193,7 @@ ConVar  sv_player_display_usercommand_errors( "sv_player_display_usercommand_err
 
 ConVar  player_debug_print_damage( "player_debug_print_damage", "0", FCVAR_CHEAT, "When true, print amount and type of all damage received by player to console." );
 
+extern ConVar sv_keep_weapons_after_death;
 
 void CC_GiveCurrentAmmo( void )
 {
@@ -578,7 +581,7 @@ CBasePlayer::CBasePlayer( )
 
 	m_szNetname[0] = '\0';
 
-	m_iHealth = 0;
+	m_iHealth = 100;
 	Weapon_SetLast( NULL );
 	m_bitsDamageType = 0;
 
@@ -1684,7 +1687,7 @@ void CBasePlayer::Event_Killed( const CTakeDamageInfo &info )
 	}
 
 	// holster the current weapon
-	if ( GetActiveWeapon() )
+	if ( GetActiveWeapon() && !sv_keep_weapons_after_death.GetBool() )
 	{
 		GetActiveWeapon()->Holster();
 	}
@@ -2068,6 +2071,7 @@ void CBasePlayer::ShowViewPortPanel( const char * name, bool bShow, KeyValues *d
 }
 
 
+
 void CBasePlayer::PlayerDeathThink(void)
 {
 	float flForward;
@@ -2090,7 +2094,7 @@ void CBasePlayer::PlayerDeathThink(void)
 		}
 	}
 
-	if ( HasWeapons() )
+	if ( HasWeapons() && !sv_keep_weapons_after_death.GetBool())
 	{
 		// we drop the guns here because weapons that have an area effect and can kill their user
 		// will sometimes crash coming back from CBasePlayer::Killed() if they kill their owner because the
@@ -4893,6 +4897,7 @@ void CBasePlayer::InitialSpawn( void )
 //-----------------------------------------------------------------------------
 void CBasePlayer::Spawn( void )
 {
+	bool died = m_iHealth <= 0;
 	// Needs to be done before weapons are given
 	if ( Hints() )
 	{
@@ -4960,7 +4965,7 @@ void CBasePlayer::Spawn( void )
 	if ( !m_fGameHUDInitialized )
 		g_pGameRules->SetDefaultPlayerTeam( this );
 
-	if (gpGlobals->eLoadType != MapLoad_Transition || !gpGlobals->startspot)
+	if ((gpGlobals->eLoadType != MapLoad_Transition || !gpGlobals->startspot) && !(died && sv_revive_after_death.GetBool()))
 	{
 		g_pGameRules->GetPlayerSpawnSpot(this);
 	}

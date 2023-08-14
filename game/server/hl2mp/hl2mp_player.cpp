@@ -469,12 +469,13 @@ void CHL2MP_Player::PickDefaultSpawnTeam( void )
 		}
 	}
 }
-
+extern ConVar sv_keep_weapons_after_death;
 //-----------------------------------------------------------------------------
 // Purpose: Sets HL2 specific defaults.
 //-----------------------------------------------------------------------------
 void CHL2MP_Player::Spawn(void)
 {
+	bool died = GetHealth() <= 0;
 	m_flNextModelChangeTime = 0.0f;
 	m_flNextTeamChangeTime = 0.0f;
 
@@ -489,7 +490,7 @@ void CHL2MP_Player::Spawn(void)
 
 		RemoveEffects( EF_NODRAW );
 		
-		if(gpGlobals->eLoadType != MapLoad_Transition || !gpGlobals->startspot)
+		if((gpGlobals->eLoadType != MapLoad_Transition || !gpGlobals->startspot) && !(died && sv_keep_weapons_after_death.GetBool()))
 			GiveDefaultItems();
 	}
 

@@ -39,6 +39,7 @@ extern IFileSystem *filesystem;
 	#include "env_player_surface_trigger.h"
 	static ConVar dispcoll_drawplane( "dispcoll_drawplane", "0" );
 #endif
+static ConVar sv_fastbhop("sv_fastbhop", "0");
 
 #ifndef HL2MP
 
@@ -2549,6 +2550,13 @@ bool CGameMovement::CheckJumpButton( void )
 	else
 	{
 		mv->m_vecVelocity[2] += flGroundFactor * flMul;  // 2 * gravity * height
+	}
+
+	if (sv_fastbhop.GetBool())
+	{
+		Vector normalizedvel = mv->m_vecVelocity.Normalized();
+		mv->m_vecVelocity[0] += mv->m_vecVelocity[0] * 0.25 + normalizedvel[0] * 200.0;
+		mv->m_vecVelocity[1] += mv->m_vecVelocity[1] * 0.25 + normalizedvel[1] * 200.0;
 	}
 
 	// Add a little forward velocity based on your current forward velocity - if you are not sprinting.

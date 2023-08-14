@@ -77,6 +77,47 @@ PRECACHE_WEAPON_REGISTER(weapon_portalgun);
 extern ConVar sv_portal_placement_debug;
 extern ConVar sv_portal_placement_never_fail;
 
+ConVar sv_fastportal("sv_fastportal", "0");
+
+CON_COMMAND(shoot_portal_blue, "Works if the player has a portal gun and sv_fastportal is set to 1")
+{
+	if (!sv_fastportal.GetBool())
+		return;
+	CBasePlayer* player = UTIL_GetCommandClient();
+	if (!player)
+		return;
+
+	for (int i = 0; i < player->WeaponCount(); i++)
+	{
+		CWeaponPortalgun* gun = dynamic_cast<CWeaponPortalgun*>(player->GetWeapon(i));
+		if (gun)
+		{
+			gun->FirePortal(false);
+			break;
+		}
+	}
+}
+
+CON_COMMAND(shoot_portal_orange, "Works if the player has a portal gun and sv_fastportal is set to 1")
+{
+	if (!sv_fastportal.GetBool())
+		return;
+	CBasePlayer* player = UTIL_GetCommandClient();
+	if (!player)
+		return;
+
+	for (int i = 0; i < player->WeaponCount(); i++)
+	{
+		CWeaponPortalgun* gun = dynamic_cast<CWeaponPortalgun*>(player->GetWeapon(i));
+		if (gun)
+		{
+			gun->FirePortal(true);
+			break;
+		}
+	}
+}
+
+
 
 void CWeaponPortalgun::Spawn( void )
 {
