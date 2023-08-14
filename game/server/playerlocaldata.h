@@ -84,6 +84,10 @@ public:
 	CNetworkVarEmbedded( audioparams_t, m_audio );
 
 	CNetworkVar( bool, m_bSlowMovement );
+
+	CNetworkVar( float, m_flDesiredWallSlide );
+	CNetworkVar( float, m_flCurrentWallSlide );
+	CNetworkVar( float, m_flSmoothedWallSlide );
 };
 
 EXTERN_SEND_TABLE(DT_Local);

@@ -60,6 +60,8 @@ public:
 
 	CNetworkQAngle( m_vecPunchAngleVel );		// velocity of auto-decaying view angle adjustment
 	CInterpolatedVar< QAngle >	m_iv_vecPunchAngleVel;
+	
+
 	bool					m_bDrawViewmodel;
 	bool					m_bWearingSuit;
 	bool					m_bPoisoned;
@@ -74,6 +76,10 @@ public:
 	audioparams_t			m_audio;
 
 	bool					m_bSlowMovement;
+
+	float					m_flDesiredWallSlide;
+	float					m_flCurrentWallSlide;
+	float					m_flSmoothedWallSlide;
 
 };
 

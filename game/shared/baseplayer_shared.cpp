@@ -91,6 +91,8 @@
 ConVar mp_usehwmmodels( "mp_usehwmmodels", "0", NULL, "Enable the use of the hw morph models. (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
 #endif
 
+ConVar sv_wall_slide("sv_wall_slide", "0");
+
 bool UseHWMorphModels()
 {
 // #ifdef CLIENT_DLL 
@@ -1580,6 +1582,16 @@ void CBasePlayer::CalcViewModelView( const Vector& eyeOrigin, const QAngle& eyeA
 	}
 }
 
+void TraceBasePlayerBBox(CBasePlayer* pPlayer, const Vector& start, const Vector& end, unsigned int fMask, int collisionGroup, trace_t& pm)
+{
+	VPROF("CGameMovement::TracePlayerBBox");
+
+	Ray_t ray;
+	ray.Init(start, end, pPlayer->GetPlayerMins(), pPlayer->GetPlayerMaxs());
+	UTIL_TraceRay(ray, fMask, pPlayer, collisionGroup, &pm);
+
+}
+
 void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& fov )
 {
 #if defined( CLIENT_DLL )
@@ -1619,6 +1631,31 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 	// Apply punch angle
 	VectorAdd( eyeAngles, m_Local.m_vecPunchAngle, eyeAngles );
 
+	if (sv_wall_slide.GetBool())
+	{
+		trace_t walltrace;
+		Vector vRight;
+		EyeVectors((Vector*)0, &vRight);
+		Vector dir = vRight / MAX(MAX(abs(vRight.x), abs(vRight.y)), abs(vRight.z));
+		//UTIL_TraceHull(GetAbsOrigin(), GetAbsOrigin() + vRight, GetPlayerMins(), GetPlayerMaxs(), MASK_PLAYERSOLID, this, COLLISION_GROUP_NONE, &walltrace);
+		Ray_t ray;
+		Vector origin = GetAbsOrigin();
+		TraceBasePlayerBBox(this, origin, origin + dir, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, walltrace);
+		float desiredWallSlide = 0.0f;
+		if (walltrace.DidHit())
+		{
+			desiredWallSlide -= clamp(GetAbsVelocity().Length() / 200.0, 0.0, 20.0);
+		}
+		TraceBasePlayerBBox(this, origin, origin - dir, MASK_PLAYERSOLID, COLLISION_GROUP_PLAYER_MOVEMENT, walltrace);
+		if (walltrace.DidHit())
+		{
+			desiredWallSlide += clamp(GetAbsVelocity().Length() / 200.0, 0.0, 20.0);
+		}
+		m_Local.m_flDesiredWallSlide = desiredWallSlide;
+		m_Local.m_flCurrentWallSlide = desiredWallSlide * 0.1 + m_Local.m_flCurrentWallSlide * 0.9;
+		m_Local.m_flSmoothedWallSlide = m_Local.m_flCurrentWallSlide * 0.1 + m_Local.m_flSmoothedWallSlide * 0.9;
+		eyeAngles[ROLL] += m_Local.m_flSmoothedWallSlide;
+	}
 #if defined( CLIENT_DLL )
 	if ( !prediction->InPrediction() )
 	{

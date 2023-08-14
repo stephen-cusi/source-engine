@@ -47,7 +47,7 @@ ConVar	teamoverride( "mp_teamoverride","1" );
 ConVar	defaultteam( "mp_defaultteam","0" );
 ConVar	allowNPCs( "mp_allowNPCs","1", FCVAR_NOTIFY );
 ConVar	pvp("mp_pvp", "1", FCVAR_NOTIFY);
-ConVar	mp_god("mp_god", "1", FCVAR_NOTIFY);
+ConVar	mp_god("mp_god", "0", FCVAR_NOTIFY);
 
 // Engine Cvars
 const ConVar	*g_pDeveloper = NULL;

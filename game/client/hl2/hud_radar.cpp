@@ -29,14 +29,14 @@ DECLARE_VGUI_SCREEN_FACTORY( CHudRadarHL2, "jalopy_radar_panel" );
 #define RADAR_CONTACT_DOG_MATERIAL		"vgui/icons/icon_dog"		// Dog
 #define RADAR_CONTACT_BASE_MATERIAL		"vgui/icons/icon_base"		// Ally base
 
-static CHudRadarHL2 *s_Radar = NULL;
+static CHudRadarHL2 * s_HL2Radar = NULL;
 
 CHudRadarHL2 *GetHudRadar()
 {
-	return s_Radar;
+	return s_HL2Radar;
 }
 
-DECLARE_HUDELEMENT( CMapOverview );
+//DECLARE_HUDELEMENT( CMapOverview );
 
 //---------------------------------------------------------
 //---------------------------------------------------------
@@ -55,7 +55,7 @@ CHudRadarHL2::CHudRadarHL2( vgui::Panel *parent, const char *panelName ) : BaseC
 //---------------------------------------------------------
 CHudRadarHL2::~CHudRadarHL2()
 {
-	s_Radar = NULL;
+	s_HL2Radar = NULL;
 
 #if defined(_X360)
 	if( m_iImageID != -1 )
@@ -102,7 +102,7 @@ bool CHudRadarHL2::Init( KeyValues* pKeyValues, VGuiScreenInitData_t* pInitData 
 {
 	bool result = BaseClass::Init( pKeyValues, pInitData );
 	ClearAllRadarContacts();
-	s_Radar = this;
+	s_HL2Radar = this;
 
 	m_ghostAlpha = 0;
 	m_flTimeStartGhosting = gpGlobals->curtime + 1.0f;

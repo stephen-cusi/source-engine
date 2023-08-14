@@ -289,6 +289,7 @@ void C_HL2MP_Player::ClientThink( void )
 
 	FixTeleportationRoll();
 
+
 	for( int iClient = 1; iClient <= gpGlobals->maxClients; ++iClient )
 	{
 		CBaseEntity *pEnt = UTIL_PlayerByIndex( iClient );
@@ -944,6 +945,14 @@ void C_HL2MP_Player::CalcView( Vector &eyeOrigin, QAngle &eyeAngles, float &zNea
 	m_qEyeAngles_LastCalcView = qEyeAngleBackup;
 	m_ptEyePosition_LastCalcView = ptEyePositionBackup;
 	m_pPortalEnvironment_LastCalcView = pPortalBackup;
+
+	//Vector vForward, vRight;
+	//EyeVectors(&vForward, &vRight);
+
+	//trace_t walltrace;
+	//Bound
+	//UTIL_TraceHull( GetAbsOrigin(), GetAbsOrigin()+vRight, )
+
 
 	BaseClass::CalcView( eyeOrigin, eyeAngles, zNear, zFar, fov );
 }
