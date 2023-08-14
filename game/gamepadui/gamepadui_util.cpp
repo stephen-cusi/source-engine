@@ -20,7 +20,7 @@ const char *COM_GetModDirectory()
     static char szModDir[ MAX_PATH ] = {};
     if ( V_strlen( szModDir ) == 0 )
     {
-        const char *pszGameDir = CommandLine()->ParmValue("-game", CommandLine()->ParmValue( "-defaultgamedir", "hl2" ) );
+        const char *pszGameDir = CommandLine()->ParmValue("-game", CommandLine()->ParmValue( "-defaultgamedir", "sourcebox" ) );
         V_strncpy( szModDir, pszGameDir, sizeof(szModDir) );
         if ( strchr( szModDir, '/' ) || strchr( szModDir, '\\' ) )
         {

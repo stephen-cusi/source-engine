@@ -823,11 +823,18 @@ void CWeaponHL2MPBase::ItemPostFrame()
 
 	if ((pPlayer->m_nButtons & IN_ATTACK2) && (m_flNextSecondaryAttack <= gpGlobals->curtime))
 	{
-		if (pPlayer->HasShield())
+		if (UsesSecondaryAmmo() && pPlayer->GetAmmoCount(m_iSecondaryAmmoType) <= 0)
+		{
+			if (m_flNextEmptySoundTime < gpGlobals->curtime)
+			{
+				WeaponSound(EMPTY);
+				m_flNextSecondaryAttack = m_flNextEmptySoundTime = gpGlobals->curtime + 0.5;
+			}
+		}
+		else if (pPlayer->HasShield())
 			CWeaponHL2MPBase::SecondaryAttack();
 		else
 			SecondaryAttack();
-
 		pPlayer->m_nButtons &= ~IN_ATTACK2;
 	}
 	else if ((pPlayer->m_nButtons & IN_ATTACK) && (m_flNextPrimaryAttack <= gpGlobals->curtime))
@@ -852,31 +859,41 @@ void CWeaponHL2MPBase::ItemPostFrame()
 		if (pPlayer->m_iShotsFired > 0 && !IsFullAuto())
 			return;
 
-		if ((pPlayer->m_afButtonPressed & IN_ATTACK) || (pPlayer->m_afButtonReleased & IN_ATTACK2))
+
+		if (!IsMeleeWeapon() &&
+			((UsesClipsForAmmo1() && m_iClip1 <= 0) || (!UsesClipsForAmmo1() && pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0)))
 		{
-			m_flNextPrimaryAttack = gpGlobals->curtime;
+			HandleFireOnEmpty();
 		}
+		else
+		{
+
+			if ((pPlayer->m_afButtonPressed & IN_ATTACK) || (pPlayer->m_afButtonReleased & IN_ATTACK2))
+			{
+				m_flNextPrimaryAttack = gpGlobals->curtime;
+			}
 
 #if !defined(CLIENT_DLL)
-		// allow the bots to react to the gunfire
-		if (GetCSWpnData().m_WeaponType != WEAPONTYPE_GRENADE)
-		{
-			IGameEvent* event = gameeventmanager->CreateEvent((HasAmmo()) ? "weapon_fire" : "weapon_fire_on_empty");
-			if (event)
+			// allow the bots to react to the gunfire
+			if (GetCSWpnData().m_WeaponType != WEAPONTYPE_GRENADE)
 			{
-				const char* weaponName = STRING(m_iClassname);
-				if (strncmp(weaponName, "weapon_", 7) == 0)
+				IGameEvent* event = gameeventmanager->CreateEvent((HasAmmo()) ? "weapon_fire" : "weapon_fire_on_empty");
+				if (event)
 				{
-					weaponName += 7;
-				}
+					const char* weaponName = STRING(m_iClassname);
+					if (strncmp(weaponName, "weapon_", 7) == 0)
+					{
+						weaponName += 7;
+					}
 
-				event->SetInt("userid", pPlayer->GetUserID());
-				event->SetString("weapon", weaponName);
-				gameeventmanager->FireEvent(event);
+					event->SetInt("userid", pPlayer->GetUserID());
+					event->SetString("weapon", weaponName);
+					gameeventmanager->FireEvent(event);
+				}
 			}
-		}
 #endif
-		PrimaryAttack();
+			PrimaryAttack();
+		}
 	}
 	else if (pPlayer->m_nButtons & IN_RELOAD && GetMaxClip1() != WEAPON_NOCLIP && !m_bInReload && m_flNextPrimaryAttack < gpGlobals->curtime)
 	{

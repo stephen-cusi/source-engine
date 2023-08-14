@@ -285,7 +285,7 @@ const char *COM_GetModDirectory()
 	static char modDir[MAX_PATH];
 	if ( Q_strlen( modDir ) == 0 )
 	{
-		const char *gamedir = CommandLine()->ParmValue("-game", CommandLine()->ParmValue( "-defaultgamedir", "hl2" ) );
+		const char *gamedir = CommandLine()->ParmValue("-game", CommandLine()->ParmValue( "-defaultgamedir", "sourcebox" ) );
 		Q_strncpy( modDir, gamedir, sizeof(modDir) );
 		if ( strchr( modDir, '/' ) || strchr( modDir, '\\' ) )
 		{

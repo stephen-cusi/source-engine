@@ -207,6 +207,8 @@ public:
 	// sets the blinking state of a menu item
 	void SetMenuItemBlinkingState( const char *itemName, bool state );
 
+	void OnGameUIShown();
+
 	// handles gameUI being shown
 	void OnGameUIActivated();
 

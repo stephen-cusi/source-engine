@@ -740,6 +740,10 @@ void CGameUI::AllowEngineHideGameUI()
 //-----------------------------------------------------------------------------
 void CGameUI::OnGameUIActivated()
 {
+	if (!m_bActivatedUI)
+	{
+		BasePanel()->OnGameUIShown();
+	}
 	m_bActivatedUI = true;
 
 	// hide/show the main panel to Activate all game ui
@@ -772,6 +776,7 @@ void CGameUI::OnGameUIActivated()
 //-----------------------------------------------------------------------------
 void CGameUI::OnGameUIHidden()
 {
+	m_bActivatedUI = false;
 	if ( GameClientExports() )
 	{
 		const char *pGameName = CommandLine()->ParmValue( "-game", "hl2" );

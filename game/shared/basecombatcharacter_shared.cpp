@@ -11,6 +11,7 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+ConVar sv_infinite_ammo("sv_infinite_ammo", "0");
 
 //-----------------------------------------------------------------------------
 // Purpose: Switches to the best weapon that is also better than the given weapon.
@@ -161,7 +162,7 @@ int CBaseCombatCharacter::GetAmmoCount( int iAmmoIndex ) const
 		return 0;
 
 	// Infinite ammo?
-	if ( GetAmmoDef()->MaxCarry( iAmmoIndex ) == INFINITE_AMMO )
+	if ( GetAmmoDef()->MaxCarry( iAmmoIndex ) == INFINITE_AMMO || sv_infinite_ammo.GetBool() )
 		return 999;
 
 	return m_iAmmo[ iAmmoIndex ];

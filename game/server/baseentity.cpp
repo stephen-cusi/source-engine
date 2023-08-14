@@ -96,6 +96,10 @@ bool CBaseEntity::s_bAbsQueriesValid = true;
 
 
 ConVar sv_netvisdist( "sv_netvisdist", "10000", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "Test networking visibility distance" );
+ConVar sv_smg_jumping("sv_smg_jumping", "0");
+ConVar sv_smg_jumping_any_source("sv_smg_jumping_any_source", "0");
+ConVar sv_no_self_damage("sv_no_self_damage", "0");
+
 
 // This table encodes edict data.
 void SendProxy_AnimTime( const SendProp *pProp, const void *pStruct, const void *pVarData, DVariant *pOut, int iElement, int objectID )
@@ -1442,6 +1446,16 @@ void CBaseEntity::TakeDamage( const CTakeDamageInfo &inputInfo )
 {
 	if ( !g_pGameRules )
 		return;
+
+	if ( sv_smg_jumping.GetBool() &&
+	   ( inputInfo.GetAttacker() == this || sv_smg_jumping_any_source.GetBool() ) )
+	{
+		m_vecAbsVelocity += inputInfo.GetDamageForce() / 40.0;
+	}
+
+	if (sv_no_self_damage.GetBool() && inputInfo.GetAttacker() == this)
+		return;
+
 
 	bool bHasPhysicsForceDamage = !g_pGameRules->Damage_NoPhysicsForce( inputInfo.GetDamageType() );
 	if ( bHasPhysicsForceDamage && inputInfo.GetDamageType() != DMG_GENERIC )

@@ -385,8 +385,11 @@ public:
 		// move us to the back instead of going invisible
 		if (!state)
 		{
+			m_flAnimStart = engine->Time();
 			ipanel()->MoveToBack(GetVPanel());
 		}
+		
+
 	}
 
 	virtual int AddMenuItem(const char* itemName, const char* itemText, const char* command, Panel* target, KeyValues* userData = NULL)
@@ -734,16 +737,17 @@ public:
 	virtual void PerformLayout()
 	{
 		BaseClass::PerformLayout();
+		if (GetItemCount() == 0)
+			return;
 		float time = engine->Time() - m_flAnimStart;
-		float index = 0.0;
+		float firstItemY = GetMenuItem(0)->GetYPos();
 		for (int i = 0; i < GetItemCount(); i++) {
 			MenuItem* item = GetMenuItem(i);
 			if (item->IsVisible()) {
-				float ltime = clamp(time - index / 10.0+1.4, 0.0, 3.0) / 3.0;
-				float ta = powf(ltime, 16);
-				float tb = powf(1.0 - ltime, 16);
-				item->SetPos((int)((ta / (ta + tb) - 1.0) * 200.0), item->GetYPos());
-				index += 1.0;
+				float ltime = time - (item->GetYPos() - firstItemY)/900.0;
+				ltime = MAX(ltime, 0.0);
+				float ta = 300.0 - 1.0 / (ltime / 3.0 + 1.0 / 300.0);
+				item->SetPos((int)(ta) - 290.0, item->GetYPos());
 			}
 		}
 	}
@@ -1313,11 +1317,11 @@ void CBasePanel::SetBackgroundRenderState(EBackgroundState state)
 		// make the menus visible
 		m_bFadingInMenus = true;
 		m_flFadeMenuStartTime = frametime;
-		m_flFadeMenuEndTime = frametime + 3.0f;
-		m_pGameMenu->m_flAnimStart = frametime;
+		m_flFadeMenuEndTime = frametime + 3.0f;	
 
 		if ( state == BACKGROUND_MAINMENU )
 		{
+			OnGameUIShown();
 			// fade background into main menu
 			m_bRenderingBackgroundTransition = true;
 			m_flTransitionStartTime = frametime;
@@ -1957,6 +1961,13 @@ void CBasePanel::OnActivateModule(int moduleIndex)
 {
 	g_VModuleLoader.ActivateModule(moduleIndex);
 }
+
+
+void CBasePanel::OnGameUIShown()
+{
+	m_pGameMenu->m_flAnimStart = engine->Time();
+}
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Animates menus on gameUI being shown

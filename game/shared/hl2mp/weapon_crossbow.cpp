@@ -34,6 +34,7 @@
 #define	BOLT_SKIN_NORMAL	0
 #define BOLT_SKIN_GLOW		1
 
+ConVar sv_crossbowbolt_always_bounce("sv_crossbowbolt_always_bounce", "0");
 
 #ifndef CLIENT_DLL
 
@@ -285,7 +286,7 @@ void CCrossbowBolt::BoltTouch( CBaseEntity *pOther )
 			// See if we should reflect off this surface
 			float hitDot = DotProduct( tr.plane.normal, -vecDir );
 			
-			if ( ( hitDot < 0.5f ) && ( speed > 100 ) )
+			if ( ( ( hitDot < 0.5f ) || sv_crossbowbolt_always_bounce.GetBool() ) && (speed > 100) )
 			{
 				Vector vReflection = 2.0f * tr.plane.normal * hitDot + vecDir;
 				

@@ -29,6 +29,8 @@
 #define SMG1_GRENADE_DAMAGE 100.0f
 #define SMG1_GRENADE_RADIUS 250.0f
 
+ConVar sv_smg_grenade_preserve_velocity("sv_smg_grenade_preserve_velocity", "0");
+
 class CWeaponSMG1 : public CHL2MPMachineGun
 {
 public:
@@ -218,6 +220,8 @@ void CWeaponSMG1::SecondaryAttack( void )
 	// Don't autoaim on grenade tosses
 	AngleVectors( pPlayer->EyeAngles() + pPlayer->GetPunchAngle(), &vecThrow );
 	VectorScale( vecThrow, 1000.0f, vecThrow );
+	if (sv_smg_grenade_preserve_velocity.GetBool())
+		vecThrow += pPlayer->GetAbsVelocity();
 	
 #ifndef CLIENT_DLL
 	//Create the grenade

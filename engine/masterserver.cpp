@@ -407,7 +407,7 @@ void CMaster::SendHeartbeat ( adrlist_t *p )
 		return;
 
 	// Send to master
-		Q_FileBase( com_gamedir, szGD, sizeof( szGD ) );
+		Q_FileBase( COM_GetModDirectory(), szGD, sizeof(szGD));
 
 	bf_write buf( string, sizeof(string) );
 	buf.WriteByte( S2M_HEARTBEAT );

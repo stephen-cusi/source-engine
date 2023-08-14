@@ -524,7 +524,7 @@ void CPortalGameMovement::CategorizePosition( void )
 	// On ladder moving up, so not on ground either
 	// NOTE: 145 is a jump.
 	if ( mv->m_vecVelocity[2] > 140 || 
-		( mv->m_vecVelocity[2] > 0.0f && player->GetMoveType() == MOVETYPE_LADDER ) )   
+		( mv->m_vecVelocity[2] > 0.0f && player->GetMoveType() == MOVETYPE_LADDER ) || player->GetMoveType() == MOVETYPE_NOCLIP)   
 	{
 		SetGroundEntity( NULL );
 	}
