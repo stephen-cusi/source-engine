@@ -62,6 +62,8 @@ ConVar tf_weapon_criticals_bucket_default( "tf_weapon_criticals_bucket_default",
 
 CBaseCombatWeapon::CBaseCombatWeapon() : BASECOMBATWEAPON_DERIVED_FROM()
 {
+
+	
 	// Constructor must call this
 	// CONSTRUCT_PREDICTABLE( CBaseCombatWeapon );
 
@@ -2280,7 +2282,7 @@ void CBaseCombatWeapon::PrimaryAttack( void )
 	info.m_iShots = 0;
 	float fireRate = GetFireRate();
 
-	while ( m_flNextPrimaryAttack <= gpGlobals->curtime )
+	while ( m_flNextPrimaryAttack <= gpGlobals->curtime && info.m_iShots < 500 )
 	{
 		// MUST call sound before removing a round from the clip of a CMachineGun
 		WeaponSound(SINGLE, m_flNextPrimaryAttack);

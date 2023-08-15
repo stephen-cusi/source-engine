@@ -75,7 +75,7 @@ void CHL2MPMachineGun::PrimaryAttack( void )
 	int iBulletsToFire = 0;
 	float fireRate = GetFireRate();
 
-	while ( m_flNextPrimaryAttack <= gpGlobals->curtime )
+	while ( m_flNextPrimaryAttack <= gpGlobals->curtime && iBulletsToFire < 500)
 	{
 		// MUST call sound before removing a round from the clip of a CHLMachineGun
 		WeaponSound(SINGLE, m_flNextPrimaryAttack);

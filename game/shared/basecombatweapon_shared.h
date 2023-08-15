@@ -86,6 +86,10 @@ typedef struct
 class CHudTexture;
 class Color;
 
+#ifndef CLIENT_DLL
+static ConVar sv_fire_rate("sv_fire_rate", "1.0", FCVAR_REPLICATED);
+#endif
+
 namespace vgui2
 {
 	typedef unsigned long HFont;
@@ -544,9 +548,9 @@ public:
 	CNetworkVar( int, m_nViewModelIndex );
 
 	// Weapon firing
-	CNetworkVar( float, m_flNextPrimaryAttack );						// soonest time ItemPostFrame will call PrimaryAttack
-	CNetworkVar( float, m_flNextSecondaryAttack );					// soonest time ItemPostFrame will call SecondaryAttack
-	CNetworkVar( float, m_flTimeWeaponIdle );							// soonest time ItemPostFrame will call WeaponIdle
+	CNetworkVarTimeScaled( float, m_flNextPrimaryAttack, sv_fire_rate );						// soonest time ItemPostFrame will call PrimaryAttack
+	CNetworkVarTimeScaled( float, m_flNextSecondaryAttack, sv_fire_rate );					// soonest time ItemPostFrame will call SecondaryAttack
+	CNetworkVarTimeScaled( float, m_flTimeWeaponIdle, sv_fire_rate );							// soonest time ItemPostFrame will call WeaponIdle
 	// Weapon state
 	bool					m_bInReload;			// Are we in the middle of a reload;
 	bool					m_bFireOnEmpty;			// True when the gun is empty and the player is still holding down the attack key(s)

@@ -91,7 +91,7 @@
 ConVar mp_usehwmmodels( "mp_usehwmmodels", "0", NULL, "Enable the use of the hw morph models. (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
 #endif
 
-ConVar sv_wall_slide("sv_wall_slide", "0");
+ConVar sv_wall_slide("sv_wall_slide", "0", FCVAR_REPLICATED);
 
 bool UseHWMorphModels()
 {
