@@ -16,6 +16,7 @@ SourceBox is based on the nillerusr fork of the 2018 engine leak.
 - Implement most games
 - Add Lua
 - Add Squirrel
+- Add VJolt (and fix it)
 
 # How to Build?
 - [Simple Guide](https://www.guilded.gg/SourceBox/groups/3Ow2j8e3/channels/ce475f6a-56a8-40a8-9638-a88c7222b148/docs/381643)
