@@ -1,3 +1,5 @@
+git submodule init && git submodule update
+
 echo "Setup Build Dependencies"
 wget https://dl.google.com/android/repository/android-ndk-r10e-linux-x86_64.zip
 unzip ./android-ndk-r10e-linux-x86_64.zip
