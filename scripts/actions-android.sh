@@ -16,11 +16,11 @@ mkdir -p ./patcher/lib
 
 echo "Build armeabi-v7a"
 ./waf configure -T release --build-games sourcebox --prefix ./patcher --enable-opus --togles --android armeabi-v7a-hard,host,21 
-./waf install
+./waf install -j4 --strip
 
 echo "Build aarch64"
 ./waf configure -T release --build-games sourcebox --prefix ./patcher --enable-opus --togles --android aarch64,host,21 --64bits
-./waf install
+./waf install -j4 --strip
 
 echo "Patch"
 cd ./patcher
