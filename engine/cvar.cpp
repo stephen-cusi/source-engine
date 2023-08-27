@@ -409,8 +409,9 @@ bool CCvarUtilities::IsCommand( const CCommand &args )
 #endif
 			)
 		{
-			ConMsg( "Can't use cheat cvar %s in multiplayer, unless the server has sv_cheats set to 1.\n", v->GetName() );
-			return true;
+			//ConMsg( "Can't use cheat cvar %s in multiplayer, unless the server has sv_cheats set to 1.\n", v->GetName() );
+			ConMsg( "Debugging %s...\n", v->GetName() );
+			//return true;
 		}
 	}
 
@@ -537,8 +538,9 @@ bool CCvarUtilities::IsValidToggleCommand( const char *cmd )
 #endif
 			)
 		{
-			ConMsg( "Can't use cheat cvar %s in multiplayer, unless the server has sv_cheats set to 1.\n", v->GetName() );
-			return false;
+			//ConMsg( "Can't use cheat cvar %s in multiplayer, unless the server has sv_cheats set to 1.\n", v->GetName() );
+			ConMsg( "Debugging %s...\n", v->GetName() );
+			//return false;
 		}
 	}
 
