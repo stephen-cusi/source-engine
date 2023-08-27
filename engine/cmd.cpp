@@ -1022,8 +1022,9 @@ const ConCommandBase *Cmd_ExecuteCommand( const CCommand &command, cmd_source_t 
 					// (used by soundscape_flush)
 					if ( g_iFilterCommandsByServerCanExecute == 0 || !pCommand->IsFlagSet( FCVAR_SERVER_CAN_EXECUTE ) )
 					{
-						Msg( "Can't use cheat command %s in multiplayer, unless the server has sv_cheats set to 1.\n", pCommand->GetName() );
-						return NULL;
+						//Msg( "Can't use cheat command %s in multiplayer, unless the server has sv_cheats set to 1.\n", pCommand->GetName() );
+						Msg( "Debugging %s...\n", pCommand->GetName() );
+						//return NULL;
 					}
 				}
 			}
