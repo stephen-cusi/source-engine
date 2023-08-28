@@ -40,7 +40,7 @@ ConVar hap_HasDevice	( "byd_HasDevice", "0", FCVAR_USERINFO/*|FCVAR_HIDDEN*/, "f
 #else
 #define HAP_DEFAULT_DAMAGE_SCALE_GAME "1.0"
 #endif
-ConVar hap_damagescale_game("hap_damagescale_game", HAP_DEFAULT_DAMAGE_SCALE_GAME);
+ConVar hap_damagescale_game("byd_damagescale_game", HAP_DEFAULT_DAMAGE_SCALE_GAME);
 #undef HAP_DEFAULT_DAMAGE_SCALE_GAME
 
 #endif
@@ -177,7 +177,7 @@ void HapticsHandleMsg_HapPunch( QAngle const &angle )
 
 }
 #ifdef TERROR
-ConVar hap_zombie_damage_scale("hap_zombie_damage_scale", "0.25", FCVAR_RELEASE|FCVAR_NEVER_AS_STRING);
+ConVar hap_zombie_damage_scale("byd_zombie_damage_scale", "0.25", FCVAR_RELEASE|FCVAR_NEVER_AS_STRING);
 #endif
 void HapticsHandleMsg_HapDmg( float pitch, float yaw, float damage, int damageType )
 {
@@ -208,12 +208,12 @@ void HapticsHandleMsg_HapDmg( float pitch, float yaw, float damage, int damageTy
 	}
 }
 
-ConVar hap_melee_scale("hap_melee_scale", "0.8", FCVAR_RELEASE|FCVAR_NEVER_AS_STRING);
+ConVar hap_melee_scale("byd_melee_scale", "0.8", FCVAR_RELEASE|FCVAR_NEVER_AS_STRING);
 void HapticsHandleMsg_HapMeleeContact()
 {
 	haptics->HapticsPunch(hap_melee_scale.GetFloat(), QAngle(0,0,0));
 }
-ConVar hap_noclip_avatar_scale("hap_noclip_avatar_scale", "0.10f", FCVAR_RELEASE|FCVAR_NEVER_AS_STRING);
+ConVar hap_noclip_avatar_scale("byd_noclip_avatar_scale", "0.10f", FCVAR_RELEASE|FCVAR_NEVER_AS_STRING);
 void UpdateAvatarEffect(void)
 {
 	if(!haptics->HasDevice())
@@ -371,7 +371,7 @@ void HapticProcessSound(const char* soundname, int entIndex)
 #endif
 
 // determines weather the vehicles control box option is faded
-ConVar hap_ui_vehicles( "hap_ui_vehicles", 
+ConVar hap_ui_vehicles( "byd_ui_vehicles", 
 						   HAPTIC_VEHICLE_DEFAULT,
 						   0
 						   );
