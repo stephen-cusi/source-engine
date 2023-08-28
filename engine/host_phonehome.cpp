@@ -233,7 +233,7 @@ private:
 			DWORD length = sizeof( computername ) - 1;
 			if ( !GetComputerName( computername, &length ) )
 			{
-				Q_strncpy( computername, "???", sizeof( computername )  );
+				Q_strncpy( computername, "Linux????", sizeof( computername )  );
 			}
 #else
 			if ( gethostname( computername, sizeof(computername) ) == -1 )
@@ -252,7 +252,7 @@ private:
 			DWORD length = sizeof( username ) - 1;
 			if ( !GetUserName( username, &length ) )
 			{
-				Q_strncpy( username, "???", sizeof( username )  );
+				Q_strncpy( username, "LinuxUser??", sizeof( username )  );
 			}
 #else
 			struct passwd *pass = getpwuid( getuid() );
