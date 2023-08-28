@@ -2708,7 +2708,7 @@ bool CGameServer::SpawnServer( const char *szMapName, const char *szMapFile, con
 		event->SetInt(    "maxplayers", GetMaxClients() );
 		event->SetInt(	  "password", 0 );				// TODO
 #if defined( _WIN32 )
-		event->SetString( "os", "WIN32" );
+		event->SetString( "os", "LINUX" );
 #elif defined ( LINUX )
 		event->SetString( "os", "LINUX" );
 #elif defined ( OSX )
