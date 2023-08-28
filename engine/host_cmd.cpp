@@ -1132,6 +1132,7 @@ void Host_Changelevel2_f( const CCommand &args )
 //-----------------------------------------------------------------------------
 void Host_Disconnect( bool bShowMainMenu, const char *pszReason )
 {
+	/*
 	if ( IsX360() )
 	{
 		g_pQueuedLoader->EndMapLoading( false );
@@ -1144,7 +1145,7 @@ void Host_Disconnect( bool bShowMainMenu, const char *pszReason )
 	}
 #endif
 	Host_AllowQueuedMaterialSystem( false );
-	HostState_GameShutdown();
+	HostState_GameShutdown();*/
 }
 
 void Disconnect()
