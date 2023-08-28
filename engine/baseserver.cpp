@@ -946,7 +946,7 @@ void CBaseServer::FillServerInfo(SVC_ServerInfo &serverinfo)
 	serverinfo.m_nMaxClasses	= serverclasses;
 	serverinfo.m_bIsDedicated	= IsDedicated();
 #ifdef _WIN32
-	serverinfo.m_cOS			= 'W';
+	serverinfo.m_cOS			= 'L';
 #else
 	serverinfo.m_cOS			= 'L';
 #endif
