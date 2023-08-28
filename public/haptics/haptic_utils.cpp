@@ -31,7 +31,7 @@ extern vgui::IInputInternal *g_InputInternal;
 #endif
 
 #ifdef CLIENT_DLL 
-ConVar hap_HasDevice	( "hap_HasDevice", "0", FCVAR_USERINFO/*|FCVAR_HIDDEN*/, "falcon is connected" );
+ConVar hap_HasDevice	( "byd_HasDevice", "0", FCVAR_USERINFO/*|FCVAR_HIDDEN*/, "falcon is connected" );
 // damage scale on a title basis. Convar referenced in the haptic dll.
 #ifdef PORTAL
 #define HAP_DEFAULT_DAMAGE_SCALE_GAME "0.75"
