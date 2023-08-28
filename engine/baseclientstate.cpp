@@ -432,8 +432,8 @@ void CBaseClientState::ConnectionStart(INetChannel *chan)
 
 void CBaseClientState::ConnectionClosing( const char *reason )
 {
-	ConMsg( "Disconnect: %s.\n", reason?reason:"unknown reason" );
-	Disconnect( reason ? reason : "Connection closing", true );
+	ConMsg( "ConnectionClosing:Disconnect: %s.\n", reason?reason:"unknown reason" );
+	//Disconnect( reason ? reason : "Connection closing", true );
 }
 
 //-----------------------------------------------------------------------------
@@ -728,6 +728,7 @@ void CBaseClientState::ConnectionCrashed(const char *reason)
 
 void CBaseClientState::Disconnect( const char *pszReason, bool bShowMainMenu )
 {
+	/*
 	m_flConnectTime = -FLT_MAX;
 	m_nRetryNumber = 0;
 	m_ulGameServerSteamID = 0;
@@ -765,7 +766,7 @@ void CBaseClientState::Disconnect( const char *pszReason, bool bShowMainMenu )
 	{
 		m_NetChannel->Shutdown( ( pszReason && *pszReason ) ? pszReason : "Disconnect by user." );
 		m_NetChannel = NULL;
-	}
+	}*/
 }
 
 void CBaseClientState::RunFrame (void)
