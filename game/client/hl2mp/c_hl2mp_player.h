@@ -76,7 +76,7 @@ public:
 	int		GetIDTarget() const;
 	void	UpdateIDTarget( void );
 	//Footstep sound material fix
-	//void	PrecacheFootStepSounds( void );
+	void	PrecacheFootStepSounds( void );
 	const char	*GetPlayerModelSoundPrefix( void );
 
 	HL2MPPlayerState State_Get() const;
