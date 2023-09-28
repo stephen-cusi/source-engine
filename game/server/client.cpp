@@ -1222,6 +1222,17 @@ CON_COMMAND_F( setpos, "Move player to specified origin (must have sv_cheats).",
 	newpos.y = atof( args[2] );
 	newpos.z = args.ArgC() == 4 ? atof( args[3] ) : oldorigin.z;
 
+	#define MAP_LIMIT 32768
+
+	if (newpos.x > MAP_LIMIT || newpos.x < -MAP_LIMIT ||
+		newpos.y > MAP_LIMIT || newpos.y < -MAP_LIMIT ||
+		newpos.z > MAP_LIMIT || newpos.z < -MAP_LIMIT)
+	{
+		ClientPrint(pPlayer, HUD_PRINTCONSOLE, "This area is restricted due to map limits.\n");
+		return;
+	}
+		
+
 	pPlayer->SetAbsOrigin( newpos );
 
 	if ( !TestEntityPosition( pPlayer ) )
