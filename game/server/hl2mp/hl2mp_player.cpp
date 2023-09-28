@@ -174,7 +174,7 @@ void CHL2MP_Player::Precache( void )
 	for ( i = 0; i < nHeads; ++i )
 	   	 PrecacheModel( g_ppszRandomCombineModels[i] );
 
-	//PrecacheFootStepSounds();
+	PrecacheFootStepSounds();
 
 	PrecacheScriptSound( "NPC_MetroPolice.Die" );
 	PrecacheScriptSound( "NPC_CombineS.Die" );
@@ -244,8 +244,8 @@ void CHL2MP_Player::PickDefaultSpawnTeam( void )
 				if ( ValidatePlayerModel( szModelName ) == false )
 				{
 					char szReturnString[512];
-					Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel models/player/combine_soldier.mdl\n" );
-					engine->ClientCommand ( edict(), szReturnString );
+					//Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel models/player/combine_soldier.mdl\n" );
+					//engine->ClientCommand ( edict(), szReturnString );
 				}
 
 				ChangeTeam( TEAM_UNASSIGNED );
@@ -385,55 +385,49 @@ bool CHL2MP_Player::ValidatePlayerModel( const char *pModel )
 		}
 	}
 
-	//return false;
-	//Todo: add a server-side convar mp_allow_custom_model and check it
-	return true;
+	return false;
 }
 
 void CHL2MP_Player::SetPlayerTeamModel( void )
 {
+	/*
 	const char *szModelName = NULL;
 	szModelName = engine->GetClientConVarValue( engine->IndexOfEdict( edict() ), "cl_playermodel" );
 
 	int modelIndex = modelinfo->GetModelIndex( szModelName );
 
-	if ( modelIndex == -1 )
-	{
-		PrecacheModel ( szModelName );
-	}
-
 	if ( modelIndex == -1 || ValidatePlayerModel( szModelName ) == false )
 	{
-		szModelName = "models/player/combine_soldier.mdl";
-		m_iModelType = TEAM_COMBINE;
+		//szModelName = "models/player/combine_soldier.mdl";
+		//m_iModelType = TEAM_COMBINE;
 
 		char szReturnString[512];
 
-		Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", szModelName );
-		engine->ClientCommand ( edict(), szReturnString );
+		//Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", szModelName );
+		//engine->ClientCommand ( edict(), szReturnString );
 	}
 
 	if ( GetTeamNumber() == TEAM_COMBINE )
 	{
-		/*if ( Q_stristr( szModelName, "models/player/human") )
+		if ( Q_stristr( szModelName, "models/player/human") )
 		{
 			int nHeads = ARRAYSIZE( g_ppszRandomCombineModels );
 		
 			g_iLastCombineModel = ( g_iLastCombineModel + 1 ) % nHeads;
 			szModelName = g_ppszRandomCombineModels[g_iLastCombineModel];
-		}*/
+		}
 
 		m_iModelType = TEAM_COMBINE;
 	}
 	else if ( GetTeamNumber() == TEAM_REBELS )
 	{
-		/*if ( !Q_stristr( szModelName, "models/player/human") )
+		if ( !Q_stristr( szModelName, "models/player/human") )
 		{
 			int nHeads = ARRAYSIZE( g_ppszRandomCitizenModels );
 
 			g_iLastCitizenModel = ( g_iLastCitizenModel + 1 ) % nHeads;
 			szModelName = g_ppszRandomCitizenModels[g_iLastCitizenModel];
-		}*/
+		}
 
 		m_iModelType = TEAM_REBELS;
 	}
@@ -442,6 +436,7 @@ void CHL2MP_Player::SetPlayerTeamModel( void )
 	SetupPlayerSoundsByModel( szModelName );
 
 	m_flNextModelChangeTime = gpGlobals->curtime + MODEL_CHANGE_INTERVAL;
+	*/
 }
 
 void CHL2MP_Player::SetPlayerModel( void )
@@ -480,27 +475,27 @@ void CHL2MP_Player::SetPlayerModel( void )
 			pszCurrentModelName = "models/player/combine_soldier.mdl";
 		}
 
-		Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", pszCurrentModelName );
-		engine->ClientCommand ( edict(), szReturnString );
+		//Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", pszCurrentModelName );
+		//engine->ClientCommand ( edict(), szReturnString );
 
 		szModelName = pszCurrentModelName;
 	}
-
+/*
 	if ( GetTeamNumber() == TEAM_COMBINE )
 	{
-		/*int nHeads = ARRAYSIZE( g_ppszRandomCombineModels );
+		int nHeads = ARRAYSIZE( g_ppszRandomCombineModels );
 		
 		g_iLastCombineModel = ( g_iLastCombineModel + 1 ) % nHeads;
-		szModelName = g_ppszRandomCombineModels[g_iLastCombineModel];*/
+		szModelName = g_ppszRandomCombineModels[g_iLastCombineModel];
 
 		m_iModelType = TEAM_COMBINE;
 	}
 	else if ( GetTeamNumber() == TEAM_REBELS )
 	{
-		/*int nHeads = ARRAYSIZE( g_ppszRandomCitizenModels );
+		int nHeads = ARRAYSIZE( g_ppszRandomCitizenModels );
 
 		g_iLastCitizenModel = ( g_iLastCitizenModel + 1 ) % nHeads;
-		szModelName = g_ppszRandomCitizenModels[g_iLastCitizenModel];*/
+		szModelName = g_ppszRandomCitizenModels[g_iLastCitizenModel];
 
 		m_iModelType = TEAM_REBELS;
 	}
@@ -511,7 +506,6 @@ void CHL2MP_Player::SetPlayerModel( void )
 			szModelName = g_ppszRandomCitizenModels[0];
 		}
 		if ( Q_stristr( szModelName, "models/player/human") )
-		//if ( Q_stristr( szModelName, "models/player/human") || Q_stristr( szModelName, "models/player/human") )
 		{
 			m_iModelType = TEAM_REBELS;
 		}
@@ -525,29 +519,25 @@ void CHL2MP_Player::SetPlayerModel( void )
 
 	if ( modelIndex == -1 )
 	{
-		PrecacheModel ( szModelName );
-	}
-
-	if ( modelIndex == -1 )
-	{
 		szModelName = "models/player/combine_soldier.mdl";
 		m_iModelType = TEAM_COMBINE;
 
 		char szReturnString[512];
 
-		Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", szModelName );
-		engine->ClientCommand ( edict(), szReturnString );
+		//Q_snprintf( szReturnString, sizeof (szReturnString ), "cl_playermodel %s\n", szModelName );
+		//engine->ClientCommand ( edict(), szReturnString );
 	}
-
+*/
 	SetModel( szModelName );
 	SetupPlayerSoundsByModel( szModelName );
 
 	m_flNextModelChangeTime = gpGlobals->curtime + MODEL_CHANGE_INTERVAL;
+	
 }
 
 void CHL2MP_Player::SetupPlayerSoundsByModel( const char *pModelName )
 {
-	/*if ( Q_stristr( pModelName, "models/player/human") )
+	if ( Q_stristr( pModelName, "models/player/human") )
 	{
 		m_iPlayerSoundType = (int)PLAYER_SOUNDS_CITIZEN;
 	}
@@ -558,21 +548,6 @@ void CHL2MP_Player::SetupPlayerSoundsByModel( const char *pModelName )
 	else if ( Q_stristr(pModelName, "combine" ) )
 	{
 		m_iPlayerSoundType = (int)PLAYER_SOUNDS_COMBINESOLDIER;
-	}*/
-	if ( Q_stristr(pModelName, "police") )
-	{
-		m_iPlayerSoundType = (int)PLAYER_SOUNDS_METROPOLICE;
-		m_iModelType = TEAM_COMBINE;
-	}
-	else if ( Q_stristr(pModelName, "combine" ) )
-	{
-		m_iPlayerSoundType = (int)PLAYER_SOUNDS_COMBINESOLDIER;
-		m_iModelType = TEAM_COMBINE;
-	}
-	else
-	{
-		m_iPlayerSoundType = (int)PLAYER_SOUNDS_CITIZEN;
-		m_iModelType = TEAM_REBELS;
 	}
 }
 
