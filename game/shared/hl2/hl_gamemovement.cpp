@@ -1169,11 +1169,10 @@ bool CHL2GameMovement::CanAccelerate()
 		return true;
 	}
 #endif
-
+          return
 	BaseClass::CanAccelerate();
-
-	return true;
-}
+  ;
+  }
 
 
 #ifndef PORTAL	// Portal inherits from this but needs to declare it's own global interface
