@@ -68,6 +68,8 @@
 CThreadFastMutex g_svInstanceBaselineMutex;
 extern	CGlobalVars g_ServerGlobalVariables;
 
+extern ConVar sv_lan;
+
 static ConVar	sv_max_queries_sec( "sv_max_queries_sec", "3.0", 0, "Maximum queries per second to respond to from a single IP address." );
 static ConVar	sv_max_queries_window( "sv_max_queries_window", "30", 0, "Window over which to average queries per second averages." );
 static ConVar	sv_max_queries_sec_global( "sv_max_queries_sec_global", "3000", 0, "Maximum queries per second to respond to from anywhere." );
@@ -1536,7 +1538,8 @@ bool CBaseServer::CheckIPRestrictions( const netadr_t &adr, int nAuthProtocol )
 		return true;
 
 	// allow other users if they're on the same ip range
-	if ( Steam3Server().BLanOnly() )
+	//if ( Steam3Server().BLanOnly() )
+	if ( sv_lan.GetBool() )
 	{
 		// allow connection, if client is in the same subnet 
 		if ( adr.CompareClassBAdr( net_local_adr ) )

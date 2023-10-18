@@ -60,6 +60,8 @@ ConVar tf_weapon_criticals_bucket_bottom( "tf_weapon_criticals_bucket_bottom", "
 ConVar tf_weapon_criticals_bucket_default( "tf_weapon_criticals_bucket_default", "300.0", FCVAR_REPLICATED | FCVAR_CHEAT );
 #endif // TF
 
+extern ConVar sv_infinite_ammo;
+
 CBaseCombatWeapon::CBaseCombatWeapon() : BASECOMBATWEAPON_DERIVED_FROM()
 {
 	// Constructor must call this
@@ -239,6 +241,10 @@ void CBaseCombatWeapon::Precache( void )
 
 	// Add this weapon to the weapon registry, and get our index into it
 	// Get weapon data from script file
+#if defined( LUA_SDK )
+	if ( !IsScripted() )
+	{
+#endif
 	if ( ReadWeaponDataFromFileForSlot( filesystem, GetClassname(), &m_hWeaponFileInfo, GetEncryptionKey() ) )
 	{
 		// Get the ammo indexes for the ammo's specified in the data file
@@ -299,6 +305,9 @@ void CBaseCombatWeapon::Precache( void )
 		Warning( "Error reading weapon data file for: %s\n", GetClassname() );
 	//	Remove( );	//don't remove, this gets released soon!
 	}
+#if defined( LUA_SDK )
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1009,9 +1018,8 @@ void CBaseCombatWeapon::Equip( CBaseCombatCharacter *pOwner )
 void CBaseCombatWeapon::SetActivity( Activity act, float duration ) 
 { 
 	//Adrian: Oh man...
-#if !defined( CLIENT_DLL ) && (defined( HL2MP ) || defined( PORTAL ))
-	SetModel( GetWorldModel() );
-#endif
+	if ( GetOwner()->IsPlayer() )
+		SetModel( GetWorldModel() );
 	
 	int sequence = SelectWeightedSequence( act ); 
 	
@@ -1020,9 +1028,8 @@ void CBaseCombatWeapon::SetActivity( Activity act, float duration )
 		sequence = SelectWeightedSequence( ACT_VM_IDLE );
 
 	//Adrian: Oh man again...
-#if !defined( CLIENT_DLL ) && (defined( HL2MP ) || defined( PORTAL ))
-	SetModel( GetViewModel() );
-#endif
+	if ( GetOwner()->IsPlayer() )
+		SetModel( GetViewModel() );
 
 	if ( sequence != ACTIVITY_NOT_AVAILABLE )
 	{
@@ -2007,6 +2014,10 @@ bool CBaseCombatWeapon::DefaultReload( int iClipSize1, int iClipSize2, int iActi
 
 	MDLCACHE_CRITICAL_SECTION();
 	float flSequenceEndTime = gpGlobals->curtime + SequenceDuration();
+	if (sv_infinite_ammo.GetBool())
+	{
+		flSequenceEndTime = gpGlobals->curtime;
+	}
 	pOwner->SetNextAttack( flSequenceEndTime );
 	m_flNextPrimaryAttack = m_flNextSecondaryAttack = flSequenceEndTime;
 
