@@ -58,11 +58,6 @@ void FinishClientPutInServer( CHL2MP_Player *pPlayer )
 	// notify other clients of player joining the game
 	UTIL_ClientPrintAll( HUD_PRINTNOTIFY, "#Game_connected", sName[0] != 0 ? sName : "<unconnected>" );
 
-	if ( HL2MPRules()->IsTeamplay() == true )
-	{
-		ClientPrint( pPlayer, HUD_PRINTTALK, "You are on team %s1\n", pPlayer->GetTeam()->GetName() );
-	}
-
 	const ConVar *hostname = cvar->FindVar( "hostname" );
 	const char *title = (hostname) ? hostname->GetString() : "MESSAGE OF THE DAY";
 
@@ -73,6 +68,11 @@ void FinishClientPutInServer( CHL2MP_Player *pPlayer )
 	data->SetBool( "unload", sv_motd_unload_on_dismissal.GetBool() );
 
 	pPlayer->ShowViewPortPanel( PANEL_INFO, true, data );
+
+	if ( HL2MPRules()->IsTeamplay() == true )
+	{
+                ClientPrint( pPlayer, HUD_PRINTTALK, "You are on team %s1\n", pPlayer->GetTeam()->GetName() );
+	}
 
 	data->deleteThis();
 }
@@ -184,10 +184,8 @@ void GameStartFrame( void )
 
 	gpGlobals->teamplay = (teamplay.GetInt() != 0);
 
-#ifdef DEBUG
 	extern void Bot_RunAll();
 	Bot_RunAll();
-#endif
 }
 
 //=========================================================

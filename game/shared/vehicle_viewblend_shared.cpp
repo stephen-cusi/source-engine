@@ -215,6 +215,11 @@ void SharedVehicleViewSmoothing(CBasePlayer *pPlayer,
 								ViewSmoothingData_t *pData, 
 								float *pFOV )
 {
+	if ( !pPlayer )
+	{
+		return;
+	}
+
 	int eyeAttachmentIndex = pData->pVehicle->LookupAttachment( "vehicle_driver_eyes" );
 	matrix3x4_t vehicleEyePosToWorld;
 	Vector vehicleEyeOrigin;
@@ -268,31 +273,27 @@ void SharedVehicleViewSmoothing(CBasePlayer *pPlayer,
 		flFracFOV = ( gpGlobals->curtime - pData->flEnterExitStartTime ) / ( pData->flEnterExitDuration * 0.85f );
 		flFracFOV = clamp( flFracFOV, 0.0f, 1.0f );
 
-		//Msg("Frac: %f\n", frac );
-
-		if ( frac < 1.0 )
-		{
-			// Blend to the desired vehicle eye origin
-			//Vector vecToView = (vehicleEyeOrigin - PrevMainViewOrigin());
-			//vehicleEyeOrigin = PrevMainViewOrigin() + (vecToView * SimpleSpline(frac));
-			//debugoverlay->AddBoxOverlay( vehicleEyeOrigin, -Vector(1,1,1), Vector(1,1,1), vec3_angle, 0,255,255, 64, 10 );
-		}
-		else 
+		if ( frac > 1.0 )
 		{
 			pData->bRunningEnterExit = false;
 
 			// Enter animation has finished, align view with the eye attachment point
 			// so they can start mouselooking around.
-			if ( !bExitAnimOn )
-			{
-				Vector localEyeOrigin;
-				QAngle localEyeAngles;
-
-				pData->pVehicle->GetAttachmentLocal( eyeAttachmentIndex, localEyeOrigin, localEyeAngles );
 #ifdef CLIENT_DLL
-				engine->SetViewAngles( localEyeAngles );
+			if ( pPlayer->IsLocalPlayer() )
+			{
 #endif
+				if ( !bExitAnimOn )
+				{
+					Vector localEyeOrigin;
+					QAngle localEyeAngles;
+
+					pData->pVehicle->GetAttachmentLocal( eyeAttachmentIndex, localEyeOrigin, localEyeAngles );
+					pPlayer->SetLocalAngles( localEyeAngles );
+				}
+#ifdef CLIENT_DLL
 			}
+#endif
 		}
 	}
 
@@ -366,12 +367,6 @@ void SharedVehicleViewSmoothing(CBasePlayer *pPlayer,
 
 		// Use this as the basis for the next error calculation.
 		pData->vecAnglesSaved = *pAbsAngles;
-
-		//if ( gpGlobals->frametime )
-		//{
-		//	Msg("Angle : %.2f %.2f %.2f\n", target.x, target.y, target.z );
-		//}
-		//Msg("Prev: %.2f %.2f %.2f\n", pData->vecAnglesSaved.x, pData->vecAnglesSaved.y, pData->vecAnglesSaved.z );
 
 		Vector vecAbsOrigin = *pAbsOrigin;
 

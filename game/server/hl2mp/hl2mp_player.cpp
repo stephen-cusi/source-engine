@@ -21,6 +21,8 @@
 #include "eventqueue.h"
 #include "gamestats.h"
 
+#include "hl2mp_cvars.h"
+
 #include "engine/IEngineSound.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 
@@ -150,8 +152,6 @@ void CHL2MP_Player::Precache( void )
 	for ( i = 0; i < nHeads; ++i )
 	   	 PrecacheModel( g_ppszRandomCombineModels[i] );
 
-	PrecacheFootStepSounds();
-
 	PrecacheScriptSound( "NPC_MetroPolice.Die" );
 	PrecacheScriptSound( "NPC_CombineS.Die" );
 	PrecacheScriptSound( "NPC_Citizen.die" );
@@ -198,24 +198,28 @@ void CHL2MP_Player::GiveDefaultItems( void )
 {
 	EquipSuit();
 
-	CBasePlayer::GiveAmmo( 255,	"Pistol");
-	CBasePlayer::GiveAmmo( 45,	"SMG1");
-	CBasePlayer::GiveAmmo( 1,	"grenade" );
-	CBasePlayer::GiveAmmo( 6,	"Buckshot");
-	CBasePlayer::GiveAmmo( 6,	"357" );
+	if( !mp_skipdefaults.GetBool() )
+	{
+		CBasePlayer::GiveAmmo( 255,	"Pistol");
+		CBasePlayer::GiveAmmo( 45,	"SMG1");
+		CBasePlayer::GiveAmmo( 1,	"grenade" );
+		CBasePlayer::GiveAmmo( 6,	"Buckshot");
+		CBasePlayer::GiveAmmo( 6,	"357" );
 
-	if ( GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER )
-	{
-		GiveNamedItem( "weapon_stunstick" );
+		if ( GetPlayerModelType() == PLAYER_SOUNDS_METROPOLICE || GetPlayerModelType() == PLAYER_SOUNDS_COMBINESOLDIER )
+		{
+			GiveNamedItem( "weapon_stunstick" );
+		}
+		else if ( GetPlayerModelType() == PLAYER_SOUNDS_CITIZEN )
+		{
+			GiveNamedItem( "weapon_crowbar" );
+		}
+
+		GiveNamedItem( "weapon_pistol" );
+		GiveNamedItem( "weapon_smg1" );
+		GiveNamedItem( "weapon_frag" );
 	}
-	else if ( GetPlayerModelType() == PLAYER_SOUNDS_CITIZEN )
-	{
-		GiveNamedItem( "weapon_crowbar" );
-	}
-	
-	GiveNamedItem( "weapon_pistol" );
-	GiveNamedItem( "weapon_smg1" );
-	GiveNamedItem( "weapon_frag" );
+
 	GiveNamedItem( "weapon_physcannon" );
 
 	const char *szDefaultWeaponName = engine->GetClientConVarValue( engine->IndexOfEdict( edict() ), "cl_defaultweapon" );
@@ -259,23 +263,34 @@ void CHL2MP_Player::PickDefaultSpawnTeam( void )
 			CTeam *pCombine = g_Teams[TEAM_COMBINE];
 			CTeam *pRebels = g_Teams[TEAM_REBELS];
 
-			if ( pCombine == NULL || pRebels == NULL )
+			if ( defaultteam.GetBool() )
 			{
-				ChangeTeam( random->RandomInt( TEAM_COMBINE, TEAM_REBELS ) );
+				if ( pCombine == NULL || pRebels == NULL )
+				{
+					ChangeTeam( defaultteam.GetInt() );
+				}
 			}
 			else
+                        {
+                        	ChangeTeam( random->RandomInt( TEAM_COMBINE, TEAM_REBELS ) );
+                        }
+
+			if ( !defaultteam.GetBool() )
 			{
-				if ( pCombine->GetNumPlayers() > pRebels->GetNumPlayers() )
+				if ( pCombine != NULL || pRebels != NULL )
 				{
-					ChangeTeam( TEAM_REBELS );
-				}
-				else if ( pCombine->GetNumPlayers() < pRebels->GetNumPlayers() )
-				{
-					ChangeTeam( TEAM_COMBINE );
-				}
-				else
-				{
-					ChangeTeam( random->RandomInt( TEAM_COMBINE, TEAM_REBELS ) );
+					if ( pCombine->GetNumPlayers() > pRebels->GetNumPlayers() )
+					{
+						ChangeTeam( TEAM_REBELS );
+					}
+					else if ( pCombine->GetNumPlayers() < pRebels->GetNumPlayers() )
+					{
+						ChangeTeam( TEAM_COMBINE );
+					}
+					else
+					{
+						ChangeTeam( random->RandomInt( TEAM_COMBINE, TEAM_REBELS ) );
+					}
 				}
 			}
 		}
@@ -293,14 +308,13 @@ void CHL2MP_Player::Spawn(void)
 	PickDefaultSpawnTeam();
 
 	BaseClass::Spawn();
-	
+
 	if ( !IsObserver() )
 	{
 		pl.deadflag = false;
+		RemoveEffects( EF_NODRAW );
 		RemoveSolidFlags( FSOLID_NOT_SOLID );
 
-		RemoveEffects( EF_NODRAW );
-		
 		GiveDefaultItems();
 	}
 
@@ -310,7 +324,7 @@ void CHL2MP_Player::Spawn(void)
 	m_nRenderFX = kRenderNormal;
 
 	m_Local.m_iHideHUD = 0;
-	
+
 	AddFlag(FL_ONGROUND); // set the player on the ground at the start of the round.
 
 	m_impactEnergyScale = HL2MPPLAYER_PHYSDAMAGE_SCALE;
@@ -324,6 +338,8 @@ void CHL2MP_Player::Spawn(void)
 		RemoveFlag( FL_FROZEN );
 	}
 
+	SetSuitUpdate(NULL, false, 0); // stop ALL hev stuff
+
 	m_iSpawnInterpCounter = (m_iSpawnInterpCounter + 1) % 8;
 
 	m_Local.m_bDucked = false;
@@ -335,7 +351,10 @@ void CHL2MP_Player::Spawn(void)
 
 void CHL2MP_Player::PickupObject( CBaseEntity *pObject, bool bLimitMassAndSize )
 {
-	
+	if( mp_allowpickup.GetBool() )
+	{
+		BaseClass::PickupObject( pObject, bLimitMassAndSize ); // Use PickupObject from base class
+	}
 }
 
 bool CHL2MP_Player::ValidatePlayerModel( const char *pModel )
@@ -616,23 +635,30 @@ void CHL2MP_Player::NoteWeaponFired( void )
 
 extern ConVar sv_maxunlag;
 
-bool CHL2MP_Player::WantsLagCompensationOnEntity( const CBasePlayer *pPlayer, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits ) const
+bool CHL2MP_Player::WantsLagCompensationOnEntity(const CBaseEntity *pEntity, const CUserCmd *pCmd, const CBitVec<MAX_EDICTS> *pEntityTransmitBits) const
 {
 	// No need to lag compensate at all if we're not attacking in this command and
 	// we haven't attacked recently.
-	if ( !( pCmd->buttons & IN_ATTACK ) && (pCmd->command_number - m_iLastWeaponFireUsercmd > 5) )
+	if ( !( pCmd->buttons & IN_ATTACK | IN_ATTACK2 ) && (pCmd->command_number - m_iLastWeaponFireUsercmd > 5) )
 		return false;
 
 	// If this entity hasn't been transmitted to us and acked, then don't bother lag compensating it.
-	if ( pEntityTransmitBits && !pEntityTransmitBits->Get( pPlayer->entindex() ) )
+	if (pEntityTransmitBits && !pEntityTransmitBits->Get(pEntity->entindex())) 
 		return false;
 
 	const Vector &vMyOrigin = GetAbsOrigin();
-	const Vector &vHisOrigin = pPlayer->GetAbsOrigin();
+	const Vector &vHisOrigin = pEntity->GetAbsOrigin();
 
 	// get max distance player could have moved within max lag compensation time, 
 	// multiply by 1.5 to to avoid "dead zones"  (sqrt(2) would be the exact value)
-	float maxDistance = 1.5 * pPlayer->MaxSpeed() * sv_maxunlag.GetFloat();
+	float maxspeed;
+	CBasePlayer *pPlayer = ToBasePlayer((CBaseEntity*)pEntity);
+	if (pPlayer)
+		maxspeed = pPlayer->MaxSpeed();
+	else
+		maxspeed = 600;
+	float maxDistance = 1.5 * maxspeed * sv_maxunlag.GetFloat();
+
 
 	// If the player is within this distance, lag compensate them in case they're running past us.
 	if ( vHisOrigin.DistTo( vMyOrigin ) < maxDistance )
@@ -890,16 +916,8 @@ bool CHL2MP_Player::BumpWeapon( CBaseCombatWeapon *pWeapon )
 
 void CHL2MP_Player::ChangeTeam( int iTeam )
 {
-/*	if ( GetNextTeamChangeTime() >= gpGlobals->curtime )
-	{
-		char szReturnString[128];
-		Q_snprintf( szReturnString, sizeof( szReturnString ), "Please wait %d more seconds before trying to switch teams again.\n", (int)(GetNextTeamChangeTime() - gpGlobals->curtime) );
-
-		ClientPrint( this, HUD_PRINTTALK, szReturnString );
-		return;
-	}*/
-
 	bool bKill = false;
+	bool bWasSpectator = false;
 
 	if ( HL2MPRules()->IsTeamplay() != true && iTeam != TEAM_SPECTATOR )
 	{
@@ -915,6 +933,11 @@ void CHL2MP_Player::ChangeTeam( int iTeam )
 		}
 	}
 
+	if (this->GetTeamNumber() == TEAM_SPECTATOR)
+	{
+		bWasSpectator = true;
+	}
+
 	BaseClass::ChangeTeam( iTeam );
 
 	m_flNextTeamChangeTime = gpGlobals->curtime + TEAM_CHANGE_INTERVAL;
@@ -928,9 +951,28 @@ void CHL2MP_Player::ChangeTeam( int iTeam )
 		SetPlayerModel();
 	}
 
+	if ( bWasSpectator )
+	{
+		Spawn();
+		return; // everything is useless afterwards
+	}
+
+	DetonateTripmines();
+	ClearUseEntity();
+
 	if ( iTeam == TEAM_SPECTATOR )
 	{
 		RemoveAllItems( true );
+
+		if ( FlashlightIsOn() )
+		{
+			FlashlightTurnOff();
+		}
+
+		if ( IsInAVehicle() )
+		{
+			LeaveVehicle();
+		}
 
 		State_Transition( STATE_OBSERVER_MODE );
 	}
@@ -943,10 +985,41 @@ void CHL2MP_Player::ChangeTeam( int iTeam )
 
 bool CHL2MP_Player::HandleCommand_JoinTeam( int team )
 {
+	if( team == TEAM_SPECTATOR && IsHLTV() )
+	{
+		ChangeTeam( TEAM_SPECTATOR );
+		ResetDeathCount();
+		ResetFragCount();
+		return true;
+	}
+
+	if( GetNextTeamChangeTime() > gpGlobals->curtime )
+	{
+                char szReturnString[128];
+                Q_snprintf( szReturnString, sizeof( szReturnString ), "Please wait %d more seconds before trying to switch teams again.\n", (int)(GetNextTeamChangeTime() - gpGlobals->curtime) );
+
+                ClientPrint( this, HUD_PRINTTALK, szReturnString );
+
+		return false;
+	}
+
 	if ( !GetGlobalTeam( team ) || team == 0 )
 	{
 		Warning( "HandleCommand_JoinTeam( %d ) - invalid team index.\n", team );
 		return false;
+	}
+
+	// Don't do anything if you join your own team
+	if (team == GetTeamNumber())
+	{
+		return false;
+	}
+	
+	// end early
+	if (this->GetTeamNumber() == TEAM_SPECTATOR)
+	{
+		ChangeTeam(team);
+		return true;
 	}
 
 	if ( team == TEAM_SPECTATOR )
@@ -958,7 +1031,7 @@ bool CHL2MP_Player::HandleCommand_JoinTeam( int team )
 			return false;
 		}
 
-		if ( GetTeamNumber() != TEAM_UNASSIGNED && !IsDead() )
+		if (GetTeamNumber() != TEAM_UNASSIGNED && !IsDead())
 		{
 			m_fNextSuicideTime = gpGlobals->curtime;	// allow the suicide to work
 

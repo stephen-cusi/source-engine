@@ -677,15 +677,13 @@ void CPropJeep::Think( void )
 {
 	BaseClass::Think();
 
-	CBasePlayer	*pPlayer = UTIL_GetLocalPlayer();
-
 	if ( m_bEngineLocked )
 	{
 		m_bUnableToFire = true;
 		
-		if ( pPlayer != NULL )
+		if ( m_hPlayer != NULL )
 		{
-			pPlayer->m_Local.m_iHideHUD |= HIDEHUD_VEHICLE_CROSSHAIR;
+			m_hPlayer->m_Local.m_iHideHUD |= HIDEHUD_VEHICLE_CROSSHAIR;
 		}
 	}
 	else if ( m_bHasGun )
@@ -693,9 +691,9 @@ void CPropJeep::Think( void )
 		// Start this as false and update it again each frame
 		m_bUnableToFire = false;
 
-		if ( pPlayer != NULL )
+		if ( m_hPlayer != NULL )
 		{
-			pPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_VEHICLE_CROSSHAIR;
+			m_hPlayer->m_Local.m_iHideHUD &= ~HIDEHUD_VEHICLE_CROSSHAIR;
 		}
 	}
 
