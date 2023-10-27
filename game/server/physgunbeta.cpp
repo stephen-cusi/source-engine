@@ -1251,6 +1251,11 @@ void CWeaponGravityGunBeta::AttachObject( CBaseEntity *pObject, const Vector& st
 //=========================================================
 void CWeaponGravityGunBeta::PrimaryAttack( void )
 {
+	if (m_hObject)
+	{
+		IPhysicsObject* pPhys = m_hObject->VPhysicsGetObject();
+		pPhys->EnableMotion(true);
+	}
 	if ( !m_active )
 	{
 		SendWeaponAnim( ACT_VM_PRIMARYATTACK );
