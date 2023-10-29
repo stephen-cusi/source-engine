@@ -90,8 +90,6 @@ $Project "Server (HL2MP)"
 		$File "$SRCDIR/game/server/hl2/weapon_ar1.cpp"
 		$File "$SRCDIR/game/server/hl2bsb/weapon_iceaxe.cpp"
 
-		$File "$SRCDIR/game/server/hl2bsb/weapon_grapple.cpp"
-		$File "$SRCDIR/game/server/hl2bsb/weapon_grapple.h"
 		$File "$SRCDIR/game/server/physgunbeta.cpp"
 	}
 
