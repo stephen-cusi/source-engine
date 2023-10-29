@@ -92,9 +92,6 @@ $Project "Client (HL2SB)"
 	$Folder "Half-Life 2 Sanbox"
 	{
 		$File "$SRCDIR/game/client/c_weapon_physgunbeta.cpp"
-
-		$File "$SRCDIR/game/client/hl2bsb/c_weapon_grapple.cpp"
-		$File "$SRCDIR/game/client/hl2bsb/c_weapon_grapple.h"
 	}
 
 	$Folder "SMenu"
