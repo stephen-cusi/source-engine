@@ -181,35 +181,78 @@ void CHL2MP_Player::Precache( void )
 	PrecacheScriptSound( "NPC_Citizen.die" );
 }
 
-void CHL2MP_Player::GiveAllItems( void )
+
+void CHL2MP_Player::GiveAllItems(void)
 {
 	EquipSuit();
 
-	CBasePlayer::GiveAmmo( 255,	"Pistol");
-	CBasePlayer::GiveAmmo( 255,	"AR2" );
-	CBasePlayer::GiveAmmo( 5,	"AR2AltFire" );
-	CBasePlayer::GiveAmmo( 255,	"SMG1");
-	CBasePlayer::GiveAmmo( 5,	"smg1_grenade");
-	CBasePlayer::GiveAmmo( 255,	"Buckshot");
-	CBasePlayer::GiveAmmo( 32,	"357" );
-	CBasePlayer::GiveAmmo( 3,	"rpg_round");
-	CBasePlayer::GiveAmmo( 5,	"grenade" );
-	CBasePlayer::GiveAmmo( 5,	"slam" );
-	GiveNamedItem( "weapon_crowbar" );
-	GiveNamedItem( "weapon_stunstick" );
-	GiveNamedItem( "weapon_pistol" );
-	GiveNamedItem( "weapon_357" );
-	GiveNamedItem( "weapon_smg1" );
-	GiveNamedItem( "weapon_ar2" );
-	GiveNamedItem( "weapon_shotgun" );
-	GiveNamedItem( "weapon_frag" );
-	GiveNamedItem( "weapon_crossbow" );
-	GiveNamedItem( "weapon_rpg" );
-	GiveNamedItem( "weapon_slam" );
-	GiveNamedItem( "weapon_physcannon" );
-	GiveNamedItem( "weapon_physgunbeta");
-	GiveNamedItem( "weapon_toolgun");
+	CBasePlayer::GiveAmmo(255, "Pistol");
+	CBasePlayer::GiveAmmo(255, "AR2");
+	CBasePlayer::GiveAmmo(5, "AR2AltFire");
+	CBasePlayer::GiveAmmo(255, "SMG1");
+	CBasePlayer::GiveAmmo(5, "smg1_grenade");
+	CBasePlayer::GiveAmmo(255, "Buckshot");
+	CBasePlayer::GiveAmmo(32, "357");
+	CBasePlayer::GiveAmmo(3, "rpg_round");
+	CBasePlayer::GiveAmmo(5, "grenade");
+	CBasePlayer::GiveAmmo(5, "slam");
+	GiveNamedItem("weapon_crowbar");
+	GiveNamedItem("weapon_stunstick");
+	GiveNamedItem("weapon_pistol");
+	GiveNamedItem("weapon_357");
+	GiveNamedItem("weapon_smg1");
+	GiveNamedItem("weapon_ar2");
+	GiveNamedItem("weapon_shotgun");
+	GiveNamedItem("weapon_frag");
+	GiveNamedItem("weapon_crossbow");
+	GiveNamedItem("weapon_rpg");
+	GiveNamedItem("weapon_slam");
+	GiveNamedItem("weapon_physcannon");
+	GiveNamedItem("weapon_physgun");
+	GiveNamedItem("weapon_toolgun");
 }
+
+void LegitImpulse101(void)
+{
+	CBasePlayer* pPlayer = ToHL2MPPlayer(UTIL_GetCommandClient());
+	if (!pPlayer)
+		return;
+
+	CPlayerState* pl = pPlayer->PlayerData();
+	Assert(pl);
+	
+	if (pPlayer)
+	{
+		pPlayer->EquipSuit(true);
+
+		pPlayer->GiveAmmo(255, "Pistol");
+		pPlayer->GiveAmmo(255, "AR2");
+		pPlayer->GiveAmmo(5, "AR2AltFire");
+		pPlayer->GiveAmmo(255, "SMG1");
+		pPlayer->GiveAmmo(5, "smg1_grenade");
+		pPlayer->GiveAmmo(255, "Buckshot");
+		pPlayer->GiveAmmo(32, "357");
+		pPlayer->GiveAmmo(3, "rpg_round");
+		pPlayer->GiveAmmo(5, "grenade");
+		pPlayer->GiveAmmo(5, "slam");
+		pPlayer->GiveNamedItem("weapon_crowbar");
+		pPlayer->GiveNamedItem("weapon_stunstick");
+		pPlayer->GiveNamedItem("weapon_pistol");
+		pPlayer->GiveNamedItem("weapon_357");
+		pPlayer->GiveNamedItem("weapon_smg1");
+		pPlayer->GiveNamedItem("weapon_ar2");
+		pPlayer->GiveNamedItem("weapon_shotgun");
+		pPlayer->GiveNamedItem("weapon_frag");
+		pPlayer->GiveNamedItem("weapon_crossbow");
+		pPlayer->GiveNamedItem("weapon_rpg");
+		pPlayer->GiveNamedItem("weapon_slam");
+		pPlayer->GiveNamedItem("weapon_physcannon");
+		pPlayer->GiveNamedItem("weapon_physgun");
+		pPlayer->GiveNamedItem("weapon_toolgun");
+	}
+}
+
+static ConCommand LegitImpulse("LegitImpulse", LegitImpulse101, "Legit Impulse.");
 
 void CHL2MP_Player::GiveDefaultItems( void )
 {
@@ -224,7 +267,19 @@ void CHL2MP_Player::GiveDefaultItems( void )
 	}
 	else
 	{
-		GiveAllItems();
+		EquipSuit();
+
+		CBasePlayer::GiveAmmo(255, "Pistol");
+		CBasePlayer::GiveAmmo(255, "SMG1");
+		CBasePlayer::GiveAmmo(32, "357");
+		GiveNamedItem("weapon_crowbar");
+		GiveNamedItem("weapon_stunstick");
+		GiveNamedItem("weapon_pistol");
+		GiveNamedItem("weapon_357");
+		GiveNamedItem("weapon_smg1");
+		GiveNamedItem("weapon_physcannon");
+		GiveNamedItem("weapon_physgun");
+		GiveNamedItem("weapon_toolgun");
 	}
 
 }

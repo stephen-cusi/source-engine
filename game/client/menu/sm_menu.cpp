@@ -12,6 +12,7 @@
 #include <vgui_controls/Menu.h>
 #include <vgui_controls/Frame.h>
 #include <vgui_controls/Label.h>
+#include <vgui_controls/Divider.h>
 #include <vgui_controls/Controls.h>
 #include <vgui_controls/MenuButton.h>
 #include <vgui_controls/MenuItem.h>
@@ -28,6 +29,7 @@
 #include "filesystem.h"
 #include "sm_menu.h"
 #include "vgui_imagebutton.h"
+#include "vgui_entitybutton.h"
 #include "game_controls/basemodel_panel.h"
 
 #include "tier0/memdbgon.h"
@@ -44,6 +46,8 @@ void CC_MessageBoxWarn()
 		vgui::MessageBox *pMessageBox = new vgui::MessageBox( "Welcome to Half-Life 2 Beta Sandbox!", "Hi, are you currently playing Half-Life 2: Beta Sandbox.\nThis modification is based on Half-Life 2 Sandbox. Thank you for your understanding." );
 		pMessageBox->DoModal();
 		pMessageBox->SetScheme(vgui::scheme()->LoadSchemeFromFile("resource/sch.res", "SourceScheme"));
+		//pMessageBox->SetScheme(vgui::scheme()->LoadSchemeFromFile("resource/SourceScheme.res", "SourceScheme"));
+
 	}
 }
 
@@ -197,9 +201,80 @@ void SMToolMenu::OnCommand( const char *pcCommand )
 	}
 }
 
+// MainMenu
+SMMainMenu::SMMainMenu(vgui::Panel* parent, const char* panelName) : BaseClass(parent, panelName)
+{
+	vgui::ivgui()->AddTickSignal(GetVPanel(), 250);
+
+	m_Impulse = new vgui::Button(this, "Impulse", "Give All Weapons", this, "Impulse101");
+	m_Impulse->SetSize(140,40);
+	m_Impulse->SetPos(15, 20);
+	m_Impulse->SetDepressedSound("common/bugreporter_succeeded.wav");
+	m_Impulse->SetReleasedSound("ui/buttonclick.wav");
+
+	m_ImpNoDiv = new vgui::Divider(this, "ImpNoDiv");
+
+	m_Noclip = new vgui::Button(this, "Noclip", "Toggle Noclip", this, "NoclipLegit");
+	m_Noclip->SetSize(140, 40);
+	m_Noclip->SetPos(15, 85);
+	m_Noclip->SetDepressedSound("common/bugreporter_succeeded.wav");
+	m_Noclip->SetReleasedSound("ui/buttonclick.wav");
+
+	m_NoGoDiv = new vgui::Divider(this, "NoGoDiv");
+
+	m_God = new vgui::Button(this, "GodMod", "Toggle GodMod", this, "GodLegit");
+	m_God->SetSize(140, 40);
+	m_God->SetPos(15, 150);
+	m_God->SetDepressedSound("common/bugreporter_succeeded.wav");
+	m_God->SetReleasedSound("ui/buttonclick.wav");
+
+	m_GoNoTDiv = new vgui::Divider(this, "GoNoTDiv");
+
+	m_Notarget = new vgui::Button(this, "NoTarget", "Toggle NoTarget", this, "NoTargetLegit");
+	m_Notarget->SetSize(140, 40);
+	m_Notarget->SetPos(15, 215);
+	m_Notarget->SetDepressedSound("common/bugreporter_succeeded.wav");
+	m_Notarget->SetReleasedSound("ui/buttonclick.wav");
+	 
+	surface()->AddCustomFontFile("resource/lucidaconsole.ttf", "resource/lucidaconsole.ttf");
+	hTestFont = surface()->CreateFont();
+	surface()->SetFontGlyphSet(hTestFont, "Lucida Console", 16, 0, 0, 0, 0, 0, 0);
+	LoadControlSettings("resource/ui/mainmenu.res");
+}
+
+void SMMainMenu::OnTick(void)
+{
+	BaseClass::OnTick();
+}
+
+void SMMainMenu::OnCommand(const char* pcCommand)
+{
+	BaseClass::OnCommand(pcCommand);
+	if (!Q_stricmp(pcCommand, "Impulse101"))
+	{
+		engine->ClientCmd("LegitImpulse");
+	}
+	else if (!Q_stricmp(pcCommand, "NoclipLegit"))
+	{
+		engine->ClientCmd("LegitNoclip");
+	}
+	else if (!Q_stricmp(pcCommand, "GodLegit"))
+	{
+		engine->ClientCmd("LegitGod");
+	}
+	else if (!Q_stricmp(pcCommand, "NoTargetLegit"))
+	{
+		engine->ClientCmd("LegitNoTarget");
+	}
+}
+
 // List of Models and Entities
 SMList::SMList( vgui::Panel *parent, const char *pName ) : BaseClass( parent, pName )
 {
+	surface()->AddCustomFontFile("resource/lucidaconsole.ttf", "resource/lucidaconsole.ttf");
+	hTestFont = surface()->CreateFont();
+	surface()->SetFontGlyphSet(hTestFont, "Lucida Console", 16, 0, 0, 0, 0, 0, 0);
+
 	SetBounds( 0, 0, 800, 640 );
 }
 
@@ -227,8 +302,8 @@ void SMList::PerformLayout()
 {
 	BaseClass::PerformLayout();
 
-	int w = 64;
-	int h = 64;
+	int w = 115;
+	int h = 115;
 	int x = 5;
 	int y = 5;
 
@@ -246,11 +321,25 @@ void SMList::PerformLayout()
 	}
 }
 
-void SMList::AddImageButton( PanelListPanel *panel, const char *image, const char *hover, const char *command )
+
+void SMList::AddImageButton( PanelListPanel *panel, const char *image, const char *hover, const char *command, const char *textName, const char *text )
 {
-	ImageButton *btn = new ImageButton( panel, image, image, hover, NULL, command );
+	ImageButton *btn = new ImageButton( panel, image, image, hover, NULL, command, textName, text );
+	Label *lbl = new Label(btn, textName, text);
+	//lbl->SetFont(hTestFont);
+	lbl->SetSize(120, 20);
+	lbl->SetPos(0, 95);	
+	lbl->SetFgColor(Color(255, 0, 0, 255));
 	m_LayoutItems.AddToTail( btn );
 	panel->AddItem( NULL, btn );
+}
+
+void SMList::AddTextButton( PanelListPanel *panel, const char *name, const char *text, PanelListPanel *panelTarget, const char *command )
+{
+	//Button *btn = new Button(panel, "EntButton", text, panelTarget, command);
+	Button *btn = new Button(panel, "EntButton", text, panelTarget, command);
+	m_LayoutItems.AddToTail(btn);
+	panel->AddItem(NULL, btn);
 }
 
 void SMList::AddModelPanel( PanelListPanel *panel, const char *mdlname, const char *cmd )
@@ -276,10 +365,11 @@ void SMList::InitEntities( KeyValues *kv, PanelListPanel *panel, const char *ent
 		{
 			if ( entname && entname[0] )
 			{
-				char entspawn[MAX_PATH], normalImage[MAX_PATH], vtf[MAX_PATH], vtf_without_ex[MAX_PATH], vmt[MAX_PATH], file[MAX_PATH];
+				char entspawn[MAX_PATH], normalImage[MAX_PATH], name[MAX_PATH], vtf[MAX_PATH], vtf_without_ex[MAX_PATH], vmt[MAX_PATH], file[MAX_PATH];
 				
 				Q_snprintf( entspawn, sizeof(entspawn), "ent_create %s", entname );
 				Q_snprintf( normalImage, sizeof(normalImage), "smenu/%s", entname );
+				Q_snprintf( name, sizeof(name), "materials/vgui/smenu/%s.vtf", entname);
 				Q_snprintf( vtf, sizeof( vtf ), "materials/vgui/smenu/%s.vtf", entname );
 				Q_snprintf( vtf_without_ex, sizeof(vtf_without_ex), "vgui/smenu/%s", entname );
 				Q_snprintf( vmt, sizeof( vmt ), "materials/vgui/smenu/%s.vmt", entname );
@@ -287,12 +377,55 @@ void SMList::InitEntities( KeyValues *kv, PanelListPanel *panel, const char *ent
 
 				if ( filesystem->FileExists( vtf ) && filesystem->FileExists( vmt ) )
 				{
-					AddImageButton( panel, normalImage, NULL, entspawn );
+					AddImageButton( panel, normalImage, NULL, entspawn, entname, entname);
+					//AddTextButton(this, name, entname, this, NULL);
 					continue;
 				}
 			}
 		}
 	}		
+}
+
+void SMList::InitWeapons(KeyValues* kv, PanelListPanel* panel, const char* enttype)
+{
+	for (KeyValues* control = kv->GetFirstSubKey(); control != NULL; control = control->GetNextKey())
+	{
+		//C_BaseCombatWeapon *entPrintname;
+		const char* printname;
+		const char* entname;
+
+		if (!Q_strcasecmp(control->GetName(), "entity"))
+		{
+			entname = control->GetString();
+			//entPrintname = control->GetString();
+			//printname = entPrintname->GetPrintName();
+		}
+
+
+		if (Q_strncmp(entname, enttype, Q_strlen(enttype)) == 0)
+		{
+			if (entname && entname[0])
+			{
+				char entspawn[MAX_PATH], normalImage[MAX_PATH], name[MAX_PATH], vtf[MAX_PATH], vtf_without_ex[MAX_PATH], vmt[MAX_PATH], file[MAX_PATH];
+
+				Q_snprintf(entspawn, sizeof(entspawn), "ent_create %s", entname);
+				Q_snprintf(normalImage, sizeof(normalImage), "smenu/%s", entname);
+				Q_snprintf(name, sizeof(name), "materials/vgui/smenu/%s.vtf", entname);
+				Q_snprintf(vtf, sizeof(vtf), "materials/vgui/smenu/%s.vtf", entname);
+				Q_snprintf(vtf_without_ex, sizeof(vtf_without_ex), "vgui/smenu/%s", entname);
+				Q_snprintf(vmt, sizeof(vmt), "materials/vgui/smenu/%s.vmt", entname);
+				Q_snprintf(file, sizeof(file), "hl2sb/%s", vmt);
+
+
+				if (filesystem->FileExists(vtf) && filesystem->FileExists(vmt))
+				{
+					AddImageButton(panel, normalImage, NULL, entspawn, entname, entname);
+					//AddTextButton(this, name, entname, this, NULL);
+					continue;
+				}
+			}
+		}
+	}
 }
 
 void SMList::InitModels( PanelListPanel *panel, const char *modeltype, const char *modelfolder, const char *mdlPath )
@@ -333,8 +466,9 @@ void SMList::InitModels( PanelListPanel *panel, const char *modeltype, const cha
 
 CSMenu::CSMenu( vgui::VPANEL *parent, const char *panelName ) : BaseClass( NULL, "SMenu" )
 {
-	SetTitle( "SMenu", true );
+	SetTitle( "SpawnMenu", true );
 	SetScheme(vgui::scheme()->LoadSchemeFromFile("resource/sch.res", "SourceScheme"));
+	//SetScheme(vgui::scheme()->LoadSchemeFromFile("resource/SourceScheme.res", "SourceScheme"));
 
 	SetProportional(true);
 	
@@ -349,8 +483,11 @@ CSMenu::CSMenu( vgui::VPANEL *parent, const char *panelName ) : BaseClass( NULL,
 
 	SetSize(w, h);
 	
-	SMToolMenu *first = new SMToolMenu(this, "Panel");
-	AddPage( first, "SMenu" );
+	SMMainMenu* first = new SMMainMenu(this, "Panel");
+	AddPage(first, "Main");
+
+	SMToolMenu *second = new SMToolMenu(this, "Panel");
+	AddPage( second, "Tools" );
 
 	CC_MessageBoxWarn();
 	
@@ -359,22 +496,27 @@ CSMenu::CSMenu( vgui::VPANEL *parent, const char *panelName ) : BaseClass( NULL,
 	{
 		if ( kv->LoadFromFile(g_pFullFileSystem, "addons/menu/entitylist.txt") )
 		{
-			SMList *npces = new SMList( this, "EntityPanel");
+			SMList *npces = new SMList( this, "NpcsPanel");
 			npces->InitEntities( kv, npces, "npc_" );
 			npces->InitEntities( kv, npces, "monster_"); // hl1 npces
-			SMList *weapons = new SMList( this, "EntityPanel");
-			weapons->InitEntities( kv, weapons, "weapon_" );
-			weapons->InitEntities( kv, weapons, "item_");
-			weapons->InitEntities( kv, weapons, "ammo_");
 			AddPage( npces, "NPCs" );
-			AddPage( weapons, "Weapons");
+			//npces->SetSize(750,120); //dont working
+
+			SMList* weapons = new SMList(this, "WeaponsPanel");
+			weapons->InitWeapons(kv, weapons, "weapon_");
+			AddPage(weapons, "Weapons");
+	
+			SMList* entities = new SMList(this, "EntitiesPanel");
+			entities->InitEntities(kv, entities, "item_");
+			entities->InitEntities(kv, entities, "ammo_");
+			AddPage(entities, "Entities");
 		}
 		kv->deleteThis();
 	}
 	
 	SMModels *mdl = new SMModels( this, "panel" );
 	//SMList *models = new SMList( this, "ModelPanel");
-	
+
 	FileFindHandle_t fh;
 	for ( const char *pDir = filesystem->FindFirstEx( "models/*", "GAME", &fh ); pDir && *pDir; pDir = filesystem->FindNext( fh ) )
 	{			
@@ -413,6 +555,10 @@ void CSMenu::OnCommand( const char *command )
 	BaseClass::OnCommand( command );
 		
 	if (!Q_stricmp(command, "Close"))	
+	{
+		sm_menu.SetValue(0);
+	}
+	if (!Q_stricmp(command, "Cancel"))
 	{
 		sm_menu.SetValue(0);
 	}

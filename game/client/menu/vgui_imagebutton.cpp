@@ -1,11 +1,12 @@
 #include "cbase.h"
 #include "vgui_imagebutton.h"
 #include "vgui/MouseCode.h"
+#include "vgui_controls/Label.h"
+#include <vgui/ISurface.h>
 
 using namespace vgui;
 
-ImageButton::ImageButton( vgui::Panel *parent, const char *panelName, const char *normalImage, const char *mouseOverImage, const char *mouseClickImage, const char *pCmd )
- : ImagePanel( parent, panelName ) 
+ImageButton::ImageButton( vgui::Panel *parent, const char *panelName, const char *normalImage, const char *mouseOverImage, const char *mouseClickImage, const char *pCmd, const char *textName, const char *text) : ImagePanel( parent, panelName ) 
 {
 	m_pParent = parent;
 	
@@ -51,6 +52,7 @@ void ImageButton::OnCursorEntered()
 {
 	if ( hasMouseOverImage )
 		SetMouseOverImage();
+		surface()->PlaySound("ui/buttonrollover.wav");
 }
 
 void ImageButton::OnCursorExited()
@@ -65,12 +67,14 @@ void ImageButton::OnMouseReleased( vgui::MouseCode code )
 
 	if ( ( code == MOUSE_LEFT ) && hasMouseClickImage )
 		SetNormalImage();
+		surface()->PlaySound("ui/buttonclick.wav");
 }
 
 void ImageButton::OnMousePressed( vgui::MouseCode code )
 {
 	if ( ( code == MOUSE_LEFT ) && hasMouseClickImage )
 		SetMouseClickImage();
+		surface()->PlaySound("common/bugreporter_succeeded.wav");
 }
 
 void ImageButton::SetNormalImage( void )

@@ -16,12 +16,14 @@
 #ifndef	WEAPON_MOLOTOV_H
 #define	WEAPON_MOLOTOV_H
 
+#define MolotovModel "models/props_junk/w_garb_beerbottle.mdl" //<<TEMP>> need real model 
+
 class CGrenade_Molotov;
 
 class CWeaponMolotov : public CBaseHLCombatWeapon
 {
 public:
-	DECLARE_CLASS( CWeaponMolotov, CBaseHLCombatWeapon );
+	DECLARE_CLASS(CWeaponMolotov, CBaseHLCombatWeapon);
 
 	DECLARE_SERVERCLASS();
 
@@ -34,27 +36,27 @@ private:
 
 public:
 
-	void				Precache( void );
-	void				Spawn( void );
+	void				Precache(void);
+	void				Spawn(void);
 
-	void				DrawAmmo( void );
+	void				DrawAmmo(void);
 
-	virtual	int			WeaponRangeAttack1Condition( float flDot, float flDist );
-	virtual	bool		WeaponLOSCondition(const Vector &ownerPos, const Vector &targetPos, bool bSetConditions);
+	virtual	int			WeaponRangeAttack1Condition(float flDot, float flDist);
+	virtual	bool		WeaponLOSCondition(const Vector& ownerPos, const Vector& targetPos, bool bSetConditions);
 
-	void				SetPickupTouch( void );
-	void				MolotovTouch( CBaseEntity *pOther );	// default weapon touch
-	
-	int					CapabilitiesGet( void ) { return bits_CAP_WEAPON_RANGE_ATTACK1; }
+	void				SetPickupTouch(void);
+	void				MolotovTouch(CBaseEntity* pOther);	// default weapon touch
 
-	bool				ObjectInWay( void );
+	int					CapabilitiesGet(void) { return bits_CAP_WEAPON_RANGE_ATTACK1; }
 
-	void				ThrowMolotov( const Vector &vecSrc, const Vector &vecVelocity);
-	void				ItemPostFrame( void );
-	void				PrimaryAttack( void );
-	void				SecondaryAttack( void );
+	bool				ObjectInWay(void);
 
-	void				Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
+	void				ThrowMolotov(const Vector& vecSrc, const Vector& vecVelocity);
+	void				ItemPostFrame(void);
+	void				PrimaryAttack(void);
+	void				SecondaryAttack(void);
+
+	void				Operator_HandleAnimEvent(animevent_t* pEvent, CBaseCombatCharacter* pOperator);
 
 	DECLARE_ACTTABLE();
 	DECLARE_DATADESC();

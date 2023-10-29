@@ -1098,7 +1098,7 @@ void EnableNoClip( CBasePlayer *pPlayer )
 	// Disengage from hierarchy
 	pPlayer->SetParent( NULL );
 	pPlayer->SetMoveType( MOVETYPE_NOCLIP );
-	ClientPrint( pPlayer, HUD_PRINTCONSOLE, "noclip ON\n");
+	ClientPrint( pPlayer, HUD_PRINTCENTER, "Noclip ON\n");
 	pPlayer->AddEFlags( EFL_NOCLIP_ACTIVE );
 }
 
@@ -1158,7 +1158,62 @@ void CC_Player_NoClip( void )
 	}
 }
 
+void CC_Player_LegitNoClip(void)
+{
+	//if (!sv_allow_noclip.GetBool())
+		//return;
+
+	CBasePlayer* pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+	if (!pPlayer)
+		return;
+
+	CPlayerState* pl = pPlayer->PlayerData();
+	Assert(pl);
+
+	if (pPlayer->GetMoveType() != MOVETYPE_NOCLIP)
+	{
+		EnableNoClip(pPlayer);
+		return;
+	}
+
+	pPlayer->RemoveEFlags(EFL_NOCLIP_ACTIVE);
+	pPlayer->SetMoveType(MOVETYPE_WALK);
+
+	Vector oldorigin = pPlayer->GetAbsOrigin();
+	ClientPrint(pPlayer, HUD_PRINTCENTER, "Noclip OFF\n");
+	if (!TestEntityPosition(pPlayer))
+	{
+		Vector forward, right, up;
+
+		AngleVectors(pl->v_angle, &forward, &right, &up);
+
+		// Try to move into the world
+		if (!FindPassableSpace(pPlayer, forward, 1, oldorigin))
+		{
+			if (!FindPassableSpace(pPlayer, right, 1, oldorigin))
+			{
+				if (!FindPassableSpace(pPlayer, right, -1, oldorigin))		// left
+				{
+					if (!FindPassableSpace(pPlayer, up, 1, oldorigin))	// up
+					{
+						if (!FindPassableSpace(pPlayer, up, -1, oldorigin))	// down
+						{
+							if (!FindPassableSpace(pPlayer, forward, -1, oldorigin))	// back
+							{
+								Msg("Can't find the world\n");
+							}
+						}
+					}
+				}
+			}
+		}
+
+		pPlayer->SetAbsOrigin(oldorigin);
+	}
+}
+
 static ConCommand noclip("noclip", CC_Player_NoClip, "Toggle. Player becomes non-solid and flies.");
+static ConCommand Legitnoclip("LegitNoclip", CC_Player_LegitNoClip, "Legit Noclip.");
 
 
 //------------------------------------------------------------------------------
@@ -1172,7 +1227,8 @@ void CC_God_f (void)
 	CBasePlayer *pPlayer = ToBasePlayer( UTIL_GetCommandClient() ); 
 	if ( !pPlayer )
 		return;
-
+//GOD MODE FIX
+/*
 #ifdef TF_DLL
    if ( TFGameRules() && ( TFGameRules()->IsPVEModeActive() == false ) )
    {
@@ -1183,6 +1239,7 @@ void CC_God_f (void)
 	if ( gpGlobals->deathmatch )
 		return;
 #endif
+*/
 
 	pPlayer->ToggleFlag( FL_GODMODE );
 	if (!(pPlayer->GetFlags() & FL_GODMODE ) )
@@ -1191,7 +1248,27 @@ void CC_God_f (void)
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "godmode ON\n");
 }
 
+//------------------------------------------------------------------------------
+// Sets client to godmode
+//------------------------------------------------------------------------------
+void CC_LegitGod_f(void)
+{
+	//if (!sv_cheats->GetBool())
+		//return;
+
+	CBasePlayer* pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+	if (!pPlayer)
+		return;
+
+	pPlayer->ToggleFlag(FL_GODMODE);
+	if (!(pPlayer->GetFlags() & FL_GODMODE))
+		ClientPrint(pPlayer, HUD_PRINTCENTER, "Godmode OFF\n");
+	else
+		ClientPrint(pPlayer, HUD_PRINTCENTER, "Godmode ON\n");
+}
+
 static ConCommand god("god", CC_God_f, "Toggle. Player becomes invulnerable.", FCVAR_CHEAT );
+static ConCommand Legitgod("LegitGod", CC_LegitGod_f, "Legit God.");
 
 
 //------------------------------------------------------------------------------
@@ -1360,8 +1437,10 @@ void CC_Notarget_f (void)
 	if ( !pPlayer )
 		return;
 
-	if ( gpGlobals->deathmatch )
-		return;
+
+//NOTARGET FIX
+	//if (gpGlobals->deathmatch)
+		//return;
 
 	pPlayer->ToggleFlag( FL_NOTARGET );
 	if ( !(pPlayer->GetFlags() & FL_NOTARGET ) )
@@ -1370,7 +1449,31 @@ void CC_Notarget_f (void)
 		ClientPrint( pPlayer, HUD_PRINTCONSOLE, "notarget ON\n");
 }
 
+//------------------------------------------------------------------------------
+// Sets client to notarget mode.
+//------------------------------------------------------------------------------
+void CC_LegitNotarget_f(void)
+{
+	//if (!sv_cheats->GetBool())
+		//return;
+
+	CBasePlayer* pPlayer = ToBasePlayer(UTIL_GetCommandClient());
+	if (!pPlayer)
+		return;
+
+//NOTARGET FIX
+	//if (gpGlobals->deathmatch)
+		//return;
+
+	pPlayer->ToggleFlag(FL_NOTARGET);
+	if (!(pPlayer->GetFlags() & FL_NOTARGET))
+		ClientPrint(pPlayer, HUD_PRINTCENTER, "NoTarget OFF\n");
+	else
+		ClientPrint(pPlayer, HUD_PRINTCENTER, "NoTarget ON\n");
+}
+
 ConCommand notarget("notarget", CC_Notarget_f, "Toggle. Player becomes hidden to NPCs.", FCVAR_CHEAT);
+ConCommand Legitnotarget("LegitNoTarget", CC_LegitNotarget_f, "Legit NoTarget.");
 
 //------------------------------------------------------------------------------
 // Damage the client the specified amount

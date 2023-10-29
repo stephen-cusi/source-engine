@@ -86,7 +86,9 @@ protected:
 
 	virtual AngularImpulse	PhysGunLaunchAngularImpulse( void );
 	virtual Vector			PhysGunLaunchVelocity( const Vector &forward, float flMass );
-	bool					PassengerInTransition( void );
+#ifndef HL2SB
+	bool					PassengerInTransition(void);
+#endif // !HL2SB
 
 	void	SetBusterHopperVisibility(bool visible);
 

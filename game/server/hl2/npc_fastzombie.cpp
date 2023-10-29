@@ -389,6 +389,7 @@ static const char *s_pLegsModel = "models/gibs/fast_zombie_legs.mdl";
 void CFastZombie::Precache( void )
 {
 	PrecacheModel("models/zombie/fast.mdl");
+	PrecacheModel("models/zombie/Fast_torso.mdl");
 #ifdef HL2_EPISODIC
 	PrecacheModel("models/zombie/Fast_torso.mdl");
 	PrecacheScriptSound( "NPC_FastZombie.CarEnter1" );

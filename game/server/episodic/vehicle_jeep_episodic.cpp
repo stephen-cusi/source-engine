@@ -637,20 +637,23 @@ void CPropJeepEpisodic::InputAddBusterToCargo( inputdata_t &data )
 // Purpose: 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CPropJeepEpisodic::PassengerInTransition( void )
+#ifndef HL2SB
+bool CPropJeepEpisodic::PassengerInTransition(void)
 {
 	// FIXME: Big hack - we need a way to bridge this data better
 	// TODO: Get a list of passengers we can traverse instead
-	CNPC_Alyx *pAlyx = CNPC_Alyx::GetAlyx();
-	if ( pAlyx )
+	CNPC_Alyx* pAlyx = CNPC_Alyx::GetAlyx();
+	if (pAlyx)
 	{
-		if ( pAlyx->GetPassengerState() == PASSENGER_STATE_ENTERING ||
-			 pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING )
+		if (pAlyx->GetPassengerState() == PASSENGER_STATE_ENTERING ||
+			pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING)
 			return true;
 	}
 
 	return false;
 }
+
+#endif // !HL2SB
 
 //-----------------------------------------------------------------------------
 // Purpose: Override velocity if our passenger is transitioning or we're upside-down
@@ -658,8 +661,10 @@ bool CPropJeepEpisodic::PassengerInTransition( void )
 Vector CPropJeepEpisodic::PhysGunLaunchVelocity( const Vector &forward, float flMass )
 {
 	// Disallow
-	if ( PassengerInTransition() )
+#ifndef HL2SB
+	if (PassengerInTransition())
 		return vec3_origin;
+#endif // !HL2SB
 
 	Vector vecPuntDir = BaseClass::PhysGunLaunchVelocity( forward, flMass );
 	vecPuntDir.z = 150.0f;
@@ -1080,12 +1085,14 @@ void CPropJeepEpisodic::Think( void )
 {
 	BaseClass::Think();
 
+#ifndef HL2SB
 	// If our passenger is transitioning, then don't let the player drive off
-	CNPC_Alyx *pAlyx = CNPC_Alyx::GetAlyx();
-	if ( pAlyx && pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING )
+	CNPC_Alyx* pAlyx = CNPC_Alyx::GetAlyx();
+	if (pAlyx && pAlyx->GetPassengerState() == PASSENGER_STATE_EXITING)
 	{
-		m_throttleDisableTime = gpGlobals->curtime + 0.25f;		
+		m_throttleDisableTime = gpGlobals->curtime + 0.25f;
 	}
+#endif // !HL2SB
 
 	// Update our cargo entering our hold
 	UpdateCargoEntry();

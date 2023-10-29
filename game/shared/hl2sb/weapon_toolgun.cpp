@@ -70,6 +70,18 @@ private:
 	virtual void PrimaryAttack();
 #ifndef CLIENT_DLL
 	virtual void SecondaryAttack();
+
+	virtual void AttachEntities(CBaseEntity* pEntity1, CBaseEntity* pEntity2)
+	{
+		if (pEntity1 && pEntity2)
+		{
+			SetParent(pEntity1);
+			SetMoveType(MOVETYPE_NONE);
+
+			SetLocalOrigin(pEntity2->GetLocalOrigin() - pEntity1->GetLocalOrigin());
+			SetLocalAngles(pEntity2->GetLocalAngles() - pEntity1->GetLocalAngles());
+		}
+	}
 #endif
 	virtual void Precache();
 	virtual bool HasAnyAmmo() { return true; }
@@ -181,6 +193,7 @@ void CWeaponToolGun::PrimaryAttack()
 	   6 - emitter
 	*/
 	m_iMode = toolmode.GetInt();
+	bool isFisrt = false;
 
 	switch( m_iMode )
 	{
@@ -225,7 +238,13 @@ void CWeaponToolGun::PrimaryAttack()
 			break;
 		case 4:
 			{
-//				LaunchStickyBomb( pOwner, tr.endpos, tr.endpos );
+				if (tr.m_pEnt->IsPlayer())
+				{
+					break;
+				}
+				CBaseEntity* pEntity1 = tr.m_pEnt;
+				CBaseEntity* pEntity2 = tr.m_pEnt;
+				AttachEntities(pEntity1, pEntity2);
 			}
 			break;
 		case 5:

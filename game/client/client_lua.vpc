@@ -92,13 +92,29 @@ $Project "Client (HL2SB)"
 	$Folder "Half-Life 2 Sanbox"
 	{
 		$File "$SRCDIR/game/client/c_weapon_physgunbeta.cpp"
+
+		$File "$SRCDIR/game/client/hl2bsb/c_weapon_grapple.cpp"
+		$File "$SRCDIR/game/client/hl2bsb/c_weapon_grapple.h"
 	}
 
 	$Folder "SMenu"
 	{
 		$File "menu/sm_menu.cpp"
 		$File "menu/vgui_imagebutton.cpp"
+		$File "menu/vgui_entitybutton.cpp"
 		$File "menu/playermodel_menu.cpp"
+	}
+
+	$Folder "Episodic"
+	{
+		$File	"episodic\c_vehicle_jeep_episodic.cpp"
+		$File 	"hl2\hud_radar.cpp"
+		$Folder "NPC"
+		{
+			$File	"episodic\c_npc_puppet.cpp"
+			$File	"$SRCDIR\game\shared\episodic\npc_advisor_shared.h"
+			$File	"episodic\c_npc_advisor.cpp"
+		}
 	}
 
 	$Folder "Gunmod"

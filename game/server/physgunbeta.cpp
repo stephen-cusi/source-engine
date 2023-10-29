@@ -20,6 +20,7 @@
 #include "physics_saverestore.h"
 #include "player_pickup.h"
 #include "SoundEmitterSystem/isoundemittersystembase.h"
+#include "basehlcombatweapon.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -35,7 +36,7 @@ static int g_physgunBeam;
 
 #define MAX_PELLETS	50
 
-class CWeaponGravityGunBeta;
+class CWeaponPhysGun;
 
 class CGravityPelletBeta : public CBaseAnimating
 {
@@ -459,14 +460,14 @@ struct pelletlist_t
 	EHANDLE						parent;
 };
 
-class CWeaponGravityGunBeta : public CBaseCombatWeapon
+class CWeaponPhysGun : public CBaseHLCombatWeapon
 {
 	DECLARE_DATADESC();
 
 public:
-	DECLARE_CLASS( CWeaponGravityGunBeta, CBaseCombatWeapon );
+	DECLARE_CLASS( CWeaponPhysGun, CBaseHLCombatWeapon );
 
-	CWeaponGravityGunBeta();
+	CWeaponPhysGun();
 	void Spawn( void );
 	void OnRestore( void );
 	void Precache( void );
@@ -475,10 +476,11 @@ public:
 	void SecondaryAttack( void );
 	void WeaponIdle( void );
 	void ItemPostFrame( void );
-	virtual bool Holster( CBaseCombatWeapon *pSwitchingTo )
+	virtual bool Holster(CBaseCombatWeapon* pSwitchingTo)
 	{
 		EffectDestroy();
-		return BaseClass::Holster();
+		SoundDestroy();
+		return BaseClass::Holster(pSwitchingTo);
 	}
 
 	bool Reload( void );
@@ -510,6 +512,8 @@ public:
 	void SoundStop( void );
 	void SoundStart( void );
 	void SoundUpdate( void );
+
+
 	void AddPellet( CGravityPelletBeta *pPellet, CBaseEntity *pParent, const Vector &surfaceNormal );
 	void DeleteActivePellets();
 	void SortPelletsForObject( CBaseEntity *pObject );
@@ -573,7 +577,7 @@ private:
 	CNetworkVar( bool, m_glueTouching );
 };
 
-IMPLEMENT_SERVERCLASS_ST( CWeaponGravityGunBeta,DT_WeaponGravityGunBeta )
+IMPLEMENT_SERVERCLASS_ST( CWeaponPhysGun,DT_WeaponPhysGun )
 	SendPropVector( SENDINFO_NAME(m_gravCallback.m_targetPosition, m_targetPosition), -1, SPROP_COORD ),
 	SendPropVector( SENDINFO_NAME(m_gravCallback.m_worldPosition, m_worldPosition), -1, SPROP_COORD ),
 	SendPropInt( SENDINFO(m_active), 1, SPROP_UNSIGNED ),
@@ -581,8 +585,8 @@ IMPLEMENT_SERVERCLASS_ST( CWeaponGravityGunBeta,DT_WeaponGravityGunBeta )
 	SendPropModelIndex( SENDINFO(m_viewModelIndex) ),
 END_SEND_TABLE()
 
-LINK_ENTITY_TO_CLASS( weapon_physgunbeta, CWeaponGravityGunBeta );
-PRECACHE_WEAPON_REGISTER(weapon_physgunbeta);
+LINK_ENTITY_TO_CLASS( weapon_physgun, CWeaponPhysGun );
+PRECACHE_WEAPON_REGISTER(weapon_physgun);
 
 //---------------------------------------------------------
 // Save/Restore
@@ -595,7 +599,7 @@ BEGIN_SIMPLE_DATADESC( pelletlist_t )
 
 END_DATADESC()
 
-BEGIN_DATADESC( CWeaponGravityGunBeta )
+BEGIN_DATADESC( CWeaponPhysGun )
 
 	DEFINE_FIELD( m_active,				FIELD_INTEGER ),
 	DEFINE_FIELD( m_useDown,				FIELD_BOOLEAN ),
@@ -627,7 +631,7 @@ enum physgun_soundIndex { SI_LOCKEDON = 0, SI_SCANNING = 1, SI_LIGHTOBJECT = 2, 
 //=========================================================
 //=========================================================
 
-CWeaponGravityGunBeta::CWeaponGravityGunBeta()
+CWeaponPhysGun::CWeaponPhysGun()
 {
 	m_active = false;
 	m_bFiresUnderwater = true;
@@ -637,7 +641,7 @@ CWeaponGravityGunBeta::CWeaponGravityGunBeta()
 
 //=========================================================
 //=========================================================
-void CWeaponGravityGunBeta::Spawn( )
+void CWeaponPhysGun::Spawn( )
 {
 	BaseClass::Spawn();
 	SetModel( GetWorldModel() );
@@ -645,7 +649,7 @@ void CWeaponGravityGunBeta::Spawn( )
 	FallInit();
 }
 
-void CWeaponGravityGunBeta::OnRestore( void )
+void CWeaponPhysGun::OnRestore( void )
 {
 	BaseClass::OnRestore();
 
@@ -658,7 +662,7 @@ void CWeaponGravityGunBeta::OnRestore( void )
 
 //=========================================================
 //=========================================================
-void CWeaponGravityGunBeta::Precache( void )
+void CWeaponPhysGun::Precache( void )
 {
 	BaseClass::Precache();
 
@@ -671,14 +675,14 @@ void CWeaponGravityGunBeta::Precache( void )
 	PrecacheScriptSound( "Weapon_Physgun.HeavyObject" );
 }
 
-void CWeaponGravityGunBeta::EffectCreate( void )
+void CWeaponPhysGun::EffectCreate( void )
 {
 	EffectUpdate();
 	m_active = true;
 }
 
 
-void CWeaponGravityGunBeta::EffectUpdate( void )
+void CWeaponPhysGun::EffectUpdate( void )
 {
 	Vector start, angles, forward, right;
 	trace_t tr;
@@ -840,20 +844,20 @@ void CWeaponGravityGunBeta::EffectUpdate( void )
 	NetworkStateChanged();
 }
 
-void CWeaponGravityGunBeta::SoundCreate( void )
+void CWeaponPhysGun::SoundCreate( void )
 {
 	m_soundState = SS_SCANNING;
 	SoundStart();
 }
 
 
-void CWeaponGravityGunBeta::SoundDestroy( void )
+void CWeaponPhysGun::SoundDestroy( void )
 {
 	SoundStop();
 }
 
 
-void CWeaponGravityGunBeta::SoundStop( void )
+void CWeaponPhysGun::SoundStop( void )
 {
 	switch( m_soundState )
 	{
@@ -895,7 +899,7 @@ static float UTIL_LineFraction( float value, float low, float high, float scale 
 	return scale * (value-low) / delta;
 }
 
-void CWeaponGravityGunBeta::SoundStart( void )
+void CWeaponPhysGun::SoundStart( void )
 {
 	CPASAttenuationFilter filter( GetOwner() );
 	filter.MakeReliable();
@@ -921,7 +925,7 @@ void CWeaponGravityGunBeta::SoundStart( void )
 													//   volume, att, flags, pitch
 }
 
-void CWeaponGravityGunBeta::SoundUpdate( void )
+void CWeaponPhysGun::SoundUpdate( void )
 {
 	int newState;
 	
@@ -992,7 +996,7 @@ void CWeaponGravityGunBeta::SoundUpdate( void )
 }
 
 
-void CWeaponGravityGunBeta::AddPellet( CGravityPelletBeta*pPellet, CBaseEntity *pAttach, const Vector &surfaceNormal )
+void CWeaponPhysGun::AddPellet( CGravityPelletBeta*pPellet, CBaseEntity *pAttach, const Vector &surfaceNormal )
 {
 	Assert(m_pelletCount<MAX_PELLETS);
 
@@ -1008,7 +1012,7 @@ void CWeaponGravityGunBeta::AddPellet( CGravityPelletBeta*pPellet, CBaseEntity *
 	m_pelletCount++;
 }
 
-void CWeaponGravityGunBeta::SortPelletsForObject( CBaseEntity *pObject )
+void CWeaponPhysGun::SortPelletsForObject( CBaseEntity *pObject )
 {
 	m_objectPelletCount = 0;
 	for ( int i = 0; i < m_pelletCount; i++ )
@@ -1029,7 +1033,7 @@ void CWeaponGravityGunBeta::SortPelletsForObject( CBaseEntity *pObject )
 	SetObjectPelletsColor( 192, 255, 192 );
 }
 
-void CWeaponGravityGunBeta::SetObjectPelletsColor( int r, int g, int b )
+void CWeaponPhysGun::SetObjectPelletsColor( int r, int g, int b )
 {
 	color32 color;
 	color.r = r;
@@ -1047,7 +1051,7 @@ void CWeaponGravityGunBeta::SetObjectPelletsColor( int r, int g, int b )
 	}
 }
 
-CBaseEntity *CWeaponGravityGunBeta::GetBeamEntity()
+CBaseEntity *CWeaponPhysGun::GetBeamEntity()
 {
 	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 	if ( !pOwner )
@@ -1061,7 +1065,7 @@ CBaseEntity *CWeaponGravityGunBeta::GetBeamEntity()
 	return pOwner;
 }
 
-void CWeaponGravityGunBeta::DeleteActivePellets()
+void CWeaponPhysGun::DeleteActivePellets()
 {
 	CBaseEntity *pEnt = GetBeamEntity();
 
@@ -1089,7 +1093,7 @@ void CWeaponGravityGunBeta::DeleteActivePellets()
 	m_pelletCount = 0;
 }
 
-void CWeaponGravityGunBeta::CreatePelletAttraction( float radius, CBaseEntity *pObject )
+void CWeaponPhysGun::CreatePelletAttraction( float radius, CBaseEntity *pObject )
 {
 	int nearPellet = -1;
 	int objectPellet = -1;
@@ -1169,7 +1173,7 @@ void CWeaponGravityGunBeta::CreatePelletAttraction( float radius, CBaseEntity *p
 	}
 
 
-IPhysicsObject *CWeaponGravityGunBeta::GetPelletPhysObject( int pelletIndex )
+IPhysicsObject *CWeaponPhysGun::GetPelletPhysObject( int pelletIndex )
 {
 	if ( pelletIndex < 0 )
 		return NULL;
@@ -1181,7 +1185,7 @@ IPhysicsObject *CWeaponGravityGunBeta::GetPelletPhysObject( int pelletIndex )
 	return g_PhysWorldObject;
 }
 
-void CWeaponGravityGunBeta::EffectDestroy( void )
+void CWeaponPhysGun::EffectDestroy( void )
 {
 	m_active = false;
 	SoundStop();
@@ -1189,7 +1193,7 @@ void CWeaponGravityGunBeta::EffectDestroy( void )
 	DetachObject();
 }
 
-void CWeaponGravityGunBeta::DetachObject( void )
+void CWeaponPhysGun::DetachObject( void )
 {
 	m_pelletHeld = -1;
 	m_pelletAttract = -1;
@@ -1207,7 +1211,7 @@ void CWeaponGravityGunBeta::DetachObject( void )
 	}
 }
 
-void CWeaponGravityGunBeta::AttachObject( CBaseEntity *pObject, const Vector& start, const Vector &end, float distance )
+void CWeaponPhysGun::AttachObject( CBaseEntity *pObject, const Vector& start, const Vector &end, float distance )
 {
 	m_hObject = pObject;
 	IPhysicsObject *pPhysics = pObject ? (pObject->VPhysicsGetObject()) : NULL;
@@ -1217,7 +1221,7 @@ void CWeaponGravityGunBeta::AttachObject( CBaseEntity *pObject, const Vector& st
 
 		m_gravCallback.AttachEntity( pObject, pPhysics, end );
 		float mass = pPhysics->GetMass();
-		Msg( "Object mass: %.2f lbs (%.2f kg)\n", kg2lbs(mass), mass );
+		//Msg( "Object mass: %.2f lbs (%.2f kg)\n", kg2lbs(mass), mass );
 		float vel = phys_gunvel.GetFloat();
 		if ( mass > phys_gunmass.GetFloat() )
 		{
@@ -1249,13 +1253,14 @@ void CWeaponGravityGunBeta::AttachObject( CBaseEntity *pObject, const Vector& st
 
 //=========================================================
 //=========================================================
-void CWeaponGravityGunBeta::PrimaryAttack( void )
+void CWeaponPhysGun::PrimaryAttack( void )
 {
-	if (m_hObject)
-	{
-		IPhysicsObject* pPhys = m_hObject->VPhysicsGetObject();
-		pPhys->EnableMotion(true);
-	}
+	//if (m_hObject)
+	//{
+		//IPhysicsObject* pPhys = m_hObject->VPhysicsGetObject();
+		//pPhys->EnableMotion(true);
+	//}
+	m_flNextSecondaryAttack = gpGlobals->curtime + 0.1;
 	if ( !m_active )
 	{
 		SendWeaponAnim( ACT_VM_PRIMARYATTACK );
@@ -1269,7 +1274,7 @@ void CWeaponGravityGunBeta::PrimaryAttack( void )
 	}
 }
 
-void CWeaponGravityGunBeta::SecondaryAttack( void )
+void CWeaponPhysGun::SecondaryAttack( void )
 {
 	m_flNextSecondaryAttack = gpGlobals->curtime + 0.1;
 	if ( m_active )
@@ -1330,19 +1335,20 @@ void CWeaponGravityGunBeta::SecondaryAttack( void )
 	}
 	AddPellet( pPellet, pHit, tr.plane.normal );
 
+	CBaseEntity* pEnt = GetBeamEntity();
+
 	// UNDONE: Probably should just do this client side
-	CBaseEntity *pEnt = GetBeamEntity();
-	CBeam *pBeam = CBeam::BeamCreate( PHYSGUN_BEAM_SPRITE, 1.5 );
-	pBeam->PointEntInit( endPoint, pEnt );
-	pBeam->SetEndAttachment( 1 );
-	pBeam->SetBrightness( 255 );
-	pBeam->SetColor( 255, 0, 0 );
+	CBeam *pBeam = CBeam::BeamCreate(PHYSGUN_BEAM_SPRITE, 1.5);
+	pBeam->PointEntInit(pPellet->GetAbsOrigin(), pEnt);
+	pBeam->SetEndAttachment(1);
+	pBeam->SetBrightness(255);
+	pBeam->SetColor(255, 0, 0);
 	pBeam->RelinkBeam();
-	pBeam->LiveForTime( 0.1 );
+	pBeam->LiveForTime(0.1);
 
 }
 
-void CWeaponGravityGunBeta::WeaponIdle( void )
+void CWeaponPhysGun::WeaponIdle( void )
 {
 	if ( HasWeaponIdleTimeElapsed() )
 	{
@@ -1368,7 +1374,7 @@ void CWeaponGravityGunBeta::WeaponIdle( void )
 	}
 }
 
-void CWeaponGravityGunBeta::ItemPostFrame( void )
+void CWeaponPhysGun::ItemPostFrame( void )
 {
 	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 	if (!pOwner)
@@ -1400,7 +1406,7 @@ void CWeaponGravityGunBeta::ItemPostFrame( void )
 // Purpose: 
 // Output : Returns true on success, false on failure.
 //-----------------------------------------------------------------------------
-bool CWeaponGravityGunBeta::HasAnyAmmo( void )
+bool CWeaponPhysGun::HasAnyAmmo( void )
 {
 	//Always report that we have ammo
 	return true;
@@ -1408,7 +1414,7 @@ bool CWeaponGravityGunBeta::HasAnyAmmo( void )
 
 //=========================================================
 //=========================================================
-bool CWeaponGravityGunBeta::Reload( void )
+bool CWeaponPhysGun::Reload( void )
 {
 	CBasePlayer *pOwner = ToBasePlayer( GetOwner() );
 

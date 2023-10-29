@@ -79,9 +79,37 @@ $Project "Server (HL2MP)"
 	$Folder "Half-Life 2 Beta Sandbox"
 	{
 		$File "$SRCDIR/game/shared/hl2sb/weapon_toolgun.cpp"
+		$File "$SRCDIR/game/server/hl2bsb/weapon_binoculars.cpp"
+		$File "$SRCDIR/game/server/hl2bsb/weapon_flaregun.cpp"
+		$File "$SRCDIR/game/server/hl2bsb/weapon_custom_flaregun.cpp"
+		$File "$SRCDIR/game/server/hl2bsb/weapon_flaregun.h"
+		$File "$SRCDIR/game/server/hl2/weapon_sniperrifle.cpp"
+		$File "$SRCDIR/game/server/hl2/weapon_molotov.cpp"
+		$File "$SRCDIR/game/server/hl2/weapon_irifle.cpp"
+		$File "$SRCDIR/game/server/hl2/weapon_immolator.cpp"
+		$File "$SRCDIR/game/server/hl2/weapon_ar1.cpp"
+		$File "$SRCDIR/game/server/hl2bsb/weapon_iceaxe.cpp"
+
+		$File "$SRCDIR/game/server/hl2bsb/weapon_grapple.cpp"
+		$File "$SRCDIR/game/server/hl2bsb/weapon_grapple.h"
 		$File "$SRCDIR/game/server/physgunbeta.cpp"
-		$File "$SRCDIR/game/server/hl2/weapon_flaregun.cpp"
-		$file "$SRCDIR/game/server/hl2/weapon_flaregun.h"
+	}
+
+	$Folder "HL2"
+	{
+		$File	"hl2\npc_fastzombie.cpp"
+	}
+
+	$Folder "Episodic"
+	{	
+		$Folder "NPC"
+		{
+			$File	"$SRCDIR\game\shared\episodic\npc_advisor_shared.h"
+			$File	"episodic\npc_advisor.cpp"
+			$File	"episodic\npc_combine_cannon.cpp"
+			$File	"episodic\npc_magnusson.cpp"
+			$File	"episodic\npc_puppet.cpp"
+		}
 	}
 
 	$Folder "Gunmod"

@@ -1,4 +1,4 @@
-//===== Copyright � 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -10,12 +10,13 @@
 #include "in_buttons.h"
 #include "beamdraw.h"
 #include "c_weapon__stubs.h"
-#include <clienteffectprecachesystem.h>
+#include "clienteffectprecachesystem.h"
+#include "c_basehlcombatweapon.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-CLIENTEFFECT_REGISTER_BEGIN( PrecacheEffectGravityGunBeta )
+CLIENTEFFECT_REGISTER_BEGIN( PrecacheEffectGravityGun )
 CLIENTEFFECT_MATERIAL( "sprites/physbeam" )
 CLIENTEFFECT_REGISTER_END()
 
@@ -25,12 +26,6 @@ public:
 	C_BeamQuadratic();
 	void			Update( C_BaseEntity *pOwner );
 
-	matrix3x4_t z;
-	const matrix3x4_t& RenderableToWorldTransform()
-	{
-		return z;
-	}
-
 	// IClientRenderable
 	virtual const Vector&			GetRenderOrigin( void ) { return m_worldPosition; }
 	virtual const QAngle&			GetRenderAngles( void ) { return vec3_angle; }
@@ -38,7 +33,6 @@ public:
 	virtual bool					IsTransparent( void ) { return true; }
 	virtual bool					ShouldReceiveProjectedTextures( int flags ) { return false; }
 	virtual int						DrawModel( int flags );
-	void ViewModelDrawn(C_BaseViewModel* pBaseViewModel);
 
 	// Returns the bounds relative to the origin (render bounds)
 	virtual void	GetRenderBounds( Vector& mins, Vector& maxs )
@@ -57,9 +51,9 @@ public:
 };
 
 
-class C_WeaponPhysGun : public C_BaseCombatWeapon
+class C_WeaponPhysGun : public C_BaseHLCombatWeapon
 {
-	DECLARE_CLASS( C_WeaponPhysGun, C_BaseCombatWeapon );
+	DECLARE_CLASS( C_WeaponPhysGun, C_BaseHLCombatWeapon );
 public:
 	C_WeaponPhysGun() {}
 
@@ -96,14 +90,14 @@ public:
 	virtual	float	CalcViewmodelBob(void);
 
 private:
-	C_WeaponPhysGun( const C_WeaponPhysGun& );
+	C_WeaponPhysGun( const C_WeaponPhysGun & );
 
 	C_BeamQuadratic	m_beam;
 };
 
-STUB_WEAPON_CLASS_IMPLEMENT( weapon_physgun, C_WeaponPhysGun);
+STUB_WEAPON_CLASS_IMPLEMENT( weapon_physgun, C_WeaponPhysGun );
 
-IMPLEMENT_CLIENTCLASS_DT( C_WeaponPhysGun, DT_WeaponPhysgun, CWeaponPhysGun)
+IMPLEMENT_CLIENTCLASS_DT( C_WeaponPhysGun, DT_WeaponPhysGun, CWeaponPhysGun )
 	RecvPropVector( RECVINFO_NAME(m_beam.m_targetPosition,m_targetPosition) ),
 	RecvPropVector( RECVINFO_NAME(m_beam.m_worldPosition, m_worldPosition) ),
 	RecvPropInt( RECVINFO_NAME(m_beam.m_active, m_active) ),
@@ -115,7 +109,6 @@ END_RECV_TABLE()
 C_BeamQuadratic::C_BeamQuadratic()
 {
 	m_pOwner = NULL;
-	m_hRenderHandle = INVALID_CLIENT_RENDER_HANDLE;
 }
 
 void C_BeamQuadratic::Update( C_BaseEntity *pOwner )
@@ -135,9 +128,9 @@ void C_BeamQuadratic::Update( C_BaseEntity *pOwner )
 	else if ( !m_active && m_hRenderHandle != INVALID_CLIENT_RENDER_HANDLE )
 	{
 		ClientLeafSystem()->RemoveRenderable( m_hRenderHandle );
-		m_hRenderHandle = INVALID_CLIENT_RENDER_HANDLE;
 	}
 }
+
 
 int	C_BeamQuadratic::DrawModel( int )
 {
@@ -170,82 +163,9 @@ int	C_BeamQuadratic::DrawModel( int )
 	}
 
 	float scrollOffset = gpGlobals->curtime - (int)gpGlobals->curtime;
-
-	CMatRenderContextPtr pRenderContext( materials );
-	pRenderContext->Bind( pMat );
-
+	materials->Bind( pMat );
 	DrawBeamQuadratic( points[0], points[1], points[2], 13, color, scrollOffset );
-	DrawBeamQuadratic( points[0], points[1], points[2], 13, color, scrollOffset );
-	DrawBeamQuadratic( points[0], points[1], points[2], 13, color, scrollOffset );
-	DrawBeamQuadratic( points[0], points[1], points[2], 13, color, -scrollOffset );
 	return 1;
-}
-
-void C_BeamQuadratic::ViewModelDrawn(C_BaseViewModel* pBaseViewModel)
-{
-	Vector points[3];
-	QAngle tmpAngle;
-
-	C_BaseEntity* pEnt = cl_entitylist->GetEnt(m_viewModelIndex);
-	pEnt->GetAttachment(1, points[0], tmpAngle);
-
-	points[1] = 0.5 * (m_targetPosition + points[0]);
-
-	// a little noise 11t & 13t should be somewhat non-periodic looking
-	//points[1].z += 4*sin( gpGlobals->curtime*11 ) + 5*cos( gpGlobals->curtime*13 );
-	points[2] = m_worldPosition;
-
-	IMaterial* pMat = materials->FindMaterial("sprites/physbeam", TEXTURE_GROUP_CLIENT_EFFECTS);
-	Vector color;
-	if (m_glueTouching)
-	{
-		color.Init(1, 0, 0);
-	}
-	else
-	{
-		color.Init(1, 1, 1);
-	}
-
-	float scrollOffset = gpGlobals->curtime - (int)gpGlobals->curtime;
-
-	CMatRenderContextPtr pRenderContext(materials);
-	pRenderContext->Bind(pMat);
-
-	DrawBeamQuadratic(points[0], points[1], points[2], 13, color, scrollOffset);
-	DrawBeamQuadratic(points[0], points[1], points[2], 13, color, -scrollOffset);
-
-	IMaterial* pMaterial = materials->FindMaterial("sprites/physglow", TEXTURE_GROUP_CLIENT_EFFECTS);
-
-	//old
-	/*color32 clr = {0,64,255,255};
-	if ( pObject )
-	{
-		clr.r = 186;
-		clr.g = 253;
-		clr.b = 247;
-		clr.a = 255;
-	}*/
-
-	color32 clr = { 0,64,255,255 };
-	if (m_glueTouching)
-	{
-		clr.r = 186;
-		clr.g = 253;
-		clr.b = 247;
-		clr.a = 255;
-	}
-
-	float scale = random->RandomFloat(3, 5) * (m_glueTouching ? 3 : 2);
-
-	// Draw the sprite
-	pRenderContext->Bind(pMaterial);
-	for (int i = 0; i < 3; i++)
-	{
-		DrawSprite(points[2], scale, scale, clr);
-	}
-
-
-	C_BeamQuadratic::ViewModelDrawn(pBaseViewModel);
 }
 
 #define	HL2_BOB_CYCLE_MIN	1.0f
@@ -265,7 +185,7 @@ static ConVarRef    v_ipitch_cycle("v_ipitch_cycle");
 static ConVarRef    v_iyaw_level("v_iyaw_level");
 static ConVarRef    v_iroll_level("v_iroll_level");
 static ConVarRef    v_ipitch_level("v_ipitch_level");
-float C_WeaponPhysGun::CalcViewmodelBob(void)
+float CWeaponPhysGun::CalcViewmodelBob(void)
 {
 	static	float bobtime;
 	static	float lastbobtime;
@@ -308,7 +228,7 @@ float C_WeaponPhysGun::CalcViewmodelBob(void)
 	g_lateralBob = clamp(g_lateralBob, -7.0f, 4.0f);
 	return 0.0f;
 }
-void C_WeaponPhysGun::AddViewmodelBob(CBaseViewModel* viewmodel, Vector& origin, QAngle& angles)
+void CWeaponPhysGun::AddViewmodelBob(CBaseViewModel* viewmodel, Vector& origin, QAngle& angles)
 {
 	Vector	forward, right;
 	AngleVectors(angles, &forward, &right, NULL);
@@ -321,3 +241,4 @@ void C_WeaponPhysGun::AddViewmodelBob(CBaseViewModel* viewmodel, Vector& origin,
 	angles[YAW] -= g_lateralBob * 0.3f;
 	VectorMA(origin, g_lateralBob * 0.8f, right, origin);
 }
+

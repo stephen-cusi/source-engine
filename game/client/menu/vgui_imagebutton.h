@@ -6,16 +6,17 @@
 #endif
 
 #include <vgui_controls/ImagePanel.h>
+#include <vgui_controls/Label.h>
 
 namespace vgui
 {
 
-class ImageButton : public vgui::ImagePanel
+class ImageButton : public vgui::ImagePanel 
 {
 	typedef vgui::ImagePanel BaseClass;
 
 public:
-	ImageButton( vgui::Panel *parent, const char *panelName, const char *normalImage, const char *mouseOverImage, const char *mouseClickImage, const char *pCmd );
+	ImageButton( vgui::Panel *parent, const char *panelName, const char *normalImage, const char *mouseOverImage, const char *mouseClickImage, const char *pCmd, const char* textName, const char* text);
 
 	virtual void OnCursorEntered(); // When the mouse hovers over this panel, change images
 	virtual void OnCursorExited(); // When the mouse leaves this panel, change back
@@ -31,6 +32,8 @@ private:
 	vgui::IImage *i_normalImage; // The image when the mouse isn't over it, and its not being clicked
 	vgui::IImage *i_mouseOverImage; // The image that appears as when the mouse is hovering over it
 	vgui::IImage *i_mouseClickImage; // The image that appears while the mouse is clicking
+
+	vgui::Label* m_Impulse;
 	
 	char command[260]; // The command when it is clicked on
 	char m_normalImage[260];
