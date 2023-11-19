@@ -17,6 +17,8 @@ games = {
 	'hl1mp': ['server_base.vpc', 'server_hl1mp.vpc'],
 	'cstrike': ['server_base.vpc', 'server_cstrike.vpc', 'nav_mesh.vpc'],
 	'dod': ['server_base.vpc', 'server_dod.vpc'],
+# Add LJ homemade mod: lmod, To be honest, his mod is really just as useless as the name
+	'lmod': ['server_base.vpc', 'server_lmod.vpc'],
 	'tf': [
 		'server_base.vpc',
 		'server_econ_base.vpc',
