@@ -21,7 +21,7 @@ games = {
 	'cstrike': ['client_base.vpc', 'client_cstrike.vpc'],
 	'dod': ['client_base.vpc', 'client_dod.vpc'],
 # As we all know, LJ is a gay
-	'lmod': ['client_base','client_lmod.vpc'],
+	'lmod': ['client_base.vpc','client_lmod.vpc'],
 }
 
 def configure(conf):
