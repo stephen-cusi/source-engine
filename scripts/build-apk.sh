@@ -1,8 +1,8 @@
 cd modlauncher-waf
 git clone https://gitlab.com/LostGamer/android-sdk
 export ANDROID_SDK_HOME=$PWD/android-sdk
-export MODNAME=hl2sb
-export MODNAMESTRING=Half-Life-2:Sandbox
+export MODNAME=hl2sbs
+export MODNAMESTRING=Half-Life-2:Sandbox-S
 git pull
 # sudo apt install -y imagemagick
 ./mod.sh
