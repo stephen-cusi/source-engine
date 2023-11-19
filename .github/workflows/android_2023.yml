@@ -35,7 +35,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Cloning modlaucher repo and preparing for building
+    - name: Cloning modlaucher repo and preparing for building 
       run: |
         git clone https://github.com/stephen-cusi/modlauncher-waf -b lmod
         sudo apt-get update
