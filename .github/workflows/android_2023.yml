@@ -49,6 +49,7 @@ jobs:
         scripts/build-android-arm64.sh   
     - name: Build APK
       run: |
+        chmod +x scripts/sbuild-apk.sh
         scripts/sbuild-apk.sh 
     - name: Rename APK
       run: |
