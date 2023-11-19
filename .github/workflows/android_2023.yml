@@ -1,4 +1,4 @@
-name: Build-lmod-for-android
+name: Build-lmod
 
 on: [push, pull_request]
 
@@ -70,15 +70,14 @@ jobs:
         #
         git submodule init;git submodule update
         ./waf.bat configure -T release --prefix=./win --disable-warns -4 --build-game=lmod
-        pwsh -c "Get-ChildItem -Path './win' -Include '*.pdb', '*.lib' -File -Recurse | foreach-object { $_.Delete() }"
-
+        pwsh -command "Get-ChildItem -Path './win' -Include '*.pdb', '*.lib' -File -Recurse | foreach-object { $_.Delete() }"
         
         
         ./waf.bat install
         # ./scripts/del-jk.ps1
     - uses: actions/upload-artifact@v3
       with:
-        name: hl2lmod-win-i386
+        name: lmod-win-i386
         path: ./win
         if-no-files-found: error
         
@@ -92,8 +91,7 @@ jobs:
         #
         git submodule init;git submodule update
         ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=lmod
-        pwsh -c "Get-ChildItem -Path './win' -Include '*.pdb', '*.lib' -File -Recurse | foreach-object { $_.Delete() }"
-
+        pwsh -command "Get-ChildItem -Path './win' -Include '*.pdb', '*.lib' -File -Recurse | foreach-object { $_.Delete() }"
         
         ./waf.bat install
         # ./scripts/del-jk.ps1
