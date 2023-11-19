@@ -45,6 +45,7 @@ jobs:
         scripts/build-android-armv7a.sh
     - name: Build Android (64 bit)
       run: |
+        sudo chmod +x scripts/build-android-arm64
         scripts/build-android-arm64.sh    
     - name: Build APK
       run: |
