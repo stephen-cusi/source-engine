@@ -49,7 +49,7 @@ jobs:
         scripts/build-android-arm64.sh   
     - name: Build APK
       run: |
-        scripts/build-apk.sh 
+        scripts/sbuild-apk.sh 
     - name: Rename APK
       run: |
          mv modlauncher-waf/build/android/mod-signed.apk lmod-release.apk
