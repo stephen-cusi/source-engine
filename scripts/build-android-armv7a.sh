@@ -8,4 +8,8 @@ tar -xf clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
 export PATH="$PWD/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-16.04/bin:$PATH"
 ./waf configure -T release --build-game=hl2sb --prefix=modlauncher-waf/android --android=armeabi-v7a-hard,host,21 --target=../armeabi-v7a --disable-warns &&
 ./waf install --target=client,server --strip
+# 移除多余lib
+rm modlauncher-waf/android/lib/libtier0.so
+rm modlauncher-waf/android/lib/libsteam_api.so
+rm modlauncher-waf/android/lib/libvstdlib.so
 # 加引擎脑子纯粹喀了屎
