@@ -73,7 +73,7 @@ jobs:
         ./waf.bat configure -T release --prefix=./win --disable-warns -4 --build-game=lmod
         ./waf.bat install
         echo Running delete_file.cmd
-        call scripts\delete_file.cmd
+        scripts\delete_file.cmd
 
 
 
@@ -95,7 +95,7 @@ jobs:
         ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=lmod
         ./waf.bat install
         echo Running delete_file.cmd
-        call scripts\delete_file.cmd
+        scripts\delete_file.cmd
 
 
 
