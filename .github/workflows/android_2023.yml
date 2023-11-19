@@ -72,7 +72,7 @@ jobs:
         
         
         ./waf.bat install
-        scripts/del-jk.ps1
+        ./scripts/del-jk.ps1
     - uses: actions/upload-artifact@v3
       with:
         name: hl2lmod-win-i386
@@ -91,7 +91,7 @@ jobs:
         ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=lmod
         
         ./waf.bat install
-        scripts/del-jk.ps1
+        ./scripts/del-jk.ps1
     - uses: actions/upload-artifact@v3
       with:
         name: lmod-win-amd64
