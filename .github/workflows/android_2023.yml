@@ -45,7 +45,7 @@ jobs:
         scripts/build-android-armv7a.sh
     - name: Build Android (64 bit)
       run: |
-        scripts/build-android-aarch64.sh    
+        scripts/build-android-arm64.sh    
     - name: Build APK
       run: |
         scripts/build-apk.sh 
