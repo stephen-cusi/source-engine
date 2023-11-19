@@ -6,7 +6,7 @@ jobs:
   # build-linux-i386:
     # runs-on: ubuntu-latest
     # steps:
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3
     # - name: Build Linux (32 bit)
       # run: |
         # scripts/build-ubuntu-i386.sh
@@ -20,7 +20,7 @@ jobs:
     # runs-on: ubuntu-20.04
 
     # steps:
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3
     # - name: Build Linux (64 Bit)
       # run: |
         # scripts/build-ubuntu-amd64.sh
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Cloning modlaucher repo and preparing for building
       run: |
         git clone https://github.com/stephen-cusi/modlauncher-waf
@@ -99,7 +99,7 @@ jobs:
     # runs-on: windows-2019
 
     # steps:
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3
     # - name: Build Windows Dedicated (32 bit) 
       # run: |
         # git submodule init && git submodule update
@@ -115,7 +115,7 @@ jobs:
     # runs-on: windows-2019
 
     # steps:
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3
     # - name: Build Windows Dedicated (64 bit)
       # run: |
         # git submodule init && git submodule update
@@ -131,7 +131,7 @@ jobs:
     # runs-on: ubuntu-20.04
 
     # steps:
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3
     # - name: Build Linux Dedicated (32 bit)
       # run: |
         # scripts/build-ubuntu-i386.sh -d
@@ -145,7 +145,7 @@ jobs:
     # runs-on: ubuntu-20.04
 
     # steps:
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3
     # - name: Build Linux Dedicated (64 bit)
       # run: |
         # scripts/build-ubuntu-amd64.sh -d
@@ -159,7 +159,7 @@ jobs:
     # runs-on: macos-latest
 
     # steps:
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3
     # - name: Build MacOS (64 bit)
       # run: |
         # scripts/build-macos-amd64.sh
@@ -173,7 +173,7 @@ jobs:
     # runs-on: macos-latest
 
     # steps:
-    # - uses: actions/checkout@v2
+    # - uses: actions/checkout@v3
     # - name: Build MacOS Dedicated (64 bit)
       # run: |
         # scripts/build-macos-amd64.sh -d
