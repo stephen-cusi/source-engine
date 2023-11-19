@@ -71,12 +71,8 @@ jobs:
         #
         git submodule init;git submodule update
         ./waf.bat configure -T release --prefix=./win --disable-warns -4 --build-game=lmod
-        pwsh -command "Get-ChildItem -Path './win' -Include '*.pdb', '*.lib' -File -Recurse | foreach-object { Remove-Item -Path $_.FullName -Force }"
-
-        
-        
         ./waf.bat install
-        # ./scripts/del-jk.ps1
+        pwsh -command "Get-ChildItem -Path './win' -Include '*.pdb', '*.lib' -File -Recurse | foreach-object { Remove-Item -Path $_.FullName -Force }"
     - uses: actions/upload-artifact@v3
       with:
         name: lmod-win-i386
@@ -93,11 +89,8 @@ jobs:
         #
         git submodule init;git submodule update
         ./waf.bat configure -T release --prefix=./win --disable-warns --build-game=lmod
-        pwsh -command "Get-ChildItem -Path './win' -Include '*.pdb', '*.lib' -File -Recurse | foreach-object { Remove-Item -Path $_.FullName -Force }"
-
-        
         ./waf.bat install
-        # ./scripts/del-jk.ps1
+        pwsh -command "Get-ChildItem -Path './win' -Include '*.pdb', '*.lib' -File -Recurse | foreach-object { Remove-Item -Path $_.FullName -Force }"
     - uses: actions/upload-artifact@v3
       with:
         name: lmod-win-amd64
