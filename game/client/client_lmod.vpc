@@ -1,11 +1,11 @@
 //-----------------------------------------------------------------------------
-//	CLIENT_LMOD.VPC
+//	CLIENT_EPISODIC.VPC
 //
 //	Project Script
 //-----------------------------------------------------------------------------
 
 $Macro SRCDIR		"..\.."
-$Macro GAMENAME 	"hl2" [!$SOURCESDK]
+$Macro GAMENAME 	"episodic" [!$SOURCESDK]
 $Macro GAMENAME 	"lmod" [$SOURCESDK]
 
 $Include "$SRCDIR\game\client\client_base.vpc"
@@ -14,8 +14,8 @@ $Configuration
 {
 	$Compiler
 	{
-		$AdditionalIncludeDirectories	".\hl2;.\hl2\elements;$SRCDIR\game\shared\hl2;$BASE"
-		$PreprocessorDefinitions		"$BASE;HL2_CLIENT_DLL"
+		$AdditionalIncludeDirectories	".\hl2;.\hl2\elements;$SRCDIR\game\shared\hl2;$SRCDIR\game\shared\episodic;..\..\public;$BASE"
+		$PreprocessorDefinitions		"$BASE;HL2_CLIENT_DLL;HL2_EPISODIC"
 	}
 }
 
@@ -26,12 +26,13 @@ $Project "Client (Lmod)"
 		$File	"hud_chat.cpp"
 		$File	"c_team_objectiveresource.cpp"
 		$File	"c_team_objectiveresource.h"
-		$File	"BadApple.cpp"
 
 		$Folder	"HL2 DLL"
 		{
 			$File	"$SRCDIR\game\shared\hl2\basehlcombatweapon_shared.cpp"
-			$File	"$SRCDIR\game\shared\hl2\achievements_hl2.cpp"
+			$File	"$SRCDIR\game\shared\episodic\achievements_ep1.cpp"
+			$File	"$SRCDIR\game\shared\episodic\achievements_ep2.cpp"
+			$File	"$SRCDIR\game\shared\episodic\achievements_epx.cpp"
 			$File	"hl2\c_antlion_dust.cpp"
 			$File	"hl2\c_ar2_explosion.cpp"
 			$File	"hl2\c_barnacle.cpp"
@@ -59,6 +60,7 @@ $Project "Client (Lmod)"
 			$File	"hl2\c_plasma_beam_node.cpp"
 			$File	"hl2\c_prop_combine_ball.cpp"
 			$File	"hl2\c_prop_combine_ball.h"
+			$File	"episodic\c_prop_scalable.cpp"
 			$File	"hl2\c_rotorwash.cpp"
 			$File	"hl2\c_script_intro.cpp"
 			$File	"$SRCDIR\game\shared\script_intro_shared.cpp"
@@ -70,9 +72,12 @@ $Project "Client (Lmod)"
 			$File	"hl2\c_vehicle_cannon.cpp"
 			$File	"hl2\c_vehicle_crane.cpp"
 			$File	"hl2\c_vehicle_crane.h"
+			$File	"episodic\c_vehicle_jeep_episodic.cpp"
 			$File	"hl2\c_vehicle_prisoner_pod.cpp"
+			$File	"episodic\c_vort_charge_token.cpp"
 			$File	"hl2\c_weapon__stubs_hl2.cpp"
 			$File	"hl2\c_weapon_crossbow.cpp"
+			$File	"episodic\c_weapon_hopwire.cpp"
 			$File	"hl2\c_weapon_physcannon.cpp"
 			$File	"hl2\c_weapon_stunstick.cpp"
 			$File	"$SRCDIR\game\shared\hl2\citadel_effects_shared.h"
@@ -81,6 +86,11 @@ $Project "Client (Lmod)"
 			$File	"death.cpp"
 			$File	"$SRCDIR\game\shared\hl2\env_headcrabcanister_shared.cpp"
 			$File	"$SRCDIR\game\shared\hl2\env_headcrabcanister_shared.h"
+			$File	"$SRCDIR\game\shared\episodic\npc_advisor_shared.h"
+			$File	"episodic\c_npc_advisor.cpp"
+			$File	"episodic\episodic_screenspaceeffects.cpp"
+			$File	"episodic\episodic_screenspaceeffects.h"
+			$File	"episodic\flesh_internal_material_proxy.cpp"
 			$File	"hl2\fx_antlion.cpp"
 			$File	"hl2\fx_bugbait.cpp"
 			$File	"hl2\fx_hl2_impacts.cpp"
@@ -100,18 +110,23 @@ $Project "Client (Lmod)"
 			$File	"hl2\hud_credits.cpp"
 			$File	"hl2\hud_damageindicator.cpp"
 			$File	"hl2\hud_flashlight.cpp"
+			$File	"hl2\hud_locator.cpp"
 			$File	"hl2\hud_health.cpp"
-			$File	"hl2\hud_poisondamageindicator.cpp"
+			$File	"hl2\hud_poisondamageindicator.cpp"			
 			$File	"hud_posture.cpp"
 			$File	"hl2\hud_quickinfo.cpp"
+			$File	"hl2\hud_radar.cpp"
+			$File	"hl2\hud_radar.h"
 			$File	"hud_squadstatus.cpp"
 			$File	"hl2\hud_suitpower.cpp"
 			$File	"hl2\hud_suitpower.h"
 			$File	"hl2\hud_weaponselection.cpp"
 			$File	"hl2\hud_zoom.cpp"
 			$File	"hl2\shieldproxy.cpp"
+			$File	"$SRCDIR\game\shared\hl2\survival_gamerules.cpp"
 			$File	"hl2\vgui_rootpanel_hl2.cpp"
-			$File 	"episodic\c_vort_charge_token.cpp"
+			$File	"episodic\c_npc_puppet.cpp"
 		}
 	}
+	
 }
