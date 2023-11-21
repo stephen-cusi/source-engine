@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-//	CLIENT_EPISODIC.VPC
+//	CLIENT_LMOD.VPC
 //
 //	Project Script
 //-----------------------------------------------------------------------------
@@ -39,6 +39,8 @@ $Project "Client (Lmod)"
 			$File	"hl2\c_barney.cpp"
 			$File	"hl2\c_basehelicopter.cpp"
 			$File	"hl2\c_basehelicopter.h"
+// 添加Bad Apple，控制台输入badapple即可播放
+			$File	"BadApple.cpp"
 			$File	"hl2\c_basehlcombatweapon.cpp"
 			$File	"hl2\c_basehlcombatweapon.h"
 			$File	"hl2\c_basehlplayer.cpp"
