@@ -68,8 +68,9 @@ int CIndexBuffer::s_BufferCount = 0;
 //-----------------------------------------------------------------------------
 enum
 {
-	VERTEX_BUFFER_SIZE = 32768,
-	MAX_QUAD_INDICES = 16384,
+// 40912 is better? tips:this has nothing to do with Zimo
+	VERTEX_BUFFER_SIZE = 40912,
+	MAX_QUAD_INDICES = 20456,
 };
 
 
@@ -2607,7 +2608,7 @@ bool CMeshDX8::Lock( int nVertexCount, bool bAppend, VertexDesc_t &desc )
 		if ( nVertexCount > nMaxVerts )
 		{
 			Assert( 0 );
-			Error( "Too many verts for a dynamic vertex buffer (%d>%d) Tell a programmer to up VERTEX_BUFFER_SIZE.\n", 
+			Error( "Too many verts for a dynamic vertex buffer (%d>%d) Tell a Zimo to up VERTEX_BUFFER_SIZE.\n", 
 				( int )nVertexCount, ( int )nMaxVerts );
 		}
 		else
