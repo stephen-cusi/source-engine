@@ -400,7 +400,7 @@ inline vec_t RoundInt (vec_t in)
 
 int Q_log2(int val);
 
-#include "../../thirdparty/DirectXMath-dec2023/Inc/DirectXMath.h"
+#include "DirectXMath-dec2023/Inc/DirectXMath.h"
 
 // Math routines done in optimized assembly math package routines
 void inline SinCos( float radians, float *sine, float *cosine )

@@ -389,7 +389,7 @@ typedef __m64 v2si;   // vector of 2 int (mmx)
 
 #endif
 
-#include "../../thirdparty/DirectXMath-dec2023/Inc/DirectXMath.h"
+#include "DirectXMath-dec2023/Inc/DirectXMath.h"
 
 void _SSE_SinCos(float x, float* s, float* c)
 {
