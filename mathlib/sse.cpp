@@ -389,9 +389,13 @@ typedef __m64 v2si;   // vector of 2 int (mmx)
 
 #endif
 
+#include "DirectXMath-dec2023/Inc/DirectXMath.h"
+
 void _SSE_SinCos(float x, float* s, float* c)
 {
-#if defined(__arm__) || defined(__aarch64__)
+#if 1
+	DirectX::XMScalarSinCos( s, c, x );
+#elif defined(__arm__) || defined(__aarch64__)
 #if defined( OSX )
     __sincosf(x, s, c);
 #elif defined( POSIX )
@@ -607,7 +611,9 @@ void _SSE_SinCos(float x, float* s, float* c)
 
 float _SSE_cos( float x )
 {
-#if defined(__arm__) || defined(__aarch64__)
+#if 1
+	DirectX::XMScalarCos( x );
+#elif defined(__arm__) || defined(__aarch64__)
 	return cos(x);
 #elif _WIN32
 	float temp;
